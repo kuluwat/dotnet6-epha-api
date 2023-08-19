@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\dotnet6-epha-api.props" />
+</Project>

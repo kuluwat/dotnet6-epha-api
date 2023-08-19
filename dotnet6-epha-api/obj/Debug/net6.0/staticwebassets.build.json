@@ -1,0 +1,71 @@
+{
+  "Version": 1,
+  "Hash": "n9XAOhvRFbo4UMU6EQhgsUWAiIf6KDiPqmDux1BZm6I=",
+  "Source": "dotnet6-epha-api",
+  "BasePath": "_content/dotnet6-epha-api",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "dotnet6-epha-api\\wwwroot",
+      "Source": "dotnet6-epha-api",
+      "ContentRoot": "D:\\dotnet6-epha-api\\dotnet6-epha-api\\wwwroot\\",
+      "BasePath": "_content/dotnet6-epha-api",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": [
+    {
+      "Identity": "D:\\dotnet6-epha-api\\dotnet6-epha-api\\wwwroot\\AttachedFileTemp\\FollowUp\\SPVP KPI Result -20230811083115.xlsx",
+      "SourceId": "dotnet6-epha-api",
+      "SourceType": "Discovered",
+      "ContentRoot": "D:\\dotnet6-epha-api\\dotnet6-epha-api\\wwwroot\\",
+      "BasePath": "_content/dotnet6-epha-api",
+      "RelativePath": "AttachedFileTemp/FollowUp/SPVP KPI Result -20230811083115.xlsx",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\AttachedFileTemp\\FollowUp\\SPVP KPI Result -20230811083115.xlsx"
+    },
+    {
+      "Identity": "D:\\dotnet6-epha-api\\dotnet6-epha-api\\wwwroot\\AttachedFileTemp\\FollowUp\\Thaioil Corporate Logo stroke (1).png",
+      "SourceId": "dotnet6-epha-api",
+      "SourceType": "Discovered",
+      "ContentRoot": "D:\\dotnet6-epha-api\\dotnet6-epha-api\\wwwroot\\",
+      "BasePath": "_content/dotnet6-epha-api",
+      "RelativePath": "AttachedFileTemp/FollowUp/Thaioil Corporate Logo stroke (1).png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\AttachedFileTemp\\FollowUp\\Thaioil Corporate Logo stroke (1).png"
+    },
+    {
+      "Identity": "D:\\dotnet6-epha-api\\dotnet6-epha-api\\wwwroot\\AttachedFileTemp\\FollowUp\\รายละเอียด server epha.xlsx",
+      "SourceId": "dotnet6-epha-api",
+      "SourceType": "Discovered",
+      "ContentRoot": "D:\\dotnet6-epha-api\\dotnet6-epha-api\\wwwroot\\",
+      "BasePath": "_content/dotnet6-epha-api",
+      "RelativePath": "AttachedFileTemp/FollowUp/รายละเอียด server epha.xlsx",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\AttachedFileTemp\\FollowUp\\รายละเอียด server epha.xlsx"
+    }
+  ]
+}
