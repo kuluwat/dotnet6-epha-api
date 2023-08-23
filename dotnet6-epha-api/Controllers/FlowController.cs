@@ -77,7 +77,7 @@ namespace Controllers
             ClassHazop cls = new ClassHazop();
             return cls.get_hazop_search(param);
 
-        }
+        } 
         [HttpPost("set_hazop", Name = "set_hazop")]
         public string set_hazop(SetDocHazopModel param)
         {
@@ -122,5 +122,27 @@ namespace Controllers
             return cls.set_follow_up(param);
         }
         #endregion follow up 
+
+
+        #region export hazop
+        [HttpPost("export_hazop_worksheet", Name = "export_hazop_worksheet")]
+        public string export_hazop_worksheet(ReportModel param)
+        {
+            ClassHazopSet cls = new ClassHazopSet();
+            return cls.export_hazop_worksheet(param);
+        }
+        [HttpPost("export_hazop_recommendation", Name = "export_hazop_recommendation")]
+        public string export_hazop_recommendation(ReportModel param)
+        {
+            ClassHazopSet cls = new ClassHazopSet();
+            return cls.export_hazop_recommendation(param);
+        }
+        [HttpPost("export_hazop_report", Name = "export_hazop_report")]
+        public string export_hazop_report(ReportModel param)
+        {
+            ClassHazopSet cls = new ClassHazopSet();
+            return cls.export_hazop_report(param);
+        }
+        #endregion export hazop
     }
 }

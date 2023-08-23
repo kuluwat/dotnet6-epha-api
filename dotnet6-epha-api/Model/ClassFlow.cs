@@ -9,12 +9,20 @@ namespace Model
         public string? file_name { get; set; } 
         public string? file_seq { get; set; } 
     }
+    public class ReportModel
+    {
+        public string? user_name { get; set; } = "";
+        public string? seq { get; set; } = ""; 
+        public string? export_type { get; set; } = ""; 
+
+    }
     public class LoadDocModel
     {
         public string? user_name { get; set; } = "";
         public string? token_doc { get; set; } = "";
         public string? sub_software { get; set; } = "";
-        public string? type_doc { get; set; } = "";
+        public string? type_doc { get; set; } = ""; 
+
     }
     public class LoadDocFollowModel
     {

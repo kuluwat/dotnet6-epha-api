@@ -1,4 +1,5 @@
-﻿using dotnet6_epha_api.Class;
+﻿using Aspose.Cells;
+using dotnet6_epha_api.Class;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.Exchange.WebServices.Data;
 using Model;
@@ -25,7 +26,9 @@ namespace Class
 
     public class ClassEmail
     {
-        string server_url = @"https://localhost:7096/hazop/Index?";
+        //string server_url = "WebServer_ePHA_Index";// @"https://localhost:7096/hazop/Index?";
+        string server_url = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("MailConfig")["WebServer_ePHA_Index"];
+
 
         string sqlstr = "";
         string jsper = "";
@@ -385,7 +388,7 @@ namespace Class
 
 
         }
-        public string MailToActionOwner(string seq, string sub_software)
+        public string MailToActionOwner(string seq, string sub_software )
         {
             string doc_no = "";
             string doc_name = "";
@@ -397,13 +400,14 @@ namespace Class
             string to_displayname = "";
             string s_mail_to = "";
             string s_mail_cc = "";
-            string s_mail_from = "";
+            string s_mail_from = ""; 
 
             string meeting_date = "";
             DataTable dt = new DataTable();
+             
 
             if (sub_software == "hazop")
-            {
+            {  
                 sqlstr = QueryActionOwner(seq, "", sub_software);
             }
             cls_conn = new ClassConnectionDb();
@@ -502,7 +506,7 @@ namespace Class
             string url = "";
             string url_approver = "";
             string url_reject = "";
-            string step_text = "TA2 Review.";
+            string step_text = "Approver TA2 Review.";
 
             string to_displayname = "All";
             string s_mail_to = "";
@@ -586,8 +590,7 @@ namespace Class
             s_body += "<br/><br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Please review data of PHA No." + doc_no;
             s_body += "<br/>To see the detailed infromation,<font color='red'> please click <a href='" + url + "'>here</a></font>";
 
-            s_body += "<br/><br/> <font color='blue'><a href='" + url_approver + "'>Approve</a></font>";
-            s_body += "<br/><br/> <font color='red'><a href='" + url_reject + "'>Send back with Comment</a></font>";
+            s_body += "<br/><br/> <font color='blue'><a href='" + url_approver + "'>Approve</a></font> or <font color='red'><a href='" + url_reject + "'>Send back with Comment</a></font>";
 
 
             s_body += "<br/><br/>Best Regards,";
@@ -603,7 +606,121 @@ namespace Class
             data.mail_from = s_mail_from;
 
             return sendMail(data);
+        }
+        public string MailApprovByApprover(string seq, string sub_software)
+        {
+            string doc_no = "";
+            string doc_name = "";
+            string reference_moc = "";
+            string comment = "";
+            string approver_displayname = "XXXXX (TOP-XX)";
 
+            string url = "";
+            string url_approver = "";
+            string url_reject = "";
+            string step_text = "Approver TA2 Approve.";
+
+            string to_displayname = "All";
+            string s_mail_to = "";
+            string s_mail_cc = "";
+            string s_mail_from = "";
+
+            string mail_admin_group = get_mail_admin_group();
+            DataTable dt = new DataTable();
+
+            if (sub_software == "hazop")
+            {
+                sqlstr = @"  select h.approver_user_name,h.pha_status, h.pha_no, g.pha_request_name, emp.user_displayname, emp.user_email 
+                             , h.approve_action_type, h.approve_status, h.approve_comment, g.reference_moc
+                             from EPHA_F_HEADER h
+                             inner join EPHA_T_GENERAL g on lower(h.id) = lower(g.id_pha)  
+                             left join EPHA_PERSON_DETAILS emp on lower(h.approver_user_name) = lower(emp.user_name)   
+                             where h.approver_user_name is not null and h.id =" + seq;
+
+            }
+            cls_conn = new ClassConnectionDb();
+            dt = new DataTable();
+            dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+
+            #region mail to
+            if (dt.Rows.Count > 0)
+            {
+                doc_no = (dt.Rows[0]["pha_no"] + "");
+                doc_name = (dt.Rows[0]["pha_name"] + "");
+                reference_moc = (dt.Rows[0]["reference_moc"] + "");
+
+                for (int i = 0; i < dt.Rows.Count; i++)
+                {
+                    //to pha_request_email, admin
+                    if (i > 0) { s_mail_to += ";"; }
+                    s_mail_to += (dt.Rows[i]["request_email"] + "");
+                }
+                s_mail_to += mail_admin_group ;
+            }
+            #endregion mail to
+
+            #region mail cc 
+            if (dt.Rows.Count > 0)
+            {
+                //cc approver ta2
+              s_mail_cc += (dt.Rows[0]["user_email"] + "");
+            }
+            #endregion mail cc
+
+            #region url  
+            using (Aes aesAlgorithm = Aes.Create())
+            {
+                aesAlgorithm.KeySize = 256;
+                aesAlgorithm.GenerateKey();
+                string keyBase64 = Convert.ToBase64String(aesAlgorithm.Key);
+
+                //insert keyBase64 to db 
+                string plainText = "seq=" + seq + "&pha_no=" + doc_no + "&step=3";
+                string cipherText = EncryptDataWithAes(plainText, keyBase64, out string vectorBase64);
+
+                url = server_url + cipherText + "&" + keyBase64 + "&" + vectorBase64;
+
+                //reject 
+                url_reject = url;
+
+                //approve
+                plainText = "seq=" + seq + "&pha_no=" + doc_no + "&step=4" + "&approver_type=approve";
+                cipherText = EncryptDataWithAes(plainText, keyBase64, out vectorBase64);
+                url_reject = server_url + cipherText + "&" + keyBase64 + "&" + vectorBase64;
+
+            }
+            #endregion url 
+
+
+            s_subject = "ePHA Online System : " + doc_no + (doc_name == "" ? "" : "")
+                            + ",Please follow up item and update action.";
+
+            s_body = "<html><body><font face='tahoma' size='2'>";
+            s_body += "Dear " + to_displayname + ",";
+
+            s_body += "<br/><br/><b>Step</b> : " + step_text;
+            s_body += "<br/><b>Reference MOC</b> : " + reference_moc;
+            s_body += "<br/><b>Project Name</b> : " + doc_name;
+            
+            s_body += "<br/><b>" + approver_displayname + ", has approved the conduct of PHA</b>";
+            if (comment != "") { s_body += "<br/><b>Comment: " + comment; }
+
+            s_body += "<br/><br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Please review data of PHA No." + doc_no;
+            s_body += "<br/>To see the detailed infromation,<font color='red'> please click <a href='" + url + "'>here</a></font>";
+
+            s_body += "<br/><br/>Best Regards,";
+            s_body += "<br/>ePHA Online System ";
+            s_body += "<br/><br/><br/>Note that this message was automatically sent by ePHA Online System.";
+            s_body += "</font></body></html>";
+
+            sendEmailModel data = new sendEmailModel();
+            data.mail_subject = s_subject;
+            data.mail_body = s_body;
+            data.mail_to = s_mail_to;
+            data.mail_cc = s_mail_cc;
+            data.mail_from = s_mail_from;
+
+            return sendMail(data);
 
         }
         public string MailRejectByApprover(string seq, string sub_software)
@@ -611,11 +728,13 @@ namespace Class
             string doc_no = "";
             string doc_name = "";
             string reference_moc = "";
+            string comment = "";
+            string approver_displayname = "XXXXX (TOP-XX)";
 
             string url = "";
             string url_approver = "";
             string url_reject = "";
-            string step_text = "TA2 Review.";
+            string step_text = "ApproverTA2 Send back with Comment.";
 
             string to_displayname = "All";
             string s_mail_to = "";
@@ -687,7 +806,7 @@ namespace Class
 
 
             s_subject = "ePHA Online System : " + doc_no + (doc_name == "" ? "" : "")
-                + ",Please review data.";
+                + ",Please be invited to meeting to conduct of PHA.";
 
             s_body = "<html><body><font face='tahoma' size='2'>";
             s_body += "Dear " + to_displayname + ",";
@@ -696,13 +815,12 @@ namespace Class
             s_body += "<br/><b>Reference MOC</b> : " + reference_moc;
             s_body += "<br/><b>Project Name</b> : " + doc_name;
 
+            s_body += "<br/><b>"+ approver_displayname + ",  Send back with Comment</b>"  ;
+            s_body += "<br/><b>Comment: "+ comment;
+
             s_body += "<br/><br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Please review data of PHA No." + doc_no;
             s_body += "<br/>To see the detailed infromation,<font color='red'> please click <a href='" + url + "'>here</a></font>";
-
-            s_body += "<br/><br/> <font color='blue'><a href='" + url_approver + "'>Approve</a></font>";
-            s_body += "<br/><br/> <font color='red'><a href='" + url_reject + "'>Send back with Comment</a></font>";
-
-
+             
             s_body += "<br/><br/>Best Regards,";
             s_body += "<br/>ePHA Online System ";
             s_body += "<br/><br/><br/>Note that this message was automatically sent by ePHA Online System.";

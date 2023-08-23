@@ -1,6 +1,14 @@
 {
   "Files": [
     {
+      "Id": "D:\\dotnet6-epha-api\\dotnet6-epha-api\\wwwroot\\AttachedFileTemp\\FollowUp\\PROD.png",
+      "PackagePath": "staticwebassets\\AttachedFileTemp\\FollowUp\\PROD.png"
+    },
+    {
+      "Id": "D:\\dotnet6-epha-api\\dotnet6-epha-api\\wwwroot\\AttachedFileTemp\\FollowUp\\QAS.png",
+      "PackagePath": "staticwebassets\\AttachedFileTemp\\FollowUp\\QAS.png"
+    },
+    {
       "Id": "D:\\dotnet6-epha-api\\dotnet6-epha-api\\wwwroot\\AttachedFileTemp\\FollowUp\\SPVP KPI Result -20230811083115.xlsx",
       "PackagePath": "staticwebassets\\AttachedFileTemp\\FollowUp\\SPVP KPI Result -20230811083115.xlsx"
     },
@@ -9,8 +17,24 @@
       "PackagePath": "staticwebassets\\AttachedFileTemp\\FollowUp\\Thaioil Corporate Logo stroke (1).png"
     },
     {
+      "Id": "D:\\dotnet6-epha-api\\dotnet6-epha-api\\wwwroot\\AttachedFileTemp\\FollowUp\\messageImage_1691651937550.jpg",
+      "PackagePath": "staticwebassets\\AttachedFileTemp\\FollowUp\\messageImage_1691651937550.jpg"
+    },
+    {
       "Id": "D:\\dotnet6-epha-api\\dotnet6-epha-api\\wwwroot\\AttachedFileTemp\\FollowUp\\รายละเอียด server epha.xlsx",
       "PackagePath": "staticwebassets\\AttachedFileTemp\\FollowUp\\รายละเอียด server epha.xlsx"
+    },
+    {
+      "Id": "D:\\dotnet6-epha-api\\dotnet6-epha-api\\wwwroot\\AttachedFileTemp\\HAZOP Recommendation Template.xlsx",
+      "PackagePath": "staticwebassets\\AttachedFileTemp\\HAZOP Recommendation Template.xlsx"
+    },
+    {
+      "Id": "D:\\dotnet6-epha-api\\dotnet6-epha-api\\wwwroot\\AttachedFileTemp\\HAZOP Study Worksheet Template.xlsx",
+      "PackagePath": "staticwebassets\\AttachedFileTemp\\HAZOP Study Worksheet Template.xlsx"
+    },
+    {
+      "Id": "D:\\dotnet6-epha-api\\dotnet6-epha-api\\wwwroot\\AttachedFileTemp\\HAZOP Template.docx",
+      "PackagePath": "staticwebassets\\AttachedFileTemp\\HAZOP Template.docx"
     },
     {
       "Id": "obj\\Debug\\net6.0\\staticwebassets\\msbuild.build.dotnet6-epha-api.props",

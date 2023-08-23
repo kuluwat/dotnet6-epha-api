@@ -149,6 +149,8 @@ namespace Class
             dt = new DataTable();
             dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
 
+            dt.Rows.Add(dt.NewRow()); dt.AcceptChanges();
+
             dt.TableName = "storagelocation";
             _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
 
@@ -222,13 +224,13 @@ namespace Class
 
             #region master functional location
             sqlstr = @" select *, a.functional_location as id, a.functional_location as name, 0 as selected_type
-                         from EPHA_T_FUNCTIONAL_LOCATION a
+                         from EPHA_M_FUNCTIONAL_LOCATION a
                          where active_type = 1 order by seq ";
 
             cls_conn = new ClassConnectionDb();
             dt = new DataTable();
             dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
-
+             
             dt.TableName = "functional";
             _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
             #endregion functional location  
@@ -269,8 +271,7 @@ namespace Class
             #endregion apu
 
             #region master business unit
-            sqlstr = @" select id_company, id_area, id_apu, id, name from EPHA_M_BUSSINESS_UNIT t order by id_company, id_area, id_apu, id  ";
-
+            sqlstr = @" select id_company, id_area, id_apu, id, name from EPHA_M_BUSSINESS_UNIT t order by id_company, id_area, id_apu, id  "; 
             cls_conn = new ClassConnectionDb();
             dt = new DataTable();
             dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
@@ -876,15 +877,15 @@ namespace Class
             dtemp = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
 
             string sqlstr_def = "";
-            #region header
-            ////pha_sub_software,employee_displayname,status_total,status_open,status_close
-            sqlstr = @" select a.*,b.name as pha_status_name, b.descriptions as pha_status_displayname
+            #region header 
+            sqlstr = @" select a.*,b.*,ms.name as pha_status_name, ms.descriptions as pha_status_displayname
                         ,case when a.year = year(getdate()) then vw.user_name else a.request_user_name end request_user_name
                         ,case when a.year = year(getdate()) then vw.user_name else a.request_user_displayname end request_user_displayname
                         ,null as approver_user_img
                         , 'update' as action_type, 0 as action_change
                         from EPHA_F_HEADER a
-                        left join EPHA_M_STATUS b on a.pha_status = b.id
+						inner join EPHA_T_GENERAL b on a.id  = b.id_pha
+                        left join EPHA_M_STATUS ms on a.pha_status = ms.id
                         left join VW_EPHA_PERSON_DETAILS vw on lower(a.pha_request_by) = lower(vw.user_name)
                         where 1=1";
             if (seq != "") { sqlstr += " and lower(a.seq) = lower(" + cls.ChkSqlStr(seq, 50) + ")  "; }
@@ -957,7 +958,7 @@ namespace Class
                 //default values 
                 DataTable dtram = dsData.Tables["ram"].Copy(); dtram.AcceptChanges();
                 dt.Rows[0]["id_ram"] = dtram.Rows[0]["id"];
-
+                  
                 dt.Rows[0]["expense_type"] = "OPEX";
                 dt.Rows[0]["sub_expense_type"] = "Normal";
 
@@ -1020,12 +1021,12 @@ namespace Class
             #region header
             string sqlstr_w = "";
             string sqlstr_r = "";
-            sqlstr_w = @" select 0 as no, a.pha_sub_software, a.pha_no, g.pha_request_name, '' as responder_user_displayname 
+            sqlstr_w = @" select 0 as no, a.pha_sub_software, a.seq as pha_seq,a.pha_no, g.pha_request_name, '' as responder_user_displayname 
                          ,count(1) as status_total
                          , count(case when lower(w.action_status) = 'closed' then null else 1 end) status_open
                          , count(case when lower(w.action_status) = 'closed' then 1 else null end) status_closed
                          , 'worksheet' as data_by, '' as responder_user_name
-                         , case when a.pha_status  = 13 then 'PHA Conduct' else 'Waiting Review Follow Up' end as pha_status_name
+                         , case when a.pha_status  = 13 then 'Waiting Follow Up' else 'Waiting Review Follow Up' end as pha_status_name
                          , 'update' as action_type, 0 as action_change
                          from EPHA_F_HEADER a 
                          inner join EPHA_T_GENERAL g on a.id = g.id_pha 
@@ -1035,15 +1036,15 @@ namespace Class
             if (seq != "") { sqlstr_w += @" and lower(a.seq) = lower(" + cls.ChkSqlStr(seq, 50) + ")  "; }
 
             if (role_type != "admin") { sqlstr_w += @" and ( a.pha_status in (13,14) and isnull(nw.responder_action_type,0) <> 2 )"; }
-            
-            sqlstr_w += @" group by a.pha_status, a.pha_sub_software, a.pha_no, g.pha_request_name ";
 
-            sqlstr_r = @" select  0 as no, a.pha_sub_software, '' as pha_no, '' as pha_request_name, vw.user_displayname as responder_user_displayname
+            sqlstr_w += @" group by a.pha_status, a.pha_sub_software, a.seq, a.pha_no, g.pha_request_name ";
+
+            sqlstr_r = @" select  0 as no, a.pha_sub_software, '' as pha_seq, '' as pha_no, '' as pha_request_name, vw.user_displayname as responder_user_displayname
                          ,count(1) as status_total
                          , count(case when lower(w.action_status) = 'closed' then null else 1 end) status_open
                          , count(case when lower(w.action_status) = 'closed' then 1 else null end) status_closed
                          , 'responder' as data_by, w.responder_user_name
-                         , case when a.pha_status  = 13 then 'PHA Conduct' else 'Waiting Review Follow Up' end as pha_status_name
+                         , case when a.pha_status  = 13 then 'Waiting Follow Up' else 'Waiting Review Follow Up' end as pha_status_name
                          , 'update' as action_type, 0 as action_change
                          from EPHA_F_HEADER a 
                          inner join EPHA_T_GENERAL g on a.id = g.id_pha 
@@ -1131,7 +1132,7 @@ namespace Class
 						 , count(1) as status_total
                          , count(case when lower(w.action_status) = 'closed' then null else 1 end) status_open
                          , count(case when lower(w.action_status) = 'closed' then 1 else null end) status_closed
-						 , w.document_file_name, w.document_file_path
+						 , w.document_file_name, w.document_file_path, 0 as document_file_size
 						 , format(w.estimated_start_date,'dd MMM yyyy') as estimated_start_date_text 
 						 , format(w.estimated_end_date,'dd MMM yyyy') as estimated_end_date_text 
 						 , isnull(datediff(day,case when w.estimated_end_date > getdate() then getdate() else w.estimated_end_date end,getdate()),0) as over_due
@@ -1232,6 +1233,15 @@ namespace Class
                     }
                     dt.Rows[i]["recommendations"] = recomm_text;
                     dt.Rows[i]["causes"] = cause_text;
+
+
+                    ///get document_file_size จาก document_file_path
+                    try
+                    {
+                        dt.Rows[i]["document_file_size"] = file_size((dt.Rows[i]["document_file_path"] + ""));
+                    }
+                    catch { }
+
                     dt.AcceptChanges();
                 }
             }
@@ -1243,6 +1253,29 @@ namespace Class
 
         }
 
+
+        private string file_size(string filePath)
+        {
+            //string filePath = @"C:\path\to\your\file.txt"; // Replace with your file's path
+            FileInfo fileInfo = new FileInfo(filePath);
+
+            if (fileInfo.Exists)
+            {
+                long fileSizeInBytes = fileInfo.Length;
+                Console.WriteLine($"File size: {fileSizeInBytes} bytes");
+
+                // You can convert bytes to other units for better readability
+                double fileSizeInKB = fileSizeInBytes / 1024.0;
+                //Console.WriteLine($"File size: {fileSizeInKB:F2} KB");
+                return ($"({fileSizeInKB:F2} KB)");
+                //double fileSizeInMB = fileSizeInKB / 1024.0;
+                //Console.WriteLine($"File size: {fileSizeInMB:F2} MB");
+            }
+            else
+            {
+                return "";
+            }
+        }
 
 
     }
