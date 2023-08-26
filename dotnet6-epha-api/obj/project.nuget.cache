@@ -1,14 +1,16 @@
 {
   "version": 2,
-  "dgSpecHash": "r1tT6P2AuBbzHLLOXoNlBDcUOhhECQd843rwNsVr7xZbhT8TwEwhgpl3gp00i6taKnVz05hc243pewswO81B9A==",
+  "dgSpecHash": "BqIt025mnup7hNgZ6HyiSFlGBQJ4KkP/Zmfcn1kedrcsKfMQK4TTcaE6653yJv2sDz39cSeLL7xtBIG/QYVL5g==",
   "success": true,
   "projectFilePath": "D:\\dotnet6-epha-api\\dotnet6-epha-api\\dotnet6-epha-api.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Kul-uwatSenaprom\\.nuget\\packages\\aspose.cells\\23.8.0\\aspose.cells.23.8.0.nupkg.sha512",
+    "C:\\Users\\Kul-uwatSenaprom\\.nuget\\packages\\bouncycastle\\1.8.9\\bouncycastle.1.8.9.nupkg.sha512",
     "C:\\Users\\Kul-uwatSenaprom\\.nuget\\packages\\docx\\2.5.0\\docx.2.5.0.nupkg.sha512",
     "C:\\Users\\Kul-uwatSenaprom\\.nuget\\packages\\epplus\\6.2.8\\epplus.6.2.8.nupkg.sha512",
     "C:\\Users\\Kul-uwatSenaprom\\.nuget\\packages\\epplus.interfaces\\6.1.1\\epplus.interfaces.6.1.1.nupkg.sha512",
     "C:\\Users\\Kul-uwatSenaprom\\.nuget\\packages\\epplus.system.drawing\\6.1.1\\epplus.system.drawing.6.1.1.nupkg.sha512",
+    "C:\\Users\\Kul-uwatSenaprom\\.nuget\\packages\\itextsharp\\5.5.13.3\\itextsharp.5.5.13.3.nupkg.sha512",
     "C:\\Users\\Kul-uwatSenaprom\\.nuget\\packages\\microsoft.exchange.webservices\\2.2.0\\microsoft.exchange.webservices.2.2.0.nupkg.sha512",
     "C:\\Users\\Kul-uwatSenaprom\\.nuget\\packages\\microsoft.extensions.apidescription.server\\6.0.5\\microsoft.extensions.apidescription.server.6.0.5.nupkg.sha512",
     "C:\\Users\\Kul-uwatSenaprom\\.nuget\\packages\\microsoft.extensions.configuration\\6.0.0\\microsoft.extensions.configuration.6.0.0.nupkg.sha512",
@@ -52,6 +54,26 @@
     "C:\\Users\\Kul-uwatSenaprom\\.nuget\\packages\\system.windows.extensions\\7.0.0\\system.windows.extensions.7.0.0.nupkg.sha512"
   ],
   "logs": [
+    {
+      "code": "NU1701",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'BouncyCastle 1.8.9' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8, .NETFramework,Version=v4.8.1' instead of the project target framework 'net6.0'. This package may not be fully compatible with your project.",
+      "libraryId": "BouncyCastle",
+      "targetGraphs": [
+        "net6.0"
+      ]
+    },
+    {
+      "code": "NU1701",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'iTextSharp 5.5.13.3' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8, .NETFramework,Version=v4.8.1' instead of the project target framework 'net6.0'. This package may not be fully compatible with your project.",
+      "libraryId": "iTextSharp",
+      "targetGraphs": [
+        "net6.0"
+      ]
+    },
     {
       "code": "NU1701",
       "level": "Warning",

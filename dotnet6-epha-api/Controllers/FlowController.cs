@@ -77,7 +77,7 @@ namespace Controllers
             ClassHazop cls = new ClassHazop();
             return cls.get_hazop_search(param);
 
-        } 
+        }
         [HttpPost("set_hazop", Name = "set_hazop")]
         public string set_hazop(SetDocHazopModel param)
         {
@@ -144,5 +144,13 @@ namespace Controllers
             return cls.export_hazop_report(param);
         }
         #endregion export hazop
+
+        [HttpPost("copy_pdf_file", Name = "copy_pdf_file")]
+        public string copy_pdf_file(CopyFileModel param)
+        {
+            ClassHazopSet cls = new ClassHazopSet();
+            return cls.copy_pdf_file(param);
+        }
+
     }
 }

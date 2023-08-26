@@ -13,7 +13,18 @@ namespace Model
     {
         public string? user_name { get; set; } = "";
         public string? seq { get; set; } = ""; 
-        public string? export_type { get; set; } = ""; 
+        public string? export_type { get; set; } = "";
+
+    }
+    public class CopyFileModel
+    {
+        //page_start_first,page_start_second,page_end_first,page_end_second
+        public string? file_name { get; set; } = "";
+        public string? file_path { get; set; } = "";
+        public string? page_start_first { get; set; } = "";
+        public string? page_start_second { get; set; } = "";
+        public string? page_end_first { get; set; } = "";
+        public string? page_end_second { get; set; } = "";
 
     }
     public class LoadDocModel
@@ -253,8 +264,8 @@ namespace Model
 
         public string? node { get; set; } = "";
         public string? design_intent { get; set; } = "";
-        public string? design_conditioins { get; set; } = "";
-        public string? operating_conditioins { get; set; } = "";
+        public string? design_conditions { get; set; } = "";
+        public string? operating_conditions { get; set; } = "";
         public string? node_boundary { get; set; } = "";
         public string? descriptions { get; set; } = "";
 
