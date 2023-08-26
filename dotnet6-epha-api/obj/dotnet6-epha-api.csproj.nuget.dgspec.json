@@ -72,6 +72,10 @@
             "System.DirectoryServices": {
               "target": "Package",
               "version": "[7.0.1, )"
+            },
+            "iTextSharp": {
+              "target": "Package",
+              "version": "[5.5.13.3, )"
             }
           },
           "imports": [

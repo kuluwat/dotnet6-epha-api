@@ -37,6 +37,8 @@ using Model;
 using Microsoft.Extensions.FileProviders;
 using System.Reflection;
 using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Builder;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -80,6 +82,7 @@ builder.Services.AddCors(options =>
                               policy.WithOrigins("*")
                                                   .AllowAnyHeader()
                                                   .AllowAnyMethod();
+
                           });
 });
 #endregion Allow Policy Service SAP
@@ -122,5 +125,4 @@ app.UseStaticFiles();
 app.MapControllers();
 app.Run();
 
-
-
+ 

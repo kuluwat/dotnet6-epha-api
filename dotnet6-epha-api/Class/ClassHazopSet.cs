@@ -1,5 +1,6 @@
 ﻿using Aspose.Cells;
 using dotnet6_epha_api.Class;
+using iTextSharp.text.pdf;
 using Model;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
@@ -12,6 +13,8 @@ using Xceed.Document.NET;
 using Xceed.Words.NET;
 using static System.Net.Mime.MediaTypeNames;
 
+using iTextSharp.text;
+using iTextSharp.text.pdf;
 namespace Class
 {
 
@@ -163,7 +166,7 @@ namespace Class
             #endregion Determine whether the directory exists.
 
             string msg_error = "";
-            string _DownloadPath = "/AttachedFileTemp/FollowUp/";
+            string _DownloadPath = "/AttachedFileTemp/Hazop/";
             string _Folder = "/wwwroot/AttachedFileTemp/Hazop/";
             string _FolderTemplate = MapPathFiles("/wwwroot/AttachedFileTemp/");
             string _Path = MapPathFiles(_Folder);
@@ -205,7 +208,7 @@ namespace Class
             dtNode = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
 
             sqlstr = @" select distinct
-                        h.seq, nl.id as id_node, g.pha_request_name, convert(varchar,g.create_date,106) as create_date, nl.node, nl.design_intent, nl.descriptions, nl.design_conditioins, nl.node_boundary, nl.operating_conditioins
+                        h.seq, nl.id as id_node, g.pha_request_name, convert(varchar,g.create_date,106) as create_date, nl.node, nl.design_intent, nl.descriptions, nl.design_conditions, nl.node_boundary, nl.operating_conditions
                         , d.document_no
                         , mgw.guide_words as guideword, mgw.deviations as deviation, nw.causes, nw.consequences, nw.category_type, nw.ram_befor_security, nw.ram_befor_likelihood, nw.ram_befor_risk
                         , nw.major_accident_event, nw.existing_safeguards, nw.ram_after_security, nw.ram_after_likelihood, nw.ram_after_risk, nw.recommendations, nw.responder_user_displayname
@@ -263,14 +266,14 @@ namespace Class
                         worksheet.Cells["N" + (i + startRows)].Value = (dt.Rows[i]["descriptions"] + "");
                         startRows++;
 
-                        //"Design Conditions: -->design_conditioins
-                        worksheet.Cells["B" + (i + startRows)].Value = (dt.Rows[i]["design_conditioins"] + "");
+                        //"Design Conditions: -->design_conditions
+                        worksheet.Cells["B" + (i + startRows)].Value = (dt.Rows[i]["design_conditions"] + "");
                         //HAZOP Boundary
                         worksheet.Cells["N" + (i + startRows)].Value = (dt.Rows[i]["node_boundary"] + "");
                         startRows++;
 
-                        //"Operating Conditions: -->operating_conditioins
-                        worksheet.Cells["B" + (i + startRows)].Value = (dt.Rows[i]["operating_conditioins"] + "");
+                        //"Operating Conditions: -->operating_conditions
+                        worksheet.Cells["B" + (i + startRows)].Value = (dt.Rows[i]["operating_conditions"] + "");
                         startRows++;
 
                         //PFD, PID No. : --> document_no
@@ -354,7 +357,7 @@ namespace Class
             #endregion Determine whether the directory exists.
 
             string msg_error = "";
-            string _DownloadPath = "/AttachedFileTemp/FollowUp/";
+            string _DownloadPath = "/AttachedFileTemp/Hazop/";
             string _Folder = "/wwwroot/AttachedFileTemp/Hazop/";
             string _FolderTemplate = MapPathFiles("/wwwroot/AttachedFileTemp/");
             string _Path = MapPathFiles(_Folder);
@@ -423,7 +426,7 @@ namespace Class
 
             sqlstr = @"select distinct
                         h.seq, h.pha_no, nl.id as id_node, g.pha_request_name
-                        , nl.node, nl.node as node_check, nl.design_intent, nl.descriptions, nl.design_conditioins, nl.node_boundary, nl.operating_conditioins
+                        , nl.node, nl.node as node_check, nl.design_intent, nl.descriptions, nl.design_conditions, nl.node_boundary, nl.operating_conditions
                         , d.document_no, d.document_file_name
                         , mgw.guide_words as guideword, mgw.deviations as deviation, nw.causes, nw.consequences
                         , nw.category_type, nw.ram_befor_security, nw.ram_befor_likelihood, nw.ram_befor_risk
@@ -756,7 +759,7 @@ namespace Class
             #endregion Determine whether the directory exists.
 
             string msg_error = "";
-            string _DownloadPath = "/AttachedFileTemp/FollowUp/";
+            string _DownloadPath = "/AttachedFileTemp/Hazop/";
             string _Folder = "/wwwroot/AttachedFileTemp/Hazop/";
             string _FolderTemplate = MapPathFiles("/wwwroot/AttachedFileTemp/");
             string _Path = MapPathFiles(_Folder);
@@ -787,7 +790,7 @@ namespace Class
         {
             DataSet dsData = new DataSet();
             sqlstr = @" select distinct
-                        h.seq, nl.id as id_node, g.pha_request_name, convert(varchar,g.create_date,106) as create_date, nl.node, nl.design_intent, nl.descriptions, nl.design_conditioins, nl.node_boundary, nl.operating_conditioins
+                        h.seq, nl.id as id_node, g.pha_request_name, convert(varchar,g.create_date,106) as create_date, nl.node, nl.design_intent, nl.descriptions, nl.design_conditions, nl.node_boundary, nl.operating_conditions
                         , d.document_no
                         , mgw.guide_words as guideword, mgw.deviations as deviation, nw.causes, nw.consequences, nw.category_type, nw.ram_befor_security, nw.ram_befor_likelihood, nw.ram_befor_risk
                         , nw.major_accident_event, nw.existing_safeguards, nw.ram_after_security, nw.ram_after_likelihood, nw.ram_after_risk, nw.recommendations, nw.responder_user_displayname
@@ -814,7 +817,104 @@ namespace Class
             return "";
         }
 
+        public string copy_pdf_file(CopyFileModel param)
+        {
+            //page_start_first,page_start_second,page_end_first,page_end_second
+
+            string file_name = param.file_name;
+            string file_path = param.file_path;
+            string page_start_first = param.page_start_first;
+            string page_start_second = param.page_start_second;
+            string page_end_first = param.page_end_first;
+            string page_end_second = param.page_end_second;
+
+            //D:\dotnet6-epha-api\dotnet6-epha-api\wwwroot\AttachedFileTemp\Hazop\ebook_def.pdf
+            file_name = "ebook_def.pdf";
+            page_start_first = "5";
+            page_start_second = "10";
+            page_end_first = "15";
+            page_end_second = "20";
+
+
+            DataTable dtdef = new DataTable();
+            #region Determine whether the directory exists.
+            DataTable dt = new DataTable();
+            dt.Columns.Add("ATTACHED_FILE_NAME");
+            dt.Columns.Add("ATTACHED_FILE_PATH");
+            dt.Columns.Add("ATTACHED_FILE_OF");
+            dt.Columns.Add("IMPORT_DATA_MSG");
+            dt.AcceptChanges();
+            dtdef = dt.Clone(); dtdef.AcceptChanges();
+
+            #endregion Determine whether the directory exists.
+
+            string msg_error = "";
+            string _DownloadPath = "/AttachedFileTemp/Hazop/_copy/";
+            string _Folder = MapPathFiles("/wwwroot/AttachedFileTemp/Hazop/_copy/");
+            string _FolderTemplate = MapPathFiles("/wwwroot/AttachedFileTemp/Hazop/");
+
+            var datetime_run = DateTime.Now.ToString("yyyyMMddHHmm");
+            string export_file_name = file_name.Replace(".pdf", "").Replace(".PDF", "") + datetime_run + ".pdf";
+            string export_file_name_full = _DownloadPath + export_file_name;
+
+
+            string sourcePdfPath = _FolderTemplate + file_name;// @"D:\dotnet6-epha-api\dotnet6-epha-api\wwwroot\AttachedFileTemp\Hazop\ebook_def.pdf";  // Replace with the path to the source PDF
+            string targetPdfPath = _Folder + export_file_name;// @"D:\dotnet6-epha-api\dotnet6-epha-api\wwwroot\AttachedFileTemp\Hazop\ebook_v1.pdf"; // Replace with the path to the target PDF
+            int startPagePart1 = (page_start_first == "" ? 1 : Convert.ToInt32(page_start_first));  // Replace with the start page number
+            int endPagePart1 = (page_start_second == "" ? 100 : Convert.ToInt32(page_start_second)); ;    // Replace with the end page number
+            int startPagePart2 = (page_end_first == "" ? 0 : Convert.ToInt32(page_end_first)); ;  // Replace with the start page number
+            int endPagePart2 = (page_end_second == "" ? 0 : Convert.ToInt32(page_end_second)); ;    // Replace with the end page number
+
+            try
+            {
+                using (var sourcePdfReader = new PdfReader(sourcePdfPath))
+                using (var targetPdfStream = new FileStream(targetPdfPath, FileMode.Create))
+                using (var targetPdfDoc = new iTextSharp.text.Document())
+                using (var targetPdfWriter = new PdfCopy(targetPdfDoc, targetPdfStream))
+                {
+                    targetPdfDoc.Open();
+
+                    if (startPagePart1 > 0)
+                    {
+                        for (int pageNumber = startPagePart1; pageNumber <= endPagePart1; pageNumber++)
+                        {
+                            var page = targetPdfWriter.GetImportedPage(sourcePdfReader, pageNumber);
+                            targetPdfWriter.AddPage(page);
+                        }
+                    }
+                    if (startPagePart2 > 0)
+                    {
+                        for (int pageNumber = startPagePart2; pageNumber <= endPagePart2; pageNumber++)
+                        {
+                            var page = targetPdfWriter.GetImportedPage(sourcePdfReader, pageNumber);
+                            targetPdfWriter.AddPage(page);
+                        }
+                    }
+
+                    targetPdfDoc.Close();
+                    msg_error = "";
+
+                }
+            }
+            catch (Exception ex) { export_file_name = ""; export_file_name_full = ""; }
+
+            try
+            {
+                dtdef.Rows.Add(dtdef.NewRow()); dtdef.AcceptChanges();
+                dtdef.Rows[dtdef.Rows.Count - 1]["ATTACHED_FILE_NAME"] = export_file_name;
+                dtdef.Rows[dtdef.Rows.Count - 1]["ATTACHED_FILE_PATH"] = export_file_name_full;
+                dtdef.Rows[dtdef.Rows.Count - 1]["IMPORT_DATA_MSG"] = msg_error;
+                dtdef.AcceptChanges();
+            }
+            catch (Exception ex) { ex.Message.ToString(); }
+
+            return cls_json.SetJSONresult(dtdef);
+        }
         #endregion export excel
+
+
+
+
         #region export doc
 
         #endregion export doc
@@ -1066,6 +1166,13 @@ namespace Class
             ClassHazop cls_old = new ClassHazop();
             DataSet dsDataOld = new DataSet();
 
+            string sub_expense_type = "";
+            try
+            {
+                sub_expense_type = (dsData.Tables["general"].Rows[0]["sub_expense_type"] + "");
+            }
+            catch { }
+
             if (dsData.Tables["header"].Rows.Count > 0)
             {
                 #region connection transaction
@@ -1097,22 +1204,12 @@ namespace Class
 
                 try
                 {
-                    if (pha_status == "11" || pha_status == "21")
+                    if (sub_expense_type == "Study")
                     {
-                        if (pha_status == "21")
-                        {
-                            dsData.Tables["header"].Rows[0]["PHA_VERSION"] = Convert.ToInt32((dsData.Tables["header"].Rows[0]["PHA_VERSION"] + "")) + 1;
-                            dsData.AcceptChanges();
-                        }
-
                         ret = set_hazop_header(ref dsData, ref cls_conn_header, seq_header_now);
                         if (ret == "") { ret = "true"; }
                         if (ret != "true") { goto Next_Line; }
-                    }
 
-
-                    if (pha_status == "11" || pha_status == "22")
-                    {
                         ret = set_hazop_parti(ref dsData, ref cls_conn_header, seq_header_now, dsDataOld);
                         if (ret == "") { ret = "true"; }
                         if (ret != "true") { goto Next_Line; }
@@ -1120,21 +1217,53 @@ namespace Class
                         ret = set_hazop_partii(ref dsData, ref cls_conn_node, seq_header_now);
                         if (ret == "") { ret = "true"; }
                         if (ret != "true") { goto Next_Line; }
+
+                        ret = set_hazop_partiii(ref dsData, ref cls_conn_node, seq_header_now);
+                        if (ret == "") { ret = "true"; }
+                        if (ret != "true") { goto Next_Line; }
+
+                        ret = set_hazop_partiv(ref dsData, ref cls_conn_node, seq_header_now);
+                        if (ret == "") { ret = "true"; }
+                        if (ret != "true") { goto Next_Line; }
+
                     }
-
-                    if (pha_status == "12" || pha_status == "22")
+                    else
                     {
-                        ret = set_hazop_partii(ref dsData, ref cls_conn_node, seq_header_now);
-                        if (ret == "") { ret = "true"; }
-                        if (ret != "true") { goto Next_Line; }
+                        if (pha_status == "11" || pha_status == "21")
+                        {
+                            if (pha_status == "21")
+                            {
+                                dsData.Tables["header"].Rows[0]["PHA_VERSION"] = Convert.ToInt32((dsData.Tables["header"].Rows[0]["PHA_VERSION"] + "")) + 1;
+                                dsData.AcceptChanges();
+                            }
+                            ret = set_hazop_header(ref dsData, ref cls_conn_header, seq_header_now);
+                            if (ret == "") { ret = "true"; }
+                            if (ret != "true") { goto Next_Line; }
+                        }
+                        if (pha_status == "11" || pha_status == "22")
+                        {
+                            ret = set_hazop_parti(ref dsData, ref cls_conn_header, seq_header_now, dsDataOld);
+                            if (ret == "") { ret = "true"; }
+                            if (ret != "true") { goto Next_Line; }
 
-                        ret = set_hazop_partiii(ref dsData, ref cls_conn_worksheet, seq_header_now);
-                        if (ret == "") { ret = "true"; }
-                        if (ret != "true") { goto Next_Line; }
+                            ret = set_hazop_partii(ref dsData, ref cls_conn_node, seq_header_now);
+                            if (ret == "") { ret = "true"; }
+                            if (ret != "true") { goto Next_Line; }
+                        }
+                        if (pha_status == "12" || pha_status == "22")
+                        {
+                            ret = set_hazop_partii(ref dsData, ref cls_conn_node, seq_header_now);
+                            if (ret == "") { ret = "true"; }
+                            if (ret != "true") { goto Next_Line; }
 
-                        ret = set_hazop_partiv(ref dsData, ref cls_conn_managerecom, seq_header_now);
-                        if (ret == "") { ret = "true"; }
-                        if (ret != "true") { goto Next_Line; }
+                            ret = set_hazop_partiii(ref dsData, ref cls_conn_worksheet, seq_header_now);
+                            if (ret == "") { ret = "true"; }
+                            if (ret != "true") { goto Next_Line; }
+
+                            ret = set_hazop_partiv(ref dsData, ref cls_conn_managerecom, seq_header_now);
+                            if (ret == "") { ret = "true"; }
+                            if (ret != "true") { goto Next_Line; }
+                        }
                     }
                 }
                 catch (Exception ex) { ret = ex.Message.ToString(); goto Next_Line; }
@@ -1184,12 +1313,6 @@ namespace Class
                     //91	CL	Closed
                     //81	CN	Cancle
 
-                    string sub_expense_type = "";
-                    try
-                    {
-                        sub_expense_type = (dsData.Tables["general"].Rows[0]["sub_expense_type"] + "");
-                    }
-                    catch { }
                     if (param.flow_action == "submit" && sub_expense_type == "Normal")
                     {
                         ClassEmail clsmail = new ClassEmail();
@@ -1525,6 +1648,13 @@ namespace Class
                         }
 
                     }
+                    else if (param.flow_action == "submit" && sub_expense_type == "Study") {
+                        //
+                       
+       
+
+                    }
+
                 }
                 #endregion  flow action  submit 
 

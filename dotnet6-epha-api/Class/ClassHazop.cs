@@ -230,13 +230,13 @@ namespace Class
             cls_conn = new ClassConnectionDb();
             dt = new DataTable();
             dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
-             
+
             dt.TableName = "functional";
             _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
             #endregion functional location  
 
             #region master ram
-            sqlstr = @" select seq, id, name, 0 as selected_type
+            sqlstr = @" select seq, id, name, 0 as selected_type, category_type
                         from EPHA_M_RAM where active_type = 1 order by seq ";
 
             cls_conn = new ClassConnectionDb();
@@ -246,7 +246,23 @@ namespace Class
             dt.TableName = "ram";
             _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
 
+            sqlstr = @"   select s.*, s.security_level, s.name as security_text, s.name as security_show
+                          , s.people as people_text, s.assets as assets_text, s.enhancement as enhancement_text, s.reputation as reputation_text, s.product_quality as product_quality_text
+                          , 0 as selected_type ,a.category_type
+                          from  EPHA_M_RAM a
+                          inner join EPHA_M_RAM_SECURITY s on a.id = s.id_ram  
+                          order by s.id_ram, s.sort_by";
+
+            cls_conn = new ClassConnectionDb();
+            dt = new DataTable();
+            dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+
+            dt.TableName = "security_level";
+            _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
+
             sqlstr = @"  select  b.*, 0 as selected_type ,a.category_type
+                         , '' as security_text
+                         , '' as people_text, '' as assets_text, '' as enhancement_text, '' as reputation_text, '' as product_quality_text
                          from  EPHA_M_RAM a
                          inner join EPHA_M_RAM_LEVEL b on a.id = b.id_ram 
                          order by a.id , b.sort_by ";
@@ -254,9 +270,93 @@ namespace Class
             cls_conn = new ClassConnectionDb();
             dt = new DataTable();
             dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+            for (int i = 0; i < dt.Rows.Count; i++)
+            {
+                string security_level = (dt.Rows[i]["security_level"] + "");
+                DataRow[] dr = dsData.Tables["security_level"].Select("security_level = " + security_level);
+                if (dr.Length > 0)
+                {
+                    dt.Rows[i]["security_text"] = (dr[0]["name"] + "");
+                    dt.Rows[i]["people_text"] = (dr[0]["people"] + "");
+                    dt.Rows[i]["assets_text"] = (dr[0]["assets"] + "");
+                    dt.Rows[i]["enhancement_text"] = (dr[0]["enhancement"] + "");
+                    dt.Rows[i]["reputation_text"] = (dr[0]["reputation"] + "");
+                    dt.Rows[i]["product_quality_text"] = (dr[0]["product_quality"] + "");
 
+                    //string col_show = "likelihood_show";
+                    //try { dt.Columns.Add(col_show); dt.AcceptChanges(); } catch { }
+                    //try { dt.Rows[i][col_show] = (dt.Rows[i]["likelihood" + security_level + "_text"] + ""); } catch { }
+
+                    dt.AcceptChanges();
+                }
+            }
             dt.TableName = "ram_level";
             _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
+
+            if (dt.Rows.Count > 0)
+            {
+                DataTable dtNew = new DataTable();
+                dtNew.Columns.Add("id_ram", typeof(int));
+                dtNew.Columns.Add("selected_type", typeof(int));
+                dtNew.Columns.Add("category_type", typeof(int));
+                dtNew.Columns.Add("likelihood_level");
+                dtNew.Columns.Add("likelihood_show");
+                dtNew.Columns.Add("likelihood_text");
+                dtNew.Columns.Add("likelihood_desc");
+                dtNew.Columns.Add("likelihood_criterion");
+                dtNew.AcceptChanges();
+
+                dt = new DataTable();
+                dt = dsData.Tables["ram"].Copy(); dt.AcceptChanges();
+
+                if (dt.Rows.Count > 0)
+                {
+                    for (int i = 0; i < dt.Rows.Count; i++)
+                    {
+                        int id_ram = Convert.ToInt32(dt.Rows[i]["id"]);
+                        int category_type = Convert.ToInt32(dt.Rows[i]["category_type"]);
+                        int iNo = (i + 1);
+
+                        DataRow[] dr = (dsData.Tables["ram_level"]).Select("id_ram=" + id_ram);
+                        if (dr.Length > 0)
+                        {
+                            for (int rl = 0; rl < dr.Length; rl++)
+                            {
+                                for (int j = 1; j < 8; j++)
+                                {
+                                    if ((dr[rl]["likelihood" + j + "_level"] + "") == "") { break; }
+                                    int iNewRow = dtNew.Rows.Count;
+                                    dtNew.Rows.Add(dtNew.NewRow()); dtNew.AcceptChanges();
+                                    dtNew.Rows[iNewRow]["id_ram"] = id_ram;
+                                    dtNew.Rows[iNewRow]["selected_type"] = 0;
+                                    dtNew.Rows[iNewRow]["category_type"] = category_type;
+                                    try
+                                    {
+                                        dtNew.Rows[iNewRow]["likelihood_level"] = (dr[rl]["likelihood" + j + "_level"] + ""); 
+                                        dtNew.Rows[iNewRow]["likelihood_show"] = (dr[rl]["likelihood" + j + "_text"] + "");
+                                        if (category_type == 1)
+                                        {
+                                            dtNew.Rows[iNewRow]["likelihood_text"] = (dr[rl]["likelihood" + j + "_text"] + "");
+                                            dtNew.Rows[iNewRow]["likelihood_desc"] = (dr[rl]["likelihood" + j + "_desc"] + "");
+                                            dtNew.Rows[iNewRow]["likelihood_criterion"] = (dr[rl]["likelihood" + j + "_criterion"] + "");
+                                        }
+                                    }
+                                    catch { }
+
+                                    dtNew.AcceptChanges();
+                                    if (category_type == 0 && j == 3) { break; }
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+                dtNew.TableName = "likelihood_level";
+                _dsData.Tables.Add(dtNew.Copy()); dsData.AcceptChanges();
+
+
+            }
+
             #endregion ram
 
             #region master apu
@@ -271,7 +371,7 @@ namespace Class
             #endregion apu
 
             #region master business unit
-            sqlstr = @" select id_company, id_area, id_apu, id, name from EPHA_M_BUSSINESS_UNIT t order by id_company, id_area, id_apu, id  "; 
+            sqlstr = @" select id_company, id_area, id_apu, id, name from EPHA_M_BUSSINESS_UNIT t order by id_company, id_area, id_apu, id  ";
             cls_conn = new ClassConnectionDb();
             dt = new DataTable();
             dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
@@ -723,7 +823,7 @@ namespace Class
 
             #region nodeguidwords 
             sqlstr = @"  select b.* ,coalesce(def_selected,0) as selected_type , 'update' as action_type, 0 as action_change
-                        , b.id_node as seq_node, g.guide_words as guidewords, g.deviations
+                        , b.id_node as seq_node, g.guide_words as guidewords, g.deviations, 0 as no_guide_word
                         from EPHA_F_HEADER a inner join EPHA_T_NODE_GUIDE_WORDS b on a.id  = b.id_pha
                         left join EPHA_M_GUIDE_WORDS g on b.id_guide_word = g.id
                         where 1=1 ";
@@ -958,7 +1058,7 @@ namespace Class
                 //default values 
                 DataTable dtram = dsData.Tables["ram"].Copy(); dtram.AcceptChanges();
                 dt.Rows[0]["id_ram"] = dtram.Rows[0]["id"];
-                  
+
                 dt.Rows[0]["expense_type"] = "OPEX";
                 dt.Rows[0]["sub_expense_type"] = "Normal";
 
