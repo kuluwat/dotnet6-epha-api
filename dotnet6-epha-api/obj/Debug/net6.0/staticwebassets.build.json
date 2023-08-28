@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "EwKtc6jtJxIJSOF9pQ4ZbCCRbO1O3jkBwYYzyM9mHoI=",
+  "Hash": "TqqQCxL5HsOpmxIZZbdnMytHrtd0On0hZ7FUhu7Q9Us=",
   "Source": "dotnet6-epha-api",
   "BasePath": "_content/dotnet6-epha-api",
   "Mode": "Default",
@@ -219,6 +219,23 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\AttachedFileTemp\\Hazop\\_copy\\ebook_def202308241626.pdf"
+    },
+    {
+      "Identity": "D:\\dotnet6-epha-api\\dotnet6-epha-api\\wwwroot\\AttachedFileTemp\\Hazop\\_copy\\ebook_def202308270957.pdf",
+      "SourceId": "dotnet6-epha-api",
+      "SourceType": "Discovered",
+      "ContentRoot": "D:\\dotnet6-epha-api\\dotnet6-epha-api\\wwwroot\\",
+      "BasePath": "_content/dotnet6-epha-api",
+      "RelativePath": "AttachedFileTemp/Hazop/_copy/ebook_def202308270957.pdf",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\AttachedFileTemp\\Hazop\\_copy\\ebook_def202308270957.pdf"
     },
     {
       "Identity": "D:\\dotnet6-epha-api\\dotnet6-epha-api\\wwwroot\\AttachedFileTemp\\Hazop\\ebook_def.pdf",

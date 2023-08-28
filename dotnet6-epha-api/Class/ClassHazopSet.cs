@@ -1365,18 +1365,18 @@ namespace Class
                             cls_conn.OpenConnection();
                             cls_conn.BeginTransaction();
 
-                            int i = 0;
-                            dt = new DataTable();
-                            dt = dsData.Tables["header"].Copy(); dt.AcceptChanges();
-
                             //13	WF	Waiting Follow Up
                             string pha_status_new = "13";
-                            if (dt.Rows[0]["request_approver"].ToString() == "1" ||
-                                (dt.Rows[0]["expense_type"].ToString() == "CAPEX" && dt.Rows[0]["sub_expense_type"].ToString() == "Normal"))
+                            if (dsData.Tables["header"].Rows[0]["request_approver"].ToString() == "1" ||
+                              (dsData.Tables["general"].Rows[0]["expense_type"].ToString() == "CAPEX" && dsData.Tables["general"].Rows[0]["sub_expense_type"].ToString() == "Normal"))
                             {
                                 //21	WA	Waiting Approve Review
                                 pha_status_new = "21";
                             }
+
+                            int i = 0;
+                            dt = new DataTable();
+                            dt = dsData.Tables["header"].Copy(); dt.AcceptChanges();
 
                             #region update
                             sqlstr = "update  EPHA_F_HEADER set ";
