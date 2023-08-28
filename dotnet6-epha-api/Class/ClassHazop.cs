@@ -251,7 +251,7 @@ namespace Class
                           , 0 as selected_type ,a.category_type
                           from  EPHA_M_RAM a
                           inner join EPHA_M_RAM_SECURITY s on a.id = s.id_ram  
-                          order by s.id_ram, s.sort_by";
+                          order by s.id_ram, s.sort_by desc";
 
             cls_conn = new ClassConnectionDb();
             dt = new DataTable();
@@ -344,7 +344,7 @@ namespace Class
                                     catch { }
 
                                     dtNew.AcceptChanges();
-                                    if (category_type == 0 && j == 3) { break; }
+                                    if (category_type == 0 && j == 4) { break; }
                                 }
                                 break;
                             }
