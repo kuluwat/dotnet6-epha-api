@@ -125,24 +125,41 @@ namespace Controllers
 
 
         #region export hazop
-        [HttpPost("export_hazop_worksheet", Name = "export_hazop_worksheet")]
-        public string export_hazop_worksheet(ReportModel param)
-        {
-            ClassHazopSet cls = new ClassHazopSet();
-            return cls.export_hazop_worksheet(param);
-        }
-        [HttpPost("export_hazop_recommendation", Name = "export_hazop_recommendation")]
-        public string export_hazop_recommendation(ReportModel param)
-        {
-            ClassHazopSet cls = new ClassHazopSet();
-            return cls.export_hazop_recommendation(param);
-        }
         [HttpPost("export_hazop_report", Name = "export_hazop_report")]
         public string export_hazop_report(ReportModel param)
         {
             ClassHazopSet cls = new ClassHazopSet();
             return cls.export_hazop_report(param);
         }
+
+        [HttpPost("export_hazop_worksheet", Name = "export_hazop_worksheet")]
+        public string export_hazop_worksheet(ReportModel param)
+        {
+            ClassHazopSet cls = new ClassHazopSet();
+            return cls.export_hazop_worksheet(param);
+        }
+
+        [HttpPost("export_hazop_recommendation", Name = "export_hazop_recommendation")]
+        public string export_hazop_recommendation(ReportModel param)
+        {
+            ClassHazopSet cls = new ClassHazopSet();
+            return cls.export_hazop_recommendation(param);
+        }
+
+        [HttpPost("export_hazop_ram", Name = "export_hazop_ram")]
+        public string export_hazop_ram(ReportModel param)
+        {
+            ClassHazopSet cls = new ClassHazopSet();
+            return cls.export_hazop_ram(param);
+        }
+        [HttpPost("export_hazop_guidewords", Name = "export_hazop_guidewords")]
+        public string export_hazop_guidewords(ReportModel param)
+        {
+            ClassHazopSet cls = new ClassHazopSet();
+            return cls.export_hazop_guidewords(param);
+        }
+
+
         #endregion export hazop
 
         [HttpPost("copy_pdf_file", Name = "copy_pdf_file")]

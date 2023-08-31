@@ -15,6 +15,10 @@ using static System.Net.Mime.MediaTypeNames;
 
 using iTextSharp.text;
 using iTextSharp.text.pdf;
+using Microsoft.Extensions.Options;
+using static Org.BouncyCastle.Crypto.Digests.SkeinEngine;
+using System.IO.Packaging;
+
 namespace Class
 {
 
@@ -147,6 +151,278 @@ namespace Class
         }
 
         #region export excel
+
+        public string export_hazop_report_word(ReportModel param)
+        {
+            string _FolderTemplate = MapPathFiles("/wwwroot/AttachedFileTemp/");
+            string _Folder = MapPathFiles("/wwwroot/AttachedFileTemp/Hazop/");
+            string templateFilePath = _FolderTemplate + "HAZOP Template.docx";
+            string outputFilePath = _Folder + "HAZOP Template xx.docx";
+
+            using (DocX templateDoc = DocX.Load(templateFilePath))
+            {
+                // Replace placeholders in the template with actual data
+                templateDoc.ReplaceText("{Title}", "Sample Document Title");
+                templateDoc.ReplaceText("{Content}", "This is a sample paragraph in the document.");
+
+                // Save the generated document
+                templateDoc.SaveAs(outputFilePath);
+            }
+
+
+            return ("Document created successfully.");
+        }
+        public string word_hazop_report(string seq, string _Path, string _FolderTemplate, string _DownloadPath, string _export_file_name, string _export_type)
+        {
+            DataSet dsData = new DataSet();
+            sqlstr = @" select distinct
+                        h.seq, nl.id as id_node, g.pha_request_name, convert(varchar,g.create_date,106) as create_date, nl.node, nl.design_intent, nl.descriptions, nl.design_conditions, nl.node_boundary, nl.operating_conditions
+                        , d.document_no
+                        , mgw.guide_words as guideword, mgw.deviations as deviation, nw.causes, nw.consequences, nw.category_type, nw.ram_befor_security, nw.ram_befor_likelihood, nw.ram_befor_risk
+                        , nw.major_accident_event, nw.existing_safeguards, nw.ram_after_security, nw.ram_after_likelihood, nw.ram_after_risk, nw.recommendations, nw.responder_user_displayname
+                        , g.descriptions
+                        , nl.no as node_no, nw.no, nw.causes_no, nw.consequences_no, nw.category_no
+                        from EPHA_F_HEADER h 
+                        inner join EPHA_T_GENERAL g on h.id = g.id_pha 
+                        inner join EPHA_T_NODE nl on h.id = nl.id_pha 
+                        inner join EPHA_T_NODE_DRAWING nd on h.id = nd.id_pha and  nl.id = nd.id_node 
+                        inner join EPHA_T_DRAWING d on h.id = d.id_pha and  nd.id_drawing = d.id
+                        inner join EPHA_T_NODE_WORKSHEET nw on h.id = nw.id_pha and  nl.id = nw.id_node   
+                        left join EPHA_M_GUIDE_WORDS mgw on mgw.id = nw.id_guide_word    
+                        where h.seq = '" + seq + "' ";
+            sqlstr += @" order by cast(nl.no as int),cast(nw.no as int), cast(nw.causes_no as int), cast(nw.consequences_no as int), cast(nw.category_no as int)";
+
+            cls_conn = new ClassConnectionDb();
+            dt = new DataTable();
+            dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+            dt.TableName = "header";
+            dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
+
+            ClassReport classReport = new ClassReport();
+            classReport.word_hazop_worksheet(seq, _Path, _FolderTemplate, _DownloadPath, _export_file_name, _export_type, dsData);
+            return "";
+        }
+
+        public string export_hazop_report(ReportModel param)
+        {
+            string seq = param.seq;
+            string export_type = param.export_type;
+
+            DataTable dtdef = new DataTable();
+
+            #region Determine whether the directory exists.
+            DataTable dt = new DataTable();
+            dt.Columns.Add("ATTACHED_FILE_NAME");
+            dt.Columns.Add("ATTACHED_FILE_PATH");
+            dt.Columns.Add("ATTACHED_FILE_OF");
+            dt.Columns.Add("IMPORT_DATA_MSG");
+            dt.AcceptChanges();
+            dtdef = dt.Clone(); dtdef.AcceptChanges();
+
+            #endregion Determine whether the directory exists.
+
+            string msg_error = "";
+            string _DownloadPath = "/AttachedFileTemp/Hazop/";
+            string _Folder = "/wwwroot/AttachedFileTemp/Hazop/";
+            string _FolderTemplate = MapPathFiles("/wwwroot/AttachedFileTemp/");
+            string _Path = MapPathFiles(_Folder);
+
+            var datetime_run = DateTime.Now.ToString("yyyyMMddHHmm");
+            string export_file_name = "HAZOP Report " + datetime_run;
+            string export_file_name_full = "";
+            if (export_type == "excel" || export_type == "pdf")
+            {
+                export_file_name += ".xlsx";
+                export_file_name_full = excel_hazop_report(seq, _Path, _FolderTemplate, _DownloadPath, export_file_name, export_type);
+            }
+
+            try
+            {
+                dtdef.Rows.Add(dtdef.NewRow()); dtdef.AcceptChanges();
+                dtdef.Rows[dtdef.Rows.Count - 1]["ATTACHED_FILE_NAME"] = export_file_name;
+                dtdef.Rows[dtdef.Rows.Count - 1]["ATTACHED_FILE_PATH"] = export_file_name_full;
+                dtdef.Rows[dtdef.Rows.Count - 1]["IMPORT_DATA_MSG"] = msg_error;
+                dtdef.AcceptChanges();
+            }
+            catch (Exception ex) { ex.Message.ToString(); }
+
+            return cls_json.SetJSONresult(dtdef);
+        }
+        public string excel_hazop_report(string seq, string _Path, string _FolderTemplate, string _DownloadPath, string _excel_name, string export_type)
+        {
+            sqlstr = @" select distinct nl.no, nl.id as id_node
+                        from EPHA_F_HEADER h 
+                        inner join EPHA_T_GENERAL g on h.id = g.id_pha 
+                        inner join EPHA_T_NODE nl on h.id = nl.id_pha 
+                        inner join EPHA_T_NODE_DRAWING nd on h.id = nd.id_pha and  nl.id = nd.id_node 
+                        inner join EPHA_T_DRAWING d on h.id = d.id_pha and  nd.id_drawing = d.id
+                        inner join EPHA_T_NODE_WORKSHEET nw on h.id = nw.id_pha and  nl.id = nw.id_node   
+                        where h.seq = '" + seq + "' ";
+            sqlstr += @" order by cast(nl.no as int)";
+            cls_conn = new ClassConnectionDb();
+            DataTable dtNode = new DataTable();
+            dtNode = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+
+            sqlstr = @" select distinct
+                        h.seq, nl.id as id_node, g.pha_request_name, convert(varchar,g.create_date,106) as create_date, nl.node, nl.design_intent, nl.descriptions, nl.design_conditions, nl.node_boundary, nl.operating_conditions
+                        , d.document_no
+                        , mgw.guide_words as guideword, mgw.deviations as deviation, nw.causes, nw.consequences, nw.category_type, nw.ram_befor_security, nw.ram_befor_likelihood, nw.ram_befor_risk
+                        , nw.major_accident_event, nw.existing_safeguards, nw.ram_after_security, nw.ram_after_likelihood, nw.ram_after_risk, nw.recommendations, nw.responder_user_displayname
+                        , g.descriptions
+                        , nl.no as node_no, nw.no, nw.causes_no, nw.consequences_no, nw.category_no
+                        from EPHA_F_HEADER h 
+                        inner join EPHA_T_GENERAL g on h.id = g.id_pha 
+                        inner join EPHA_T_NODE nl on h.id = nl.id_pha 
+                        inner join EPHA_T_NODE_DRAWING nd on h.id = nd.id_pha and  nl.id = nd.id_node 
+                        inner join EPHA_T_DRAWING d on h.id = d.id_pha and  nd.id_drawing = d.id
+                        inner join EPHA_T_NODE_WORKSHEET nw on h.id = nw.id_pha and  nl.id = nw.id_node   
+                        left join EPHA_M_GUIDE_WORDS mgw on mgw.id = nw.id_guide_word    
+                        where h.seq = '" + seq + "' ";
+            sqlstr += @" order by cast(nl.no as int),cast(nw.no as int), cast(nw.causes_no as int), cast(nw.consequences_no as int), cast(nw.category_no as int)";
+
+            cls_conn = new ClassConnectionDb();
+            dt = new DataTable();
+            dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+
+            FileInfo template = new FileInfo(_FolderTemplate + "HAZOP Report Template.xlsx");
+            string export_file_name = _Path + _excel_name;
+
+            ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
+            using (ExcelPackage excelPackage = new ExcelPackage(template))
+            {
+                ExcelWorksheet sourceWorksheet = excelPackage.Workbook.Worksheets["WorksheetTemplate"];  // Replace "SourceSheet" with the actual source sheet name
+                #region HAZOP Worksheet
+                for (int inode = 0; inode < dtNode.Rows.Count; inode++)
+                {
+                    ExcelWorksheet worksheet = excelPackage.Workbook.Worksheets.Add("HAZOP Worksheet No." + inode, sourceWorksheet);
+
+                    string id_node = (dtNode.Rows[inode]["id_node"] + "");
+                    worksheet.Name = "HAZOP Worksheet Node (No." + (inode + 1) + ")";
+
+                    int i = 0;
+                    int startRows = 3;
+
+                    if (dt.Rows.Count > 0)
+                    {
+                        #region head text
+                        i = 0;
+                        //Project
+                        worksheet.Cells["B" + (i + startRows)].Value = (dt.Rows[i]["pha_request_name"] + "");
+                        //NODE
+                        worksheet.Cells["N" + (i + startRows)].Value = (dt.Rows[i]["node"] + "");
+                        startRows++;
+
+                        //Design Intent :
+                        worksheet.Cells["B" + (i + startRows)].Value = (dt.Rows[i]["design_intent"] + "");
+                        //System
+                        worksheet.Cells["N" + (i + startRows)].Value = (dt.Rows[i]["descriptions"] + "");
+                        startRows++;
+
+                        //"Design Conditions: -->design_conditions
+                        worksheet.Cells["B" + (i + startRows)].Value = (dt.Rows[i]["design_conditions"] + "");
+                        //HAZOP Boundary
+                        worksheet.Cells["N" + (i + startRows)].Value = (dt.Rows[i]["node_boundary"] + "");
+                        startRows++;
+
+                        //"Operating Conditions: -->operating_conditions
+                        worksheet.Cells["B" + (i + startRows)].Value = (dt.Rows[i]["operating_conditions"] + "");
+                        startRows++;
+
+                        //PFD, PID No. : --> document_no
+                        worksheet.Cells["B" + (i + startRows)].Value = (dt.Rows[i]["document_no"] + "");
+                        //Date
+                        worksheet.Cells["N" + (i + startRows)].Value = (dt.Rows[i]["create_date"] + "");
+                        startRows++;
+
+                        #endregion head text
+                        startRows = 14;
+                        for (i = 0; i < dt.Rows.Count; i++)
+                        {
+                            worksheet.InsertRow(startRows, 1);
+
+                            worksheet.Cells["A" + (startRows)].Value = dt.Rows[i]["guideword"].ToString();
+                            worksheet.Cells["B" + (startRows)].Value = dt.Rows[i]["deviation"].ToString();
+                            worksheet.Cells["C" + (startRows)].Value = dt.Rows[i]["causes"].ToString();
+                            worksheet.Cells["D" + (startRows)].Value = dt.Rows[i]["consequences"].ToString();
+                            worksheet.Cells["E" + (startRows)].Value = dt.Rows[i]["category_type"].ToString();
+
+                            worksheet.Cells["F" + (startRows)].Value = dt.Rows[i]["ram_befor_security"].ToString();
+                            worksheet.Cells["G" + (startRows)].Value = dt.Rows[i]["ram_befor_likelihood"].ToString();
+                            worksheet.Cells["H" + (startRows)].Value = dt.Rows[i]["ram_befor_risk"];
+                            worksheet.Cells["I" + (startRows)].Value = dt.Rows[i]["major_accident_event"].ToString();
+                            worksheet.Cells["J" + (startRows)].Value = dt.Rows[i]["existing_safeguards"].ToString();
+                            worksheet.Cells["K" + (startRows)].Value = dt.Rows[i]["ram_after_security"].ToString();
+                            worksheet.Cells["L" + (startRows)].Value = dt.Rows[i]["ram_after_likelihood"].ToString();
+                            worksheet.Cells["M" + (startRows)].Value = dt.Rows[i]["ram_after_risk"].ToString();
+                            worksheet.Cells["N" + (startRows)].Value = dt.Rows[i]["recommendations"].ToString();
+                            worksheet.Cells["O" + (startRows)].Value = dt.Rows[i]["responder_user_displayname"].ToString();
+                            startRows++;
+                        }
+                    }
+
+                    worksheet.Cells["A" + (startRows)].Value = (dt.Rows[0]["descriptions"] + "");
+                    startRows++;
+
+                }
+
+                ExcelWorksheet SheetTemplate = excelPackage.Workbook.Worksheets["WorksheetTemplate"];
+                SheetTemplate.Hidden = eWorkSheetHidden.Hidden;
+
+                excelPackage.SaveAs(new FileInfo(export_file_name));
+
+
+
+                #endregion HAZOP Worksheet
+
+            }
+
+            #region recommendation
+            if (true)
+            {
+                excel_hazop_recommendation(seq, _Path, _FolderTemplate, _DownloadPath, export_file_name, export_type, true);
+            }
+            #endregion recommendation
+
+            #region ram
+            if (true)
+            {
+                excel_hazop_ram(seq, _Path, _FolderTemplate, _DownloadPath, export_file_name, export_type, true);
+            }
+            #endregion ram
+
+            #region guidewords
+            if (true)
+            {
+                excel_hazop_guidewords(seq, _Path, _FolderTemplate, _DownloadPath, export_file_name, export_type, true);
+            }
+            #endregion guidewords
+
+
+            ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
+            using (ExcelPackage excelPackage = new ExcelPackage(export_file_name))
+            {
+                excelPackage.Workbook.Worksheets.Delete(excelPackage.Workbook.Worksheets["RecommTemplate"]);
+                excelPackage.Workbook.Worksheets.Delete(excelPackage.Workbook.Worksheets["SheetTemplate"]);
+                excelPackage.Workbook.Worksheets.Delete(excelPackage.Workbook.Worksheets["GuidewordsTemplate"]);
+
+                // Save changes
+                excelPackage.Save();
+
+                // Save the workbook as PDF
+                if (export_type == "pdf")
+                {
+                    Workbook workbookPDF = new Workbook(export_file_name);
+                    PdfSaveOptions options = new PdfSaveOptions
+                    {
+                        AllColumnsInOnePagePerSheet = true
+                    };
+                    workbookPDF.Save(export_file_name.Replace(".xlsx", ".pdf"), options);
+                }
+            }
+
+            return _DownloadPath + _excel_name;
+        }
+
         public string export_hazop_worksheet(ReportModel param)
         {
             string seq = param.seq;
@@ -232,16 +508,13 @@ namespace Class
             //byte[] bin = File.ReadAllBytes(_FolderTemplate + "HAZOP Study Worksheet Template.xlsx");
 
             ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
-            //create a new Excel package in a memorystream
-            //using (MemoryStream stream = new MemoryStream(bin))
-            //using (ExcelPackage excelPackage = new ExcelPackage(stream))
             using (ExcelPackage excelPackage = new ExcelPackage(template))
             {
                 //foreach (ExcelWorksheet worksheet in excelPackage.Workbook.Worksheets)
                 //{ } 
                 for (int inode = 0; inode < dtNode.Rows.Count; inode++)
                 {
-                    ExcelWorksheet sourceWorksheet = excelPackage.Workbook.Worksheets["SheetTemplate"];  // Replace "SourceSheet" with the actual source sheet name
+                    ExcelWorksheet sourceWorksheet = excelPackage.Workbook.Worksheets["WorksheetTemplate"];  // Replace "SourceSheet" with the actual source sheet name
                     ExcelWorksheet worksheet = excelPackage.Workbook.Worksheets.Add("HAZOP Worksheet No." + inode, sourceWorksheet);
 
                     string id_node = (dtNode.Rows[inode]["id_node"] + "");
@@ -313,13 +586,8 @@ namespace Class
 
                 }
 
-                ExcelWorksheet SheetTemplate = excelPackage.Workbook.Worksheets["SheetTemplate"];
+                ExcelWorksheet SheetTemplate = excelPackage.Workbook.Worksheets["WorksheetTemplate"];
                 SheetTemplate.Hidden = eWorkSheetHidden.Hidden;
-                ExcelWorksheet SheetMaster = excelPackage.Workbook.Worksheets["master"];
-                SheetMaster.Hidden = eWorkSheetHidden.Hidden;
-                ExcelWorksheet SheetGuideWord = excelPackage.Workbook.Worksheets["Guide Word"];
-                SheetGuideWord.Hidden = eWorkSheetHidden.Hidden;
-
                 excelPackage.SaveAs(new FileInfo(_Path + _excel_name));
 
                 // Save the workbook as PDF
@@ -337,7 +605,6 @@ namespace Class
 
             return _DownloadPath + _excel_name;
         }
-
         public string export_hazop_recommendation(ReportModel param)
         {
             string seq = param.seq;
@@ -368,7 +635,7 @@ namespace Class
             if (export_type == "excel" || export_type == "pdf")
             {
                 export_file_name += ".xlsx";
-                export_file_name_full = excel_hazop_recommendation(seq, _Path, _FolderTemplate, _DownloadPath, export_file_name, export_type);
+                export_file_name_full = excel_hazop_recommendation(seq, _Path, _FolderTemplate, _DownloadPath, export_file_name, export_type, false);
             }
 
             try
@@ -383,7 +650,8 @@ namespace Class
 
             return cls_json.SetJSONresult(dtdef);
         }
-        public string excel_hazop_recommendation(string seq, string _Path, string _FolderTemplate, string _DownloadPath, string _excel_name, string export_type)
+        public string excel_hazop_recommendation(string seq, string _Path, string _FolderTemplate, string _DownloadPath, string _excel_name, string export_type
+            , Boolean report_all)
         {
             sqlstr = @" select distinct h.pha_no, g.pha_request_name, nw.responder_user_name, nw.responder_user_displayname
                         from EPHA_F_HEADER h 
@@ -471,11 +739,9 @@ namespace Class
 
 
             FileInfo template = new FileInfo(_FolderTemplate + "HAZOP Recommendation Template.xlsx");
+            if (report_all == true) { template = new FileInfo(_excel_name); }
 
             ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
-            //create a new Excel package in a memorystream
-            //using (MemoryStream stream = new MemoryStream(bin))
-            //using (ExcelPackage excelPackage = new ExcelPackage(stream))
             using (ExcelPackage excelPackage = new ExcelPackage(template))
             {
 
@@ -485,8 +751,8 @@ namespace Class
                     #region Response Sheet
                     if (true)
                     {
-                        ExcelWorksheet sourceWorksheet = excelPackage.Workbook.Worksheets["SheetTemplate"];
-                        ExcelWorksheet worksheet = excelPackage.Workbook.Worksheets.Add("SheetTemplate" + i, sourceWorksheet);
+                        ExcelWorksheet sourceWorksheet = excelPackage.Workbook.Worksheets["RecommTemplate"];
+                        ExcelWorksheet worksheet = excelPackage.Workbook.Worksheets.Add("RecommTemplate" + i, sourceWorksheet);
 
                         string ref_no = (i + 1).ToString();
                         worksheet.Name = "Response Sheet(Ref." + ref_no + ")";
@@ -673,74 +939,33 @@ namespace Class
                 }
                 #endregion Response Sheet
 
-                ExcelWorksheet SheetTemplate = excelPackage.Workbook.Worksheets["SheetTemplate"];
-                SheetTemplate.Hidden = eWorkSheetHidden.Hidden;
-                excelPackage.SaveAs(new FileInfo(_Path + _excel_name));
-
-                // Save the workbook as PDF
-                if (export_type == "pdf")
+                if (report_all == true)
                 {
-                    Workbook workbookPDF = new Workbook(_Path + _excel_name);
-                    PdfSaveOptions options = new PdfSaveOptions
+                    excelPackage.Save();
+                }
+                else
+                {
+                    ExcelWorksheet SheetTemplate = excelPackage.Workbook.Worksheets["RecommTemplate"];
+                    SheetTemplate.Hidden = eWorkSheetHidden.Hidden;
+                    excelPackage.SaveAs(new FileInfo(_Path + _excel_name));
+
+                    // Save the workbook as PDF
+                    if (export_type == "pdf")
                     {
-                        AllColumnsInOnePagePerSheet = true
-                    };
-                    workbookPDF.Save(_Path + _excel_name.Replace(".xlsx", ".pdf"), options);
+                        Workbook workbookPDF = new Workbook(_Path + _excel_name);
+                        PdfSaveOptions options = new PdfSaveOptions
+                        {
+                            AllColumnsInOnePagePerSheet = true
+                        };
+                        workbookPDF.Save(_Path + _excel_name.Replace(".xlsx", ".pdf"), options);
+                    }
                 }
 
             }
 
             return _DownloadPath + _excel_name;
         }
-        static void DrawTableBorders(ExcelWorksheet worksheet, int startRow, int startCol, int endRow, int endCol)
-        {
-            for (int row = startRow; row <= endRow; row++)
-            {
-                for (int col = startCol; col <= endCol; col++)
-                {
-                    var cell = worksheet.Cells[row, col];
-                    cell.Style.Border.Top.Style = ExcelBorderStyle.Thin;
-                    cell.Style.Border.Left.Style = ExcelBorderStyle.Thin;
-                    cell.Style.Border.Right.Style = ExcelBorderStyle.Thin;
-                    cell.Style.Border.Bottom.Style = ExcelBorderStyle.Thin;
-                }
-            }
-        }
-
-        public string export_hazop_report(ReportModel param)
-        {
-            string _FolderTemplate = MapPathFiles("/wwwroot/AttachedFileTemp/");
-            string _Folder = MapPathFiles("/wwwroot/AttachedFileTemp/Hazop/");
-            string templateFilePath = _FolderTemplate + "HAZOP Template.docx";
-            string outputFilePath = _Folder + "HAZOP Template xx.docx";
-
-            //using (DocX document = DocX.Create(outputFilePath))
-            //{
-            //    // Add a title to the document
-            //    var title = document.InsertParagraph("Sample Document Title");
-            //    title.FontSize(18).Bold();
-            //    title.Alignment = Alignment.center; 
-            //    // Add some content to the document
-            //    var content = document.InsertParagraph("This is a sample paragraph in the document.");
-            //    content.FontSize(12); 
-            //    // Save the document
-            //    document.Save(); 
-            //}
-
-            using (DocX templateDoc = DocX.Load(templateFilePath))
-            {
-                // Replace placeholders in the template with actual data
-                templateDoc.ReplaceText("{Title}", "Sample Document Title");
-                templateDoc.ReplaceText("{Content}", "This is a sample paragraph in the document.");
-
-                // Save the generated document
-                templateDoc.SaveAs(outputFilePath);
-            }
-
-
-            return ("Document created successfully.");
-        }
-        public string export_hazop_reportx(ReportModel param)
+        public string export_hazop_ram(ReportModel param)
         {
             string seq = param.seq;
             string export_type = param.export_type;
@@ -765,12 +990,12 @@ namespace Class
             string _Path = MapPathFiles(_Folder);
 
             var datetime_run = DateTime.Now.ToString("yyyyMMddHHmm");
-            string export_file_name = "HAZOP Report " + datetime_run;
+            string export_file_name = "HAZOP RAM " + datetime_run;
             string export_file_name_full = "";
-            if (export_type == "word" || export_type == "pdf")
+            if (export_type == "excel" || export_type == "pdf")
             {
-                export_file_name += ".docx";
-                export_file_name_full = word_hazop_report(seq, _Path, _FolderTemplate, _DownloadPath, export_file_name, export_type);
+                export_file_name += ".xlsx";
+                export_file_name_full = excel_hazop_ram(seq, _Path, _FolderTemplate, _DownloadPath, export_file_name, export_type, false);
             }
 
             try
@@ -785,36 +1010,222 @@ namespace Class
 
             return cls_json.SetJSONresult(dtdef);
         }
-
-        public string word_hazop_report(string seq, string _Path, string _FolderTemplate, string _DownloadPath, string _export_file_name, string _export_type)
+        public string excel_hazop_ram(string seq, string _Path, string _FolderTemplate, string _DownloadPath, string _excel_name, string export_type, Boolean report_all)
         {
-            DataSet dsData = new DataSet();
-            sqlstr = @" select distinct
-                        h.seq, nl.id as id_node, g.pha_request_name, convert(varchar,g.create_date,106) as create_date, nl.node, nl.design_intent, nl.descriptions, nl.design_conditions, nl.node_boundary, nl.operating_conditions
-                        , d.document_no
-                        , mgw.guide_words as guideword, mgw.deviations as deviation, nw.causes, nw.consequences, nw.category_type, nw.ram_befor_security, nw.ram_befor_likelihood, nw.ram_befor_risk
-                        , nw.major_accident_event, nw.existing_safeguards, nw.ram_after_security, nw.ram_after_likelihood, nw.ram_after_risk, nw.recommendations, nw.responder_user_displayname
-                        , g.descriptions
-                        , nl.no as node_no, nw.no, nw.causes_no, nw.consequences_no, nw.category_no
-                        from EPHA_F_HEADER h 
-                        inner join EPHA_T_GENERAL g on h.id = g.id_pha 
-                        inner join EPHA_T_NODE nl on h.id = nl.id_pha 
-                        inner join EPHA_T_NODE_DRAWING nd on h.id = nd.id_pha and  nl.id = nd.id_node 
-                        inner join EPHA_T_DRAWING d on h.id = d.id_pha and  nd.id_drawing = d.id
-                        inner join EPHA_T_NODE_WORKSHEET nw on h.id = nw.id_pha and  nl.id = nw.id_node   
-                        left join EPHA_M_GUIDE_WORDS mgw on mgw.id = nw.id_guide_word    
-                        where h.seq = '" + seq + "' ";
-            sqlstr += @" order by cast(nl.no as int),cast(nw.no as int), cast(nw.causes_no as int), cast(nw.consequences_no as int), cast(nw.category_no as int)";
-
+            sqlstr = @"  select a.descriptions, a.document_file_name
+                        from epha_m_ram a where a.active_type = 1
+                        and a.id in (select b.id_ram from epha_t_general b where b.id_pha = '" + seq + "'  )";
             cls_conn = new ClassConnectionDb();
             dt = new DataTable();
             dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
-            dt.TableName = "header";
-            dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
 
-            ClassReport classReport = new ClassReport();
-            classReport.word_hazop_worksheet(seq, _Path, _FolderTemplate, _DownloadPath, _export_file_name, _export_type, dsData);
-            return "";
+
+            FileInfo template = new FileInfo(_FolderTemplate + "FileTemplate.xlsx");
+            if (report_all == true) { template = new FileInfo(_excel_name); }
+
+
+
+            ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
+            using (ExcelPackage excelPackage = new ExcelPackage(template))
+            {
+                ExcelWorksheet worksheet = excelPackage.Workbook.Worksheets.Add("RAM");
+
+                // Define picture dimensions and position
+                int left = 2;     // column index
+                int top = 2;      // row index
+                int width = 600;  // width in pixels
+                int height = 450; // height in pixels 
+
+                // Define the picture file path
+                string _FolderFile = MapPathFiles("/wwwroot/AttachedFileTemp/");
+                string pictureFilePath = _FolderFile + (dt.Rows[0]["document_file_name"] + "");
+                // Insert the picture
+                var picture = worksheet.Drawings.AddPicture("RAM", new FileInfo(pictureFilePath));
+                picture.From.Column = left;
+                picture.From.Row = top;
+                picture.SetSize(width, height);
+
+                //descriptions  
+                int startRows = 27;
+                worksheet.Cells["A" + (startRows)].Value = dt.Rows[0]["descriptions"].ToString();
+
+                if (report_all == true)
+                {
+                    excelPackage.Save();
+
+                }
+                else
+                {
+                    ExcelWorksheet SheetTemplate = excelPackage.Workbook.Worksheets["SheetTemplate"];
+                    SheetTemplate.Hidden = eWorkSheetHidden.Hidden;
+                    excelPackage.SaveAs(new FileInfo(_Path + _excel_name));
+
+                    // Save the workbook as PDF
+                    if (export_type == "pdf")
+                    {
+                        Workbook workbookPDF = new Workbook(_Path + _excel_name);
+                        PdfSaveOptions options = new PdfSaveOptions
+                        {
+                            AllColumnsInOnePagePerSheet = true
+                        };
+                        workbookPDF.Save(_Path + _excel_name.Replace(".xlsx", ".pdf"), options);
+                    }
+                }
+            }
+
+            return _DownloadPath + _excel_name;
+        }
+        public string export_hazop_guidewords(ReportModel param)
+        {
+            string seq = param.seq;
+            string export_type = param.export_type;
+
+            DataTable dtdef = new DataTable();
+
+            #region Determine whether the directory exists.
+            DataTable dt = new DataTable();
+            dt.Columns.Add("ATTACHED_FILE_NAME");
+            dt.Columns.Add("ATTACHED_FILE_PATH");
+            dt.Columns.Add("ATTACHED_FILE_OF");
+            dt.Columns.Add("IMPORT_DATA_MSG");
+            dt.AcceptChanges();
+            dtdef = dt.Clone(); dtdef.AcceptChanges();
+
+            #endregion Determine whether the directory exists.
+
+            string msg_error = "";
+            string _DownloadPath = "/AttachedFileTemp/Hazop/";
+            string _Folder = "/wwwroot/AttachedFileTemp/Hazop/";
+            string _FolderTemplate = MapPathFiles("/wwwroot/AttachedFileTemp/");
+            string _Path = MapPathFiles(_Folder);
+
+            var datetime_run = DateTime.Now.ToString("yyyyMMddHHmm");
+            string export_file_name = "HAZOP Guidewords " + datetime_run;
+            string export_file_name_full = "";
+            if (export_type == "excel" || export_type == "pdf")
+            {
+                export_file_name += ".xlsx";
+                export_file_name_full = excel_hazop_guidewords(seq, _Path, _FolderTemplate, _DownloadPath, export_file_name, export_type, false);
+            }
+
+            try
+            {
+                dtdef.Rows.Add(dtdef.NewRow()); dtdef.AcceptChanges();
+                dtdef.Rows[dtdef.Rows.Count - 1]["ATTACHED_FILE_NAME"] = export_file_name;
+                dtdef.Rows[dtdef.Rows.Count - 1]["ATTACHED_FILE_PATH"] = export_file_name_full;
+                dtdef.Rows[dtdef.Rows.Count - 1]["IMPORT_DATA_MSG"] = msg_error;
+                dtdef.AcceptChanges();
+            }
+            catch (Exception ex) { ex.Message.ToString(); }
+
+            return cls_json.SetJSONresult(dtdef);
+        }
+        public string excel_hazop_guidewords(string seq, string _Path, string _FolderTemplate, string _DownloadPath, string _excel_name, string export_type, Boolean report_all)
+        {
+            sqlstr = @" select distinct parameter
+                        from epha_m_guide_words where active_type = 1
+                        order by parameter ";
+            cls_conn = new ClassConnectionDb();
+            DataTable dtParam = new DataTable();
+            dtParam = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+
+            sqlstr = @" select '' as usef_selected, def_selected, parameter, deviations, guide_words, process_deviation, area_application
+                        from epha_m_guide_words where active_type = 1
+                        order by parameter, deviations, guide_words, process_deviation, area_application ";
+            cls_conn = new ClassConnectionDb();
+            dt = new DataTable();
+            dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+
+
+            FileInfo template = new FileInfo(_FolderTemplate + "HAZOP Guidewords Template.xlsx");
+            if (report_all == true) { template = new FileInfo(_excel_name); }
+
+
+
+
+            ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
+            using (ExcelPackage excelPackage = new ExcelPackage(template))
+            {
+                ExcelWorksheet sourceWorksheet = excelPackage.Workbook.Worksheets["GuidewordsTemplate"];
+                ExcelWorksheet worksheet = excelPackage.Workbook.Worksheets.Add("Guidewords", sourceWorksheet);
+
+
+                int startRows = 3;
+                int i = 0;
+                for (int m = 0; m < dtParam.Rows.Count; m++)
+                {
+                    string parameter = (dtParam.Rows[m]["parameter"] + "");
+                    worksheet.InsertRow(startRows, 1);
+                    var startCell = worksheet.Cells["A" + startRows];
+                    var endCell = worksheet.Cells["D" + startRows];
+                    var mergeRange = worksheet.Cells[startCell.Address + ":" + endCell.Address];
+                    // Merge the cells
+                    mergeRange.Merge = true;
+                    // Optionally set text alignment in the merged cell
+                    mergeRange.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                    mergeRange.Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+
+                    worksheet.Cells["A" + (startRows)].Value = parameter;
+                    startRows++;
+
+                    DataRow[] dr = dt.Select("parameter = '" + parameter + "'");
+                    for (i = 0; i < dr.Length; i++)
+                    {
+                        worksheet.InsertRow(startRows, 1);
+                        worksheet.Cells["A" + (startRows)].Value = dr[i]["deviations"].ToString();
+                        worksheet.Cells["B" + (startRows)].Value = dr[i]["guide_words"].ToString();
+                        worksheet.Cells["C" + (startRows)].Value = dr[i]["process_deviation"].ToString();
+                        worksheet.Cells["D" + (startRows)].Value = dr[i]["area_application"].ToString();
+                        startRows++;
+                    }
+                }
+
+                // วาดเส้นตาราง โดยใช้เซลล์ A1 ถึง D3
+                DrawTableBorders(worksheet, 3, 1, startRows - 1, 4);
+
+                if (report_all == true)
+                {
+                    excelPackage.Save();
+
+                }
+                else
+                {
+                    ExcelWorksheet SheetTemplate = excelPackage.Workbook.Worksheets["GuidewordsTemplate"];
+                    SheetTemplate.Hidden = eWorkSheetHidden.Hidden;
+                    excelPackage.SaveAs(new FileInfo(_Path + _excel_name));
+
+                    // Save the workbook as PDF
+                    if (export_type == "pdf")
+                    {
+                        Workbook workbookPDF = new Workbook(_Path + _excel_name);
+                        PdfSaveOptions options = new PdfSaveOptions
+                        {
+                            AllColumnsInOnePagePerSheet = true
+                        };
+                        workbookPDF.Save(_Path + _excel_name.Replace(".xlsx", ".pdf"), options);
+                    }
+                }
+
+            }
+
+            return _DownloadPath + _excel_name;
+        }
+
+
+
+        static void DrawTableBorders(ExcelWorksheet worksheet, int startRow, int startCol, int endRow, int endCol)
+        {
+            for (int row = startRow; row <= endRow; row++)
+            {
+                for (int col = startCol; col <= endCol; col++)
+                {
+                    var cell = worksheet.Cells[row, col];
+                    cell.Style.Border.Top.Style = ExcelBorderStyle.Thin;
+                    cell.Style.Border.Left.Style = ExcelBorderStyle.Thin;
+                    cell.Style.Border.Right.Style = ExcelBorderStyle.Thin;
+                    cell.Style.Border.Bottom.Style = ExcelBorderStyle.Thin;
+                }
+            }
         }
 
         public string copy_pdf_file(CopyFileModel param)
@@ -1062,7 +1473,13 @@ namespace Class
             }
             catch (Exception ex) { msg = ex.Message.ToString() + ""; ret = "Error"; return; }
 
-            if (pha_status == "11") { goto Next_Line_Data; }
+            string sub_expense_type = "";
+            try
+            {
+                sub_expense_type = (dsData.Tables["general"].Rows[0]["sub_expense_type"] + "");
+            }
+            catch { }
+            if (pha_status == "11" && !(sub_expense_type == "Study")) { goto Next_Line_Data; }
 
             jsper = param.json_nodeworksheet + "";
             try
@@ -1173,6 +1590,48 @@ namespace Class
             }
             catch { }
 
+
+            if (param.flow_action == "cancel")
+            {
+                if (pha_status == "11")
+                { 
+                    cls = new ClassFunctions();
+                    cls_conn = new ClassConnectionDb();
+                    cls_conn.OpenConnection();
+                    cls_conn.BeginTransaction();
+
+                    int i = 0;
+                    dt = new DataTable();
+                    dt = dsData.Tables["header"].Copy(); dt.AcceptChanges();
+
+                    string pha_status_new = "81";
+
+                    #region update
+                    sqlstr = "update  EPHA_F_HEADER set ";
+                    sqlstr += " PHA_STATUS = " + cls.ChkSqlNum((pha_status_new).ToString(), "N");
+
+                    sqlstr += " where SEQ = " + cls.ChkSqlNum((dt.Rows[i]["SEQ"] + "").ToString(), "N");
+                    sqlstr += " and ID = " + cls.ChkSqlNum((dt.Rows[i]["ID"] + "").ToString(), "N");
+                    sqlstr += " and YEAR = " + cls.ChkSqlNum((dt.Rows[i]["YEAR"] + "").ToString(), "N");
+                    sqlstr += " and PHA_NO = " + cls.ChkSqlStr((dt.Rows[i]["PHA_NO"] + "").ToString(), 200);
+
+                    #endregion update
+
+                    ret = cls_conn.ExecuteNonQuery(sqlstr);
+                    if (ret == "") { ret = "true"; }
+                    if (ret == "true")
+                    {
+                        cls_conn.CommitTransaction();
+                    }
+                    else
+                    {
+                        cls_conn.RollbackTransaction();
+                    }
+                    cls_conn.CloseConnection();  
+                }
+                return cls_json.SetJSONresult(refMsg(ret, msg, seq_new));
+            }
+
             if (dsData.Tables["header"].Rows.Count > 0)
             {
                 #region connection transaction
@@ -1201,7 +1660,6 @@ namespace Class
                 cls_conn_managerecom.BeginTransaction();
 
                 #endregion connection transaction
-
                 try
                 {
                     if (sub_expense_type == "Study")
@@ -1313,9 +1771,9 @@ namespace Class
                     //91	CL	Closed
                     //81	CN	Cancle
 
+                    ClassEmail clsmail = new ClassEmail();
                     if (param.flow_action == "submit" && sub_expense_type == "Normal")
                     {
-                        ClassEmail clsmail = new ClassEmail();
                         if (pha_status == "11")
                         {
 
@@ -1648,11 +2106,49 @@ namespace Class
                         }
 
                     }
-                    else if (param.flow_action == "submit" && sub_expense_type == "Study") {
-                        //
-                       
-       
+                    else if (param.flow_action == "submit" && sub_expense_type == "Study")
+                    {
+                        if (pha_status == "11")
+                        {
 
+                            cls = new ClassFunctions();
+                            cls_conn = new ClassConnectionDb();
+                            cls_conn.OpenConnection();
+                            cls_conn.BeginTransaction();
+
+                            int i = 0;
+                            dt = new DataTable();
+                            dt = dsData.Tables["header"].Copy(); dt.AcceptChanges();
+
+                            string pha_status_new = "91";
+
+                            #region update
+                            sqlstr = "update  EPHA_F_HEADER set ";
+                            sqlstr += " PHA_STATUS = " + cls.ChkSqlNum((pha_status_new).ToString(), "N");
+
+                            sqlstr += " where SEQ = " + cls.ChkSqlNum((dt.Rows[i]["SEQ"] + "").ToString(), "N");
+                            sqlstr += " and ID = " + cls.ChkSqlNum((dt.Rows[i]["ID"] + "").ToString(), "N");
+                            sqlstr += " and YEAR = " + cls.ChkSqlNum((dt.Rows[i]["YEAR"] + "").ToString(), "N");
+                            sqlstr += " and PHA_NO = " + cls.ChkSqlStr((dt.Rows[i]["PHA_NO"] + "").ToString(), 200);
+
+                            #endregion update
+
+                            ret = cls_conn.ExecuteNonQuery(sqlstr);
+                            if (ret == "") { ret = "true"; }
+                            if (ret == "true")
+                            {
+                                cls_conn.CommitTransaction();
+                            }
+                            else
+                            {
+                                cls_conn.RollbackTransaction();
+                            }
+                            cls_conn.CloseConnection();
+
+                            clsmail = new ClassEmail();
+                            clsmail.MailToAdminCaseStudy((dt.Rows[i]["SEQ"] + "").ToString(), "hazop");
+
+                        }
                     }
 
                 }
