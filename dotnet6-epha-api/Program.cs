@@ -1,37 +1,4 @@
-﻿//var builder = WebApplication.CreateBuilder(args);
-
-//// Add services to the container.
-
-//builder.Services.AddControllers();
-//// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-//builder.Services.AddEndpointsApiExplorer();
-//builder.Services.AddSwaggerGen();
-
-//var app = builder.Build();
-
-//// Configure the HTTP request pipeline.
-//if (app.Environment.IsDevelopment())
-//{
-//    app.UseSwagger();
-//    app.UseSwaggerUI();
-//}
-
-//app.UseHttpsRedirection();
-
-//app.UseAuthorization();
-
-//app.MapControllers();
-
-//app.Run();
-
-//https://www.c-sharpcorner.com/article/host-and-publish-net-core-6-web-api-application-on-iis-server2/
-// add website --> set host in C:\Windows\System32\drivers\etc\hosts 
-//# localhost name resolution is handled within DNS itself.
-//#	127.0.0.1       localhost
-//#	::1             localhost 
-//127.0.0.1       eosl - api
-
-
+﻿
 
 using Model;
 using Microsoft.Extensions.FileProviders;
@@ -54,11 +21,12 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    try { 
-    // using System.Reflection;
-    var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    
-    c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
+    try
+    {
+        // using System.Reflection;
+        var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+
+        c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
     }
     catch (Exception ex) { }
 });
@@ -90,8 +58,8 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 Config.setConfig(app.Services.GetRequiredService<IConfiguration>());
 app.UseCors(MyAllowSpecificOrigins);
-string logPath = app.Configuration["appsettings:folder_Logs"]; 
-bool folderExists = Directory.Exists(logPath); 
+string logPath = app.Configuration["appsettings:folder_Logs"];
+bool folderExists = Directory.Exists(logPath);
 if (folderExists)
 {
     app.UseFileServer(new FileServerOptions
@@ -110,7 +78,7 @@ if (folderExists)
         EnableDirectoryBrowsing = true
     });
 }
- 
+
 // Configure the HTTP request pipeline.
 //if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 //{
@@ -125,4 +93,4 @@ app.UseStaticFiles();
 app.MapControllers();
 app.Run();
 
- 
+

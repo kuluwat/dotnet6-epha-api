@@ -237,7 +237,8 @@ namespace Class
 
             #region master ram
             sqlstr = @" select seq, id, name, 0 as selected_type, category_type
-                        from EPHA_M_RAM where active_type = 1 order by seq ";
+                        from EPHA_M_RAM where active_type = 1
+                        order by seq ";
 
             cls_conn = new ClassConnectionDb();
             dt = new DataTable();
