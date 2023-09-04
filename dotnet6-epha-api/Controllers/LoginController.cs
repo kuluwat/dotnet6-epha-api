@@ -17,5 +17,19 @@ namespace Controllers
             return cls.login(param);
 
         }
+        [HttpPost("register_account", Name = "register_account")]
+        public string register_account(RegisterAccountModel param)
+        {
+            ClassLogin cls = new ClassLogin();
+            return cls.register_account(param);
+
+        }
+        [HttpPost("update_register_account", Name = "update_register_account")]
+        public string update_register_account(RegisterAccountModel param)
+        {
+            ClassLogin cls = new ClassLogin();
+            return cls.update_register_account(param);
+
+        }
     }
 }

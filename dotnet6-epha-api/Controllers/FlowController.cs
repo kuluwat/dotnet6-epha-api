@@ -56,6 +56,14 @@ namespace Controllers
             return json;
         }
 
+        [HttpPost("config_email_test", Name = "config_email_test")]
+        public string config_email_test(EmailConfigModel param)
+        {
+            ClassHazopSet cls = new ClassHazopSet();
+            return cls.config_email_test(param);
+
+        }
+
         [HttpPost("uploadfile_data", Name = "uploadfile_data")]
         public string uploadfile_data([FromForm] uploadFile param)
         {

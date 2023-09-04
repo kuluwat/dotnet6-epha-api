@@ -27,6 +27,12 @@ namespace Model
         public string? page_end_second { get; set; } = "";
 
     }
+    public class EmailConfigModel
+    {
+        public string? user_name { get; set; } = ""; 
+        public string? user_email { get; set; } = ""; 
+
+    }
     public class LoadDocModel
     {
         public string? user_name { get; set; } = "";
