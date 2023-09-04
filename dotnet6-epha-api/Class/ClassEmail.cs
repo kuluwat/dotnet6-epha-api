@@ -5,6 +5,7 @@ using Microsoft.Exchange.WebServices.Data;
 using Model;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Org.BouncyCastle.Ocsp;
 using System;
 using System.Buffers.Text;
 using System.Data;
@@ -135,6 +136,22 @@ namespace Class
             String mail_from = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("MailConfig")["MailFrom"];
             String mail_test = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("MailConfig")["MailTest"];
 
+
+            sqlstr = @"select email from EPHA_M_CONFIGMAIL where active_type = 1 ";
+            cls_conn = new ClassConnectionDb();
+            dt = new DataTable();
+            dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+
+            if (dt.Rows.Count > 0)
+            {
+                mail_test = "";
+                for (int i = 0; i < dt.Rows.Count; i++)
+                {
+                    if (i > 0) { mail_test += ";"; }
+                    mail_test += (dt.Rows[i]["user_email"] + "");
+                }
+            }  
+
             string mail_font = "";
             string mail_fontsize = "";
 
@@ -152,7 +169,7 @@ namespace Class
                 s_mail_body += "</br></br>ข้อมูล mail to: " + s_mail_to + "</br></br>ข้อมูล mail cc: " + s_mail_cc;
 
                 s_mail_to = mail_test;
-                s_mail_cc = mail_test + ";kuluwat@adb-thailand.com";
+                s_mail_cc = mail_test;
             }
 
             ExchangeService service = new ExchangeService();
@@ -244,6 +261,7 @@ namespace Class
         string s_subject = "";
         string s_body = "";
 
+        #region mail workflow
         public string get_mail_admin_group()
         {
 
@@ -388,7 +406,7 @@ namespace Class
 
 
         }
-        public string MailToActionOwner(string seq, string sub_software )
+        public string MailToActionOwner(string seq, string sub_software)
         {
             string doc_no = "";
             string doc_name = "";
@@ -400,14 +418,14 @@ namespace Class
             string to_displayname = "";
             string s_mail_to = "";
             string s_mail_cc = "";
-            string s_mail_from = ""; 
+            string s_mail_from = "";
 
             string meeting_date = "";
             DataTable dt = new DataTable();
-             
+
 
             if (sub_software == "hazop")
-            {  
+            {
                 sqlstr = QueryActionOwner(seq, "", sub_software);
             }
             cls_conn = new ClassConnectionDb();
@@ -655,7 +673,7 @@ namespace Class
                     if (i > 0) { s_mail_to += ";"; }
                     s_mail_to += (dt.Rows[i]["request_email"] + "");
                 }
-                s_mail_to += mail_admin_group ;
+                s_mail_to += mail_admin_group;
             }
             #endregion mail to
 
@@ -663,7 +681,7 @@ namespace Class
             if (dt.Rows.Count > 0)
             {
                 //cc approver ta2
-              s_mail_cc += (dt.Rows[0]["user_email"] + "");
+                s_mail_cc += (dt.Rows[0]["user_email"] + "");
             }
             #endregion mail cc
 
@@ -701,7 +719,7 @@ namespace Class
             s_body += "<br/><br/><b>Step</b> : " + step_text;
             s_body += "<br/><b>Reference MOC</b> : " + reference_moc;
             s_body += "<br/><b>Project Name</b> : " + doc_name;
-            
+
             s_body += "<br/><b>" + approver_displayname + ", has approved the conduct of PHA</b>";
             if (comment != "") { s_body += "<br/><b>Comment: " + comment; }
 
@@ -815,12 +833,12 @@ namespace Class
             s_body += "<br/><b>Reference MOC</b> : " + reference_moc;
             s_body += "<br/><b>Project Name</b> : " + doc_name;
 
-            s_body += "<br/><b>"+ approver_displayname + ",  Send back with Comment</b>"  ;
-            s_body += "<br/><b>Comment: "+ comment;
+            s_body += "<br/><b>" + approver_displayname + ",  Send back with Comment</b>";
+            s_body += "<br/><b>Comment: " + comment;
 
             s_body += "<br/><br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Please review data of PHA No." + doc_no;
             s_body += "<br/>To see the detailed infromation,<font color='red'> please click <a href='" + url + "'>here</a></font>";
-             
+
             s_body += "<br/><br/>Best Regards,";
             s_body += "<br/>ePHA Online System ";
             s_body += "<br/><br/><br/>Note that this message was automatically sent by ePHA Online System.";
@@ -1093,7 +1111,7 @@ namespace Class
                              from EPHA_F_HEADER h
                              inner join EPHA_T_GENERAL g on lower(h.id) = lower(g.id_pha)  
                              left join EPHA_PERSON_DETAILS emp on lower(h.approver_user_name) = lower(emp.user_name)   
-                             where h.id =" + seq; 
+                             where h.id =" + seq;
             }
             cls_conn = new ClassConnectionDb();
             dt = new DataTable();
@@ -1107,7 +1125,7 @@ namespace Class
             if (dt.Rows.Count > 0)
             {
                 for (int i = 0; i < dt.Rows.Count; i++)
-                { 
+                {
                     //cc to  action owner
                     s_mail_cc = (dt.Rows[i]["user_email"] + "");
 
@@ -1132,7 +1150,7 @@ namespace Class
                         url = server_url + cipherText + "&" + keyBase64 + "&" + vectorBase64;
                     }
                     #endregion url 
-                     
+
                     s_subject = "ePHA Online System : " + doc_no + (doc_name == "" ? "" : "")
                               + ",Please follow up item and update action.";
 
@@ -1143,7 +1161,7 @@ namespace Class
                     s_body += "<br/><b>Reference MOC</b> : " + reference_moc;
                     s_body += "<br/><b>Project Name</b> : " + doc_name;
 
-                    s_body += "<br/><br/>" + user_displayname + " has updated the statuses of all tasks."; 
+                    s_body += "<br/><br/>" + user_displayname + " has updated the statuses of all tasks.";
 
                     s_body += "<br/><br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Please review data of PHA No." + doc_no;
                     s_body += "<br/>To see the detailed infromation,<font color='red'> please click <a href='" + url + "'>here</a></font>";
@@ -1267,7 +1285,7 @@ namespace Class
 
             s_body += "<br/><br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Please review data of PHA No." + doc_no;
             s_body += "<br/>To see the detailed infromation,<font color='red'> please click <a href='" + url + "'>here</a></font>";
-             
+
             s_body += "<br/><br/>Best Regards,";
             s_body += "<br/>ePHA Online System ";
             s_body += "<br/><br/><br/>Note that this message was automatically sent by ePHA Online System.";
@@ -1355,7 +1373,7 @@ namespace Class
                 string cipherText = EncryptDataWithAes(plainText, keyBase64, out string vectorBase64);
 
                 url = server_url + cipherText + "&" + keyBase64 + "&" + vectorBase64;
- 
+
 
             }
             #endregion url 
@@ -1373,7 +1391,7 @@ namespace Class
 
             s_body += "<br/><br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Please review data of PHA No." + doc_no;
             s_body += "<br/>To see the detailed infromation,<font color='red'> please click <a href='" + url + "'>here</a></font>";
-             
+
             s_body += "<br/><br/>Best Regards,";
             s_body += "<br/>ePHA Online System ";
             s_body += "<br/><br/><br/>Note that this message was automatically sent by ePHA Online System.";
@@ -1390,7 +1408,176 @@ namespace Class
 
 
         }
-     
 
+        #endregion mail workflow
+
+
+        #region login
+        public string MailToAdminRegisterAccount(string _user_displayname, string _user_email, string _user_password, string _user_password_confirm)
+        {
+            string doc_no = "";
+            string doc_name = "";
+            string reference_moc = "";
+            string user_displayname = _user_displayname;
+
+            string urlAccept = ""; string urlNotAccept = "";
+            string step_text = "Register Account";
+
+            string to_displayname = "All";
+            string s_mail_to = "";
+            string s_mail_cc = "";
+            string s_mail_from = "";
+
+            DataTable dt = new DataTable();
+
+            string mail_admin_group = get_mail_admin_group();
+
+            string msg = "";
+
+            #region mail to
+            s_mail_to = mail_admin_group;
+
+            #region url 
+
+            using (Aes aesAlgorithm = Aes.Create())
+            {
+                aesAlgorithm.KeySize = 256;
+                aesAlgorithm.GenerateKey();
+                string keyBase64 = Convert.ToBase64String(aesAlgorithm.Key);
+
+                //insert keyBase64 to db 
+                string plainText = "user_email=" + _user_email + "&accept_status=1";
+                string cipherText = EncryptDataWithAes(plainText, keyBase64, out string vectorBase64);
+
+                urlAccept = server_url.Replace("index", "RegisterAccount") + cipherText + "&" + keyBase64 + "&" + vectorBase64;
+
+                //insert keyBase64 to db 
+                plainText = "user_email=" + _user_email + "&accept_status=0";
+                cipherText = EncryptDataWithAes(plainText, keyBase64, out vectorBase64);
+
+                urlNotAccept = server_url.Replace("index", "RegisterAccount") + cipherText + "&" + keyBase64 + "&" + vectorBase64;
+            }
+            #endregion url 
+
+            s_subject = "ePHA Online System : Staff or Contractor register account.";
+
+            s_body = "<html><body><font face='tahoma' size='2'>";
+            s_body += "Dear " + to_displayname + ",";
+
+            s_body += "<br/><br/>" + user_displayname + " register account."; 
+            s_body += "<br/>Email address: " + _user_email + " ";
+            s_body += "<br/>Password: " + _user_password + " ";
+            s_body += "<br/>Confirm Password: " + _user_password_confirm + " ";
+
+            s_body += "<br/><br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Please check your registration to use the system.";
+            s_body += "<br/><font color='blue'><a href='" + urlAccept + "'>Accept</a></font>";
+            s_body += ",<font color='red'><a font color='red' href='" + urlNotAccept + "'>Not Accept</a></font>";
+
+            s_body += "<br/><br/>Best Regards,";
+            s_body += "<br/>ePHA Online System ";
+            s_body += "<br/><br/><br/>Note that this message was automatically sent by ePHA Online System.";
+            s_body += "</font></body></html>";
+
+
+            sendEmailModel data = new sendEmailModel();
+            data.mail_subject = s_subject;
+            data.mail_body = s_body;
+            data.mail_to = s_mail_to;
+            data.mail_cc = s_mail_cc;
+            data.mail_from = s_mail_from;
+
+            msg = sendMail(data);
+            if (msg != "") { }
+
+
+            #endregion mail to
+
+            return msg;
+
+
+        }
+        public string MailToUserRegisterAccount(string _user_displayname, string _user_email, string _user_password, string _user_password_confirm, string _accept_status)
+        {
+            string doc_no = "";
+            string doc_name = "";
+            string reference_moc = "";
+            string user_displayname = _user_displayname;
+
+            string url = "";
+            string step_text = "Register Account";
+
+            string to_displayname = _user_displayname;
+            string s_mail_to = "";
+            string s_mail_cc = "";
+            string s_mail_from = "";
+
+            DataTable dt = new DataTable();
+
+            string mail_admin_group = get_mail_admin_group();
+
+            string msg = "";
+
+            #region mail to
+            s_mail_to = mail_admin_group;
+
+            #region url 
+
+            using (Aes aesAlgorithm = Aes.Create())
+            {
+                aesAlgorithm.KeySize = 256;
+                aesAlgorithm.GenerateKey();
+                string keyBase64 = Convert.ToBase64String(aesAlgorithm.Key);
+
+                //insert keyBase64 to db 
+                string plainText = "user_email=" + _user_email;
+                string cipherText = EncryptDataWithAes(plainText, keyBase64, out string vectorBase64);
+
+                url = server_url.Replace("hazop", "login") + cipherText + "&" + keyBase64 + "&" + vectorBase64;
+
+            }
+            #endregion url 
+
+            s_subject = "ePHA Online System : Staff or Contractor register account.";
+
+            s_body = "<html><body><font face='tahoma' size='2'>";
+            s_body += "Dear " + to_displayname + ",";
+
+            s_body += "<br/><br/>Register account."; 
+            s_body += "<br/><br/>Name: " + user_displayname + " ";
+            s_body += "<br/>Email address: " + _user_email + " ";
+            s_body += "<br/>Password: " + _user_password + " ";
+            s_body += "<br/>Confirm Password: " + _user_password_confirm + " ";
+
+            s_body += "<br/><br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Admin "+ (_accept_status == "1"?"accept" : "not accept") + " registration account.";
+            s_body += "<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;System Administrator has " + (_accept_status == "1" ? "confirmed" : "not confirmed") + " your system registration.";
+            if (_accept_status == "1")
+            {
+                s_body += "<br/><font color='red'>You can now click <a href='" + url + "'>the link</a> to access the system.,</font>";
+            } 
+      
+            s_body += "<br/><br/>Best Regards,";
+            s_body += "<br/>ePHA Online System ";
+            s_body += "<br/><br/><br/>Note that this message was automatically sent by ePHA Online System.";
+            s_body += "</font></body></html>";
+
+
+            sendEmailModel data = new sendEmailModel();
+            data.mail_subject = s_subject;
+            data.mail_body = s_body;
+            data.mail_to = s_mail_to;
+            data.mail_cc = s_mail_cc;
+            data.mail_from = s_mail_from;
+
+            msg = sendMail(data);
+            if (msg != "") { }
+
+
+            #endregion mail to
+
+            return msg;
+
+
+        }
+        #endregion login 
     }
 }

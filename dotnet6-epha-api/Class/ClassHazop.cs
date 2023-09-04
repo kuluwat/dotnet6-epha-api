@@ -92,27 +92,185 @@ namespace Class
         }
         private void get_history_hazop(ref DataSet _dsData)
         {
-            sqlstr = @" select * from(select distinct b.pha_request_name  as name
+            sqlstr = @" select * from(select distinct b.reference_moc  as name
             from EPHA_F_HEADER a inner join EPHA_T_GENERAL b on a.id = b.id_pha 
-            where a.pha_status not in (81) )t order by t.name  ";
-
+            where a.pha_status not in (81) )t where t.name is not null order by t.name  "; 
             cls_conn = new ClassConnectionDb();
             dt = new DataTable();
-            dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+            dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0]; 
+            dt.TableName = "his_reference_moc"; 
+            _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
 
-            dt.TableName = "his_request_name";
+            sqlstr = @" select * from(select distinct b.pha_request_name  as name
+            from EPHA_F_HEADER a inner join EPHA_T_GENERAL b on a.id = b.id_pha 
+            where a.pha_status not in (81) )t where t.name is not null order by t.name  "; 
+            cls_conn = new ClassConnectionDb();
+            dt = new DataTable();
+            dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0]; 
+            dt.TableName = "his_pha_request_name";
             _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
 
 
             sqlstr = @" select * from(select distinct b.descriptions  as name
             from EPHA_F_HEADER a inner join EPHA_T_GENERAL b on a.id = b.id_pha 
-            where a.pha_status not in (81) )t order by t.name  ";
+            where a.pha_status not in (81) )t where t.name is not null order by t.name  "; 
+            cls_conn = new ClassConnectionDb();
+            dt = new DataTable();
+            dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0]; 
+            dt.TableName = "his_descriptions";
+            _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
+
+
+            sqlstr = @" select * from (select distinct c.document_name  as name
+            from EPHA_F_HEADER a 
+			inner join EPHA_T_GENERAL b on a.id = b.id_pha 
+			inner join EPHA_T_DRAWING c on a.id = c.id_pha 
+            where a.pha_status not in (81) )t where t.name is not null order by t.name  ";
+            cls_conn = new ClassConnectionDb();
+            dt = new DataTable();
+            dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+            dt.TableName = "his_document_name";
+            _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
+
+
+            sqlstr = @" select * from (select distinct c.document_no  as name
+            from EPHA_F_HEADER a 
+			inner join EPHA_T_GENERAL b on a.id = b.id_pha 
+			inner join EPHA_T_DRAWING c on a.id = c.id_pha 
+            where a.pha_status not in (81) )t where t.name is not null order by t.name   ";
+            cls_conn = new ClassConnectionDb();
+            dt = new DataTable();
+            dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+            dt.TableName = "his_document_no";
+            _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
+
+
+            sqlstr = @" select * from (select distinct c.node  as name
+            from EPHA_F_HEADER a 
+			inner join EPHA_T_GENERAL b on a.id = b.id_pha 
+			inner join EPHA_T_NODE c on a.id = c.id_pha 
+            where a.pha_status not in (81) )t where t.name is not null order by t.name   ";
 
             cls_conn = new ClassConnectionDb();
             dt = new DataTable();
             dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+            dt.TableName = "his_node";
+            _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
 
-            dt.TableName = "his_descriptions";
+
+            sqlstr = @" select * from (select distinct c.design_intent  as name
+            from EPHA_F_HEADER a 
+			inner join EPHA_T_GENERAL b on a.id = b.id_pha 
+			inner join EPHA_T_NODE c on a.id = c.id_pha 
+            where a.pha_status not in (81) )t where t.name is not null order by t.name   ";
+
+            cls_conn = new ClassConnectionDb();
+            dt = new DataTable();
+            dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+            dt.TableName = "his_design_intent";
+
+
+            sqlstr = @" select * from (select distinct c.design_conditions  as name
+            from EPHA_F_HEADER a 
+			inner join EPHA_T_GENERAL b on a.id = b.id_pha 
+			inner join EPHA_T_NODE c on a.id = c.id_pha 
+            where a.pha_status not in (81) )t where t.name is not null order by t.name   ";
+
+            cls_conn = new ClassConnectionDb();
+            dt = new DataTable();
+            dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+            dt.TableName = "his_design_conditions";
+            _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
+
+
+            sqlstr = @" select * from (select distinct c.operating_conditions  as name
+            from EPHA_F_HEADER a 
+			inner join EPHA_T_GENERAL b on a.id = b.id_pha 
+			inner join EPHA_T_NODE c on a.id = c.id_pha 
+            where a.pha_status not in (81) )t where t.name is not null order by t.name   ";
+
+            cls_conn = new ClassConnectionDb();
+            dt = new DataTable();
+            dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+            dt.TableName = "his_operating_conditions";
+            _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
+
+
+            sqlstr = @" select * from (select distinct c.node_boundary  as name
+            from EPHA_F_HEADER a 
+			inner join EPHA_T_GENERAL b on a.id = b.id_pha 
+			inner join EPHA_T_NODE c on a.id = c.id_pha 
+            where a.pha_status not in (81) )t where t.name is not null order by t.name   ";
+
+            cls_conn = new ClassConnectionDb();
+            dt = new DataTable();
+            dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+            dt.TableName = "his_node_boundary";
+            _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
+
+              
+            sqlstr = @" select * from (select distinct c.causes  as name
+            from EPHA_F_HEADER a 
+			inner join EPHA_T_GENERAL b on a.id = b.id_pha 
+			inner join EPHA_T_NODE_WORKSHEET c on a.id = c.id_pha 
+            where a.pha_status not in (81) )t where t.name is not null order by t.name  ";
+
+            cls_conn = new ClassConnectionDb();
+            dt = new DataTable();
+            dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+            dt.TableName = "his_causes";
+            _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
+             
+
+            sqlstr = @" select * from (select distinct c.consequences  as name
+            from EPHA_F_HEADER a 
+			inner join EPHA_T_GENERAL b on a.id = b.id_pha 
+			inner join EPHA_T_NODE_WORKSHEET c on a.id = c.id_pha 
+            where a.pha_status not in (81) )t where t.name is not null order by t.name  ";
+
+            cls_conn = new ClassConnectionDb();
+            dt = new DataTable();
+            dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+            dt.TableName = "his_consequences";
+            _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
+
+
+            sqlstr = @" select * from (select distinct c.existing_safeguards  as name
+            from EPHA_F_HEADER a 
+			inner join EPHA_T_GENERAL b on a.id = b.id_pha 
+			inner join EPHA_T_NODE_WORKSHEET c on a.id = c.id_pha 
+            where a.pha_status not in (81) )t where t.name is not null order by t.name  ";
+
+            cls_conn = new ClassConnectionDb();
+            dt = new DataTable();
+            dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+            dt.TableName = "his_existing_safeguards";
+            _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
+
+
+            sqlstr = @" select * from (select distinct c.recommendations  as name
+            from EPHA_F_HEADER a 
+			inner join EPHA_T_GENERAL b on a.id = b.id_pha 
+			inner join EPHA_T_NODE_WORKSHEET c on a.id = c.id_pha 
+            where a.pha_status not in (81) )t where t.name is not null order by t.name  ";
+
+            cls_conn = new ClassConnectionDb();
+            dt = new DataTable();
+            dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+            dt.TableName = "his_recommendations";
+            _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
+
+
+            sqlstr = @" select * from (select distinct c.note  as name
+            from EPHA_F_HEADER a 
+			inner join EPHA_T_GENERAL b on a.id = b.id_pha 
+			inner join EPHA_T_NODE c on a.id = c.id_pha 
+            where a.pha_status not in (81) )t where t.name is not null order by t.name  ";
+
+            cls_conn = new ClassConnectionDb();
+            dt = new DataTable();
+            dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+            dt.TableName = "his_note";
             _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
 
         }

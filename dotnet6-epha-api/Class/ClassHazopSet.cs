@@ -150,6 +150,19 @@ namespace Class
             return cls_json.SetJSONresult(dtdef);
         }
 
+
+        public string config_email_test(EmailConfigModel param)
+        {
+            string ret = "";
+            sqlstr = "insert into  EPHA_M_CONFIGMAIL (seq, email, active_type) values (1," + cls.ChkSqlStr((param.user_email + "").ToString(), 50) + ", 1)";
+
+            cls_conn = new ClassConnectionDb();
+            cls_conn.OpenConnection();
+            ret = cls_conn.ExecuteNonQuery(sqlstr); 
+            cls_conn.CloseConnection(); 
+            return ret;
+        }
+
         #region export excel
 
         public string export_hazop_report_word(ReportModel param)

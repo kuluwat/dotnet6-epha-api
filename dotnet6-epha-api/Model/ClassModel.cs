@@ -31,6 +31,15 @@
         public string? active_type { get; set; } = "";
         public string? input_type { get; set; } = "";
     }
+    public class RegisterAccountModel
+    {
+        public string? user_active { get; set; } = ""; 
+        public string? user_displayname { get; set; } = ""; 
+        public string? user_email { get; set; } = "";
+        public string? user_password { get; set; } = "";
+        public string? user_password_confirm { get; set; } = ""; 
+        public string? accept_status { get; set; } = ""; 
+    }
 
 
 }
