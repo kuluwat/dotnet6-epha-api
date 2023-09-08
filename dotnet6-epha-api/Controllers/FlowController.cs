@@ -1,6 +1,8 @@
 ﻿using Class;
 using Microsoft.AspNetCore.Mvc;
 using Model;
+using System.Data;
+using static Class.ClassEmail;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -175,6 +177,42 @@ namespace Controllers
         {
             ClassHazopSet cls = new ClassHazopSet();
             return cls.copy_pdf_file(param);
+        }
+        [HttpPost("mail_attachments", Name = "mail_attachments")]
+        public string mail_attachments(string seq)
+        {
+            //{"sub_software":"hazop","user_name":"' + user_name + '","seq":"' + seq + '","export_type":"' + data_type + '"}
+            ReportModel param = new ReportModel();
+            param.seq = seq;
+            param.export_type = "pdf";
+            param.user_name = "";
+
+            ClassHazopSet classHazopSet = new ClassHazopSet();
+            string jsper = classHazopSet.export_hazop_recommendation(param);
+
+            string file_ResponseSheet = "";
+            DataTable dtReport = new DataTable();
+            ClassJSON cls_json = new ClassJSON();
+            dtReport = cls_json.ConvertJSONresult(jsper);
+            if (dtReport.Rows.Count > 0)
+            {
+                file_ResponseSheet = (Path.Combine(Directory.GetCurrentDirectory(), "") + @"/wwwroot" + (dtReport.Rows[0]["ATTACHED_FILE_PATH"] + "").Replace("~", "").Replace(".xlsx", "." + param.export_type));
+            }
+
+            sendEmailModel data = new sendEmailModel();
+            data.mail_subject = "test send file";
+            data.mail_body = "xx";
+            data.mail_to = "zkuluwat@thaioilgroup.com";
+            data.mail_from = "zkuluwat@thaioilgroup.com";
+
+            if (file_ResponseSheet != "")
+            {
+                data.mail_attachments = file_ResponseSheet;
+            }
+            if (data.mail_attachments == null) { return "not file attachments"; }
+
+            ClassEmail classEmail = new ClassEmail();
+            return classEmail.sendMail(data);
         }
 
     }

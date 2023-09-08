@@ -137,7 +137,7 @@ namespace Class
             String mail_test = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("MailConfig")["MailTest"];
 
 
-            sqlstr = @"select email from EPHA_M_CONFIGMAIL where active_type = 1 ";
+            sqlstr = @"select email, email as user_email from EPHA_M_CONFIGMAIL where active_type = 1 ";
             cls_conn = new ClassConnectionDb();
             dt = new DataTable();
             dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
@@ -150,7 +150,7 @@ namespace Class
                     if (i > 0) { mail_test += ";"; }
                     mail_test += (dt.Rows[i]["user_email"] + "");
                 }
-            }  
+            }
 
             string mail_font = "";
             string mail_fontsize = "";
@@ -408,6 +408,27 @@ namespace Class
         }
         public string MailToActionOwner(string seq, string sub_software)
         {
+            #region call function  export excel 
+            string file_ResponseSheet = "";
+            //{"sub_software":"hazop","user_name":"' + user_name + '","seq":"' + seq + '","export_type":"' + data_type + '"}
+            ReportModel param = new ReportModel();
+            param.seq = seq;
+            param.export_type = "pdf";
+            param.user_name = "";
+
+            ClassHazopSet classHazopSet = new ClassHazopSet();
+            string jsper = classHazopSet.export_hazop_recommendation(param);
+
+            DataTable dtReport = new DataTable();
+            cls_json = new ClassJSON();
+            dtReport = cls_json.ConvertJSONresult(jsper);
+            if (dtReport.Rows.Count > 0)
+            {
+                file_ResponseSheet = (Path.Combine(Directory.GetCurrentDirectory(), "") + @"/wwwroot" + (dtReport.Rows[0]["ATTACHED_FILE_PATH"] + "").Replace("~", "").Replace(".xlsx", "." + param.export_type));
+            }
+            #endregion call function  export excel 
+
+
             string doc_no = "";
             string doc_name = "";
             string reference_moc = "";
@@ -431,6 +452,7 @@ namespace Class
             cls_conn = new ClassConnectionDb();
             dt = new DataTable();
             dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+
 
             #region url  
             using (Aes aesAlgorithm = Aes.Create())
@@ -492,6 +514,8 @@ namespace Class
                     s_body += "<br/><br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Please review data of PHA No." + doc_no;
                     s_body += "<br/>To see the detailed infromation,<font color='red'> please click <a href='" + url + "'>here</a></font>";
 
+                    //file excel Response Sheet 
+
                     s_body += "<br/><br/>Best Regards,";
                     s_body += "<br/>ePHA Online System ";
                     s_body += "<br/><br/><br/>Note that this message was automatically sent by ePHA Online System.";
@@ -504,6 +528,13 @@ namespace Class
                     data.mail_to = s_mail_to;
                     data.mail_cc = s_mail_cc;
                     data.mail_from = s_mail_from;
+
+                    if (file_ResponseSheet != "") {
+                        if (Directory.Exists(file_ResponseSheet))
+                        {
+                            data.mail_attachments = file_ResponseSheet;
+                        }
+                    }
 
                     msg = sendMail(data);
                     if (msg != "") { }
@@ -1464,7 +1495,7 @@ namespace Class
             s_body = "<html><body><font face='tahoma' size='2'>";
             s_body += "Dear " + to_displayname + ",";
 
-            s_body += "<br/><br/>" + user_displayname + " register account."; 
+            s_body += "<br/><br/>" + user_displayname + " register account.";
             s_body += "<br/>Email address: " + _user_email + " ";
             s_body += "<br/>Password: " + _user_password + " ";
             s_body += "<br/>Confirm Password: " + _user_password_confirm + " ";
@@ -1542,19 +1573,19 @@ namespace Class
             s_body = "<html><body><font face='tahoma' size='2'>";
             s_body += "Dear " + to_displayname + ",";
 
-            s_body += "<br/><br/>Register account."; 
+            s_body += "<br/><br/>Register account.";
             s_body += "<br/><br/>Name: " + user_displayname + " ";
             s_body += "<br/>Email address: " + _user_email + " ";
             s_body += "<br/>Password: " + _user_password + " ";
             s_body += "<br/>Confirm Password: " + _user_password_confirm + " ";
 
-            s_body += "<br/><br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Admin "+ (_accept_status == "1"?"accept" : "not accept") + " registration account.";
+            s_body += "<br/><br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Admin " + (_accept_status == "1" ? "accept" : "not accept") + " registration account.";
             s_body += "<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;System Administrator has " + (_accept_status == "1" ? "confirmed" : "not confirmed") + " your system registration.";
             if (_accept_status == "1")
             {
                 s_body += "<br/><font color='red'>You can now click <a href='" + url + "'>the link</a> to access the system.,</font>";
-            } 
-      
+            }
+
             s_body += "<br/><br/>Best Regards,";
             s_body += "<br/>ePHA Online System ";
             s_body += "<br/><br/><br/>Note that this message was automatically sent by ePHA Online System.";
