@@ -1,7 +1,9 @@
-﻿using dotnet6_epha_api.Class;
+﻿using Aspose.Cells.Charts;
+using dotnet6_epha_api.Class;
 using Model;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using SkiaSharp;
 using System.Data;
 using System.Xml.Linq;
 
@@ -94,19 +96,19 @@ namespace Class
         {
             sqlstr = @" select * from(select distinct b.reference_moc  as name
             from EPHA_F_HEADER a inner join EPHA_T_GENERAL b on a.id = b.id_pha 
-            where a.pha_status not in (81) )t where t.name is not null order by t.name  "; 
+            where a.pha_status not in (81) )t where t.name is not null order by t.name  ";
             cls_conn = new ClassConnectionDb();
             dt = new DataTable();
-            dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0]; 
-            dt.TableName = "his_reference_moc"; 
+            dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+            dt.TableName = "his_reference_moc";
             _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
 
             sqlstr = @" select * from(select distinct b.pha_request_name  as name
             from EPHA_F_HEADER a inner join EPHA_T_GENERAL b on a.id = b.id_pha 
-            where a.pha_status not in (81) )t where t.name is not null order by t.name  "; 
+            where a.pha_status not in (81) )t where t.name is not null order by t.name  ";
             cls_conn = new ClassConnectionDb();
             dt = new DataTable();
-            dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0]; 
+            dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
             dt.TableName = "his_pha_request_name";
             _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
 
@@ -217,7 +219,7 @@ namespace Class
             dt.TableName = "his_node_boundary";
             _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
 
-              
+
             sqlstr = @" select * from (select distinct c.causes  as name
             from EPHA_F_HEADER a 
 			inner join EPHA_T_GENERAL b on a.id = b.id_pha 
@@ -229,7 +231,7 @@ namespace Class
             dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
             dt.TableName = "his_causes";
             _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
-             
+
 
             sqlstr = @" select * from (select distinct c.consequences  as name
             from EPHA_F_HEADER a 
@@ -414,12 +416,11 @@ namespace Class
             dt.TableName = "ram";
             _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
 
-            sqlstr = @"   select s.*, s.security_level, s.name as security_text, s.name as security_show
-                          , s.people as people_text, s.assets as assets_text, s.enhancement as enhancement_text, s.reputation as reputation_text, s.product_quality as product_quality_text
-                          , 0 as selected_type ,a.category_type
-                          from  EPHA_M_RAM a
-                          inner join EPHA_M_RAM_SECURITY s on a.id = s.id_ram  
-                          order by s.id_ram, s.sort_by desc";
+            sqlstr = @" select a.category_type, b.id_ram, b.security_level, b.security_text
+                        , people as people_text, assets as assets_text, enhancement as enhancement_text, reputation as reputation_text, product_quality as product_quality_text 
+                        from EPHA_M_RAM a 
+                        inner join EPHA_M_RAM_LEVEL b on a.id = b.id_ram 
+                        order by b.id_ram, b.sort_by ";
 
             cls_conn = new ClassConnectionDb();
             dt = new DataTable();
@@ -429,8 +430,8 @@ namespace Class
             _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
 
             sqlstr = @"  select  b.*, 0 as selected_type ,a.category_type
-                         , '' as security_text
-                         , '' as people_text, '' as assets_text, '' as enhancement_text, '' as reputation_text, '' as product_quality_text
+                         , b.security_text
+                         , people as people_text, assets as assets_text, enhancement as enhancement_text, reputation as reputation_text, product_quality as product_quality_text
                          from  EPHA_M_RAM a
                          inner join EPHA_M_RAM_LEVEL b on a.id = b.id_ram 
                          order by a.id , b.sort_by ";
@@ -440,26 +441,22 @@ namespace Class
             dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
             for (int i = 0; i < dt.Rows.Count; i++)
             {
-                string security_level = (dt.Rows[i]["security_level"] + "");
-                DataRow[] dr = dsData.Tables["security_level"].Select("security_level = " + security_level);
-                if (dr.Length > 0)
-                {
-                    dt.Rows[i]["security_text"] = (dr[0]["name"] + "");
-                    dt.Rows[i]["people_text"] = (dr[0]["people"] + "");
-                    dt.Rows[i]["assets_text"] = (dr[0]["assets"] + "");
-                    dt.Rows[i]["enhancement_text"] = (dr[0]["enhancement"] + "");
-                    dt.Rows[i]["reputation_text"] = (dr[0]["reputation"] + "");
-                    dt.Rows[i]["product_quality_text"] = (dr[0]["product_quality"] + "");
-
-                    //string col_show = "likelihood_show";
-                    //try { dt.Columns.Add(col_show); dt.AcceptChanges(); } catch { }
-                    //try { dt.Rows[i][col_show] = (dt.Rows[i]["likelihood" + security_level + "_text"] + ""); } catch { }
-
-                    dt.AcceptChanges();
-                }
+                //string security_level = (dt.Rows[i]["security_level"] + "");
+                //DataRow[] dr = dsData.Tables["security_level"].Select("security_level = " + security_level);
+                //if (dr.Length > 0)
+                //{
+                //    dt.Rows[i]["security_text"] = (dr[0]["security_text"] + "");
+                //    dt.Rows[i]["people_text"] = (dr[0]["people_text"] + "");
+                //    dt.Rows[i]["assets_text"] = (dr[0]["assets_text"] + "");
+                //    dt.Rows[i]["enhancement_text"] = (dr[0]["enhancement_text"] + "");
+                //    dt.Rows[i]["reputation_text"] = (dr[0]["reputation_text"] + "");
+                //    dt.Rows[i]["product_quality_text"] = (dr[0]["product_quality_text"] + "");
+                //    dt.AcceptChanges();
+                //}
             }
             dt.TableName = "ram_level";
             _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
+ 
 
             if (dt.Rows.Count > 0)
             {
@@ -500,9 +497,9 @@ namespace Class
                                     dtNew.Rows[iNewRow]["category_type"] = category_type;
                                     try
                                     {
-                                        dtNew.Rows[iNewRow]["likelihood_level"] = (dr[rl]["likelihood" + j + "_level"] + ""); 
+                                        dtNew.Rows[iNewRow]["likelihood_level"] = (dr[rl]["likelihood" + j + "_level"] + "");
                                         dtNew.Rows[iNewRow]["likelihood_show"] = (dr[rl]["likelihood" + j + "_text"] + "");
-                                        if (category_type == 1)
+                                        if (category_type == 5)
                                         {
                                             dtNew.Rows[iNewRow]["likelihood_text"] = (dr[rl]["likelihood" + j + "_text"] + "");
                                             dtNew.Rows[iNewRow]["likelihood_desc"] = (dr[rl]["likelihood" + j + "_desc"] + "");
@@ -512,7 +509,7 @@ namespace Class
                                     catch { }
 
                                     dtNew.AcceptChanges();
-                                    if (category_type == 0 && j == 4) { break; }
+                                    if (j == category_type) { break; }
                                 }
                                 break;
                             }
@@ -525,6 +522,13 @@ namespace Class
 
             }
 
+
+            sqlstr = @" select seq,name,descriptions from  EPHA_M_RAM_COLOR a where active_type = 1 order by sort_by ";
+            cls_conn = new ClassConnectionDb();
+            dt = new DataTable();
+            dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+            dt.TableName = "ram_color";
+            _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
             #endregion ram
 
             #region master apu
@@ -1118,7 +1122,7 @@ namespace Class
             dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
 
             id_managerecom = (get_max("EPHA_T_NODE_WORKSHEET"));
-            set_max_id(ref dtma, "nodeworksheet", id_managerecom.ToString()); 
+            set_max_id(ref dtma, "nodeworksheet", id_managerecom.ToString());
 
 
             if (dt.Rows.Count == 0)
@@ -1418,38 +1422,38 @@ namespace Class
         public string QueryFollowUpDetail(string seq, string pha_no, string responder_user_name, string sub_software, Boolean bOrderBy)
         {
 
-       //     sqlstr = @"  select  'update' as action_type, 0 as action_change
-       //                  , 0 as no,a.id as id_pha, upper(a.pha_sub_software) as pha_sub_software, a.pha_no, g.pha_request_name, vw.user_displayname as responder_user_displayname, nw.responder_user_name
-       //                  , (w.action_status) as action_status
-						 //, count(1) as status_total
-       //                  , count(case when lower(w.action_status) = 'closed' then null else 1 end) status_open
-       //                  , count(case when lower(w.action_status) = 'closed' then 1 else null end) status_closed
-						 //, w.document_file_name, w.document_file_path, 0 as document_file_size
-						 //, format(w.estimated_start_date,'dd MMM yyyy') as estimated_start_date_text 
-						 //, format(w.estimated_end_date,'dd MMM yyyy') as estimated_end_date_text 
-						 //, isnull(datediff(day,case when w.estimated_end_date > getdate() then getdate() else w.estimated_end_date end,getdate()),0) as over_due
-       //                  , '' as recommendations, '' as causes
-       //                  , w.seq, w.id, isnull(w.responder_action_type,'') as responder_action_type
-       //                  from EPHA_F_HEADER a 
-       //                  inner join EPHA_T_GENERAL g on a.id = g.id_pha 
-						 //inner join EPHA_T_NODE_WORKSHEET nw on a.id = nw.id_pha 
-       //                  inner join EPHA_T_MANAGE_RECOM w on a.id = w.id_pha and  lower(nw.responder_user_name) =  lower(w.responder_user_name) 
-       //                  inner join VW_EPHA_PERSON_DETAILS vw on lower(w.responder_user_name) = lower(vw.user_name) 
-       //                  where nw.responder_user_name is not null ";
+            //     sqlstr = @"  select  'update' as action_type, 0 as action_change
+            //                  , 0 as no,a.id as id_pha, upper(a.pha_sub_software) as pha_sub_software, a.pha_no, g.pha_request_name, vw.user_displayname as responder_user_displayname, nw.responder_user_name
+            //                  , (w.action_status) as action_status
+            //, count(1) as status_total
+            //                  , count(case when lower(w.action_status) = 'closed' then null else 1 end) status_open
+            //                  , count(case when lower(w.action_status) = 'closed' then 1 else null end) status_closed
+            //, w.document_file_name, w.document_file_path, 0 as document_file_size
+            //, format(w.estimated_start_date,'dd MMM yyyy') as estimated_start_date_text 
+            //, format(w.estimated_end_date,'dd MMM yyyy') as estimated_end_date_text 
+            //, isnull(datediff(day,case when w.estimated_end_date > getdate() then getdate() else w.estimated_end_date end,getdate()),0) as over_due
+            //                  , '' as recommendations, '' as causes
+            //                  , w.seq, w.id, isnull(w.responder_action_type,'') as responder_action_type
+            //                  from EPHA_F_HEADER a 
+            //                  inner join EPHA_T_GENERAL g on a.id = g.id_pha 
+            //inner join EPHA_T_NODE_WORKSHEET nw on a.id = nw.id_pha 
+            //                  inner join EPHA_T_MANAGE_RECOM w on a.id = w.id_pha and  lower(nw.responder_user_name) =  lower(w.responder_user_name) 
+            //                  inner join VW_EPHA_PERSON_DETAILS vw on lower(w.responder_user_name) = lower(vw.user_name) 
+            //                  where nw.responder_user_name is not null ";
 
-       //     //ใช้จริงค่อยเปืด
-       //     //sqlstr += " and a.pha_status in (14,15)"; 
+            //     //ใช้จริงค่อยเปืด
+            //     //sqlstr += " and a.pha_status in (14,15)"; 
 
-       //     if (seq != "") { sqlstr += @" and lower(a.seq) = lower(" + cls.ChkSqlStr(seq, 50) + ")  "; }
-       //     if (pha_no != "") { sqlstr += @" and lower(a.pha_no) = lower(" + cls.ChkSqlStr(pha_no, 50) + ")  "; }
-       //     if (responder_user_name != "") { sqlstr += @" and lower(w.responder_user_name) = lower(" + cls.ChkSqlStr(responder_user_name, 50) + ")  "; }
+            //     if (seq != "") { sqlstr += @" and lower(a.seq) = lower(" + cls.ChkSqlStr(seq, 50) + ")  "; }
+            //     if (pha_no != "") { sqlstr += @" and lower(a.pha_no) = lower(" + cls.ChkSqlStr(pha_no, 50) + ")  "; }
+            //     if (responder_user_name != "") { sqlstr += @" and lower(w.responder_user_name) = lower(" + cls.ChkSqlStr(responder_user_name, 50) + ")  "; }
 
-       //     sqlstr += @" group by a.id, w.seq, w.id, a.pha_sub_software, a.pha_no, g.pha_request_name, vw.user_displayname, nw.responder_user_name
-       //                  , document_file_name, document_file_path, w.estimated_start_date, w.estimated_end_date, w.action_status, isnull(w.responder_action_type,'') ";
+            //     sqlstr += @" group by a.id, w.seq, w.id, a.pha_sub_software, a.pha_no, g.pha_request_name, vw.user_displayname, nw.responder_user_name
+            //                  , document_file_name, document_file_path, w.estimated_start_date, w.estimated_end_date, w.action_status, isnull(w.responder_action_type,'') ";
 
-       //     if (bOrderBy) { sqlstr += @" order by convert(int, a.id), a.pha_sub_software, a.pha_no, g.pha_request_name, vw.user_displayname, nw.responder_user_name"; }
+            //     if (bOrderBy) { sqlstr += @" order by convert(int, a.id), a.pha_sub_software, a.pha_no, g.pha_request_name, vw.user_displayname, nw.responder_user_name"; }
 
-               sqlstr = @"  select  'update' as action_type, 0 as action_change
+            sqlstr = @"  select  'update' as action_type, 0 as action_change
                          , 0 as no,a.id as id_pha, upper(a.pha_sub_software) as pha_sub_software, a.pha_no, g.pha_request_name, vw.user_displayname as responder_user_displayname, nw.responder_user_name
                          , (nw.action_status) as action_status
 						 , count(1) as status_total
@@ -1468,7 +1472,7 @@ namespace Class
 						 inner join EPHA_T_NODE n on a.id = n.id_pha and nw.id_node = n.id 
                          inner join VW_EPHA_PERSON_DETAILS vw on lower(nw.responder_user_name) = lower(vw.user_name) 
                          where nw.responder_user_name is not null and a.pha_status in (13,14)";
-              
+
             if (seq != "") { sqlstr += @" and lower(a.seq) = lower(" + cls.ChkSqlStr(seq, 50) + ")  "; }
             if (pha_no != "") { sqlstr += @" and lower(a.pha_no) = lower(" + cls.ChkSqlStr(pha_no, 50) + ")  "; }
             if (responder_user_name != "") { sqlstr += @" and lower(nw.responder_user_name) = lower(" + cls.ChkSqlStr(responder_user_name, 50) + ")  "; }

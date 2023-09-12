@@ -273,8 +273,10 @@ namespace Class
             {
                 excelPackage.SaveAs(new FileInfo(export_file_name));
             }
+
             //Study Objective and Work Scope, Drawing & Reference, Node List
             excel_hazop_general(seq, _Path, _FolderTemplate, _DownloadPath, export_file_name, export_type, true);
+
             //HAZOP Attendee Sheet 
             excel_hazop_atendeesheet(seq, _Path, _FolderTemplate, _DownloadPath, export_file_name, export_type, true);
 
@@ -286,28 +288,15 @@ namespace Class
 
             excel_hazop_worksheet(seq, _Path, _FolderTemplate, _DownloadPath, export_file_name, export_type, true);
 
-            #region ram
-            if (true)
-            {
-                excel_hazop_ram(seq, _Path, _FolderTemplate, _DownloadPath, export_file_name, export_type, true);
-            }
-            #endregion ram
+            excel_hazop_ram(seq, _Path, _FolderTemplate, _DownloadPath, export_file_name, export_type, true);
 
-            #region guidewords
-            if (true)
-            {
-                excel_hazop_guidewords(seq, _Path, _FolderTemplate, _DownloadPath, export_file_name, export_type, true);
-            }
-            #endregion guidewords
+            excel_hazop_guidewords(seq, _Path, _FolderTemplate, _DownloadPath, export_file_name, export_type, true);
 
+            add_drawing_to_appendix(seq, _Path, export_file_name, true);
 
             ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
             using (ExcelPackage excelPackage = new ExcelPackage(export_file_name))
             {
-                excelPackage.Workbook.Worksheets.Delete(excelPackage.Workbook.Worksheets["RecommTemplate"]);
-                excelPackage.Workbook.Worksheets.Delete(excelPackage.Workbook.Worksheets["SheetTemplate"]);
-                excelPackage.Workbook.Worksheets.Delete(excelPackage.Workbook.Worksheets["GuidewordsTemplate"]);
-
                 // Save changes
                 excelPackage.Save();
 
@@ -320,6 +309,9 @@ namespace Class
                         AllColumnsInOnePagePerSheet = true
                     };
                     workbookPDF.Save(export_file_name.Replace(".xlsx", ".pdf"), options);
+
+                    // add Drawing PIDs & PFDs to pdf 
+
                 }
             }
 
@@ -349,7 +341,7 @@ namespace Class
             dtDrawing = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
 
 
-            sqlstr = @" select nl.node, nl.design_intent, nl.design_conditions, nl.operating_conditions, nl.node_boundary
+            sqlstr = @" select nl.no, nl.node, nl.design_intent, nl.design_conditions, nl.operating_conditions, nl.node_boundary
                          , d.document_no
                          , isnull(replace(replace( convert(char,nd.page_start_first) + (case when isnull(nd.page_start_first,'') ='' then '' else
                          (case when isnull(nd.page_end_first,'') ='' then '' else 'to'end)  end) 
@@ -365,6 +357,18 @@ namespace Class
             DataTable dtNode = new DataTable();
             dtNode = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
 
+            //MAJOR ACCIDENT EVENT  (Y/N) ให้ดึงที่เป็น Y -> running no , node , cause, R ของ  UNMITIGATED RISK ASSESSMENT MATRIX
+            sqlstr = @" select 0 as no, nl.node, nw.causes, nw.causes_no, nw.ram_befor_risk
+                         from EPHA_F_HEADER h 
+                         inner join EPHA_T_GENERAL g on h.id = g.id_pha 
+                         inner join EPHA_T_NODE nl on h.id = nl.id_pha  
+                         inner join EPHA_T_NODE_WORKSHEET nw on h.id = nw.id_pha and  nl.id = nw.id_node 
+                         and lower(isnull(nw.major_accident_event,'')) = lower('Y') 
+                         where h.seq = '" + seq + "' order by convert(int,nw.no) ";
+
+            cls_conn = new ClassConnectionDb();
+            DataTable dtMajor = new DataTable();
+            dtMajor = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
 
             FileInfo template = new FileInfo(_FolderTemplate + "HAZOP Report Template.xlsx");
             if (report_all == true) { template = new FileInfo(_excel_name); }
@@ -387,7 +391,7 @@ namespace Class
                 {
                     worksheet = excelPackage.Workbook.Worksheets["Drawing & Reference"];
 
-                    int startRows = 2;
+                    int startRows = 3;
                     int icol_end = 6;
                     for (int i = 0; i < dtDrawing.Rows.Count; i++)
                     {
@@ -400,7 +404,7 @@ namespace Class
                         worksheet.Cells["E" + (i + startRows)].Value = (dtDrawing.Rows[i]["descriptions"] + "");
 
                         startRows++;
-                    } 
+                    }
                     // วาดเส้นตาราง โดยใช้เซลล์ XX ถึง XX
                     DrawTableBorders(worksheet, 1, 1, startRows - 1, icol_end - 1);
                 }
@@ -412,7 +416,7 @@ namespace Class
                 {
                     worksheet = excelPackage.Workbook.Worksheets["Drawing & Reference"];
 
-                    int startRows = 2;
+                    int startRows = 3;
                     int icol_end = 6;
                     for (int i = 0; i < dtNode.Rows.Count; i++)
                     {
@@ -426,13 +430,48 @@ namespace Class
                         worksheet.Cells["F" + (i + startRows)].Value = (dtNode.Rows[i]["node_boundary"] + "");
                         worksheet.Cells["G" + (i + startRows)].Value = (dtNode.Rows[i]["document_no"] + "");
                         worksheet.Cells["H" + (i + startRows)].Value = (dtNode.Rows[i]["document_page"] + "");
-                       
+
                         startRows++;
                     }
                     // วาดเส้นตาราง โดยใช้เซลล์ XX ถึง XX
                     DrawTableBorders(worksheet, 1, 1, startRows - 1, icol_end - 1);
                 }
                 #endregion Node List
+
+                // Major Accident Event (MAE),
+                #region Major Accident Event (MAE)
+                if (true)
+                {
+                    worksheet = excelPackage.Workbook.Worksheets["Major Accident Event (MAE)"];
+
+                    int startRows = 3;
+                    int icol_end = 6;
+                    for (int i = 0; i < dtMajor.Rows.Count; i++)
+                    {
+                        //No.	 nl.node, nw.causes, nw.causes_no, nw.ram_befor_risk
+                        worksheet.InsertRow(startRows, 1);
+                        worksheet.Cells["A" + (i + startRows)].Value = (i + 1);
+                        worksheet.Cells["B" + (i + startRows)].Value = (dtMajor.Rows[i]["node"] + "");
+                        worksheet.Cells["C" + (i + startRows)].Value = (dtMajor.Rows[i]["causes"] + "");
+                        worksheet.Cells["D" + (i + startRows)].Value = (dtMajor.Rows[i]["ram_befor_risk"] + "");
+
+                        startRows++;
+                    }
+                    // วาดเส้นตาราง โดยใช้เซลล์ XX ถึง XX
+                    DrawTableBorders(worksheet, 1, 1, startRows - 1, icol_end - 1);
+                }
+                #endregion Node List
+
+
+
+                //Study Objective and Work Scope
+                #region Study Objective and Work Scope
+                if (true)
+                {
+                    worksheet = excelPackage.Workbook.Worksheets["Study Objective and Work Scope"];
+                    worksheet.Cells["A2"].Value = (dtWorkScope.Rows[0]["work_scope"] + "");
+                }
+                #endregion Study Objective and Work Scope
 
                 if (report_all == true)
                 {
@@ -465,10 +504,93 @@ namespace Class
                     }
                 }
 
-
             }
 
             return _DownloadPath + _excel_name;
+        }
+
+        public string add_drawing_to_appendix(string seq, string _Path, string _excel_name, Boolean report_all)
+        {
+            //Drawing PIDs & PFDs 
+            sqlstr = @" select distinct d.no, d.document_name, d.document_no, d.document_file_name, d.descriptions, h.pha_sub_software as sub_software
+                        from EPHA_F_HEADER h 
+                        inner join EPHA_T_GENERAL g on h.id = g.id_pha  
+                        inner join EPHA_T_DRAWING d on h.id = d.id_pha    
+                        where h.seq = '" + seq + "' and isnull(d.document_file_name,'') <>'' order by convert(int,d.no) ";
+
+            cls_conn = new ClassConnectionDb();
+            DataTable dtDrawing = new DataTable();
+            dtDrawing = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+
+            string existingPdfFilePath = (_Path + _excel_name);
+            if (report_all == true) { existingPdfFilePath = _excel_name; }
+
+            for (int i = 0; i < dtDrawing.Rows.Count; i++)
+            {
+                string pdfToBeAddedFilePath = _Path + (dtDrawing.Rows[i]["document_file_name"] + "");
+                addfile_pdf_to_pdf(_Path, existingPdfFilePath, pdfToBeAddedFilePath);
+            }
+
+            return existingPdfFilePath;
+        }
+
+        public string addfile_pdf_to_pdf(string _Path, string existingPdfFilePath, string pdfToBeAddedFilePath)
+        {
+
+            string sourceFilePath = existingPdfFilePath;
+            string destinationFilePath = _Path + "outfile.pdf";
+
+            try { File.Delete(destinationFilePath); } catch { }
+            File.Copy(sourceFilePath, destinationFilePath);
+
+            try
+            {
+                // Create a FileStream for the output PDF 
+                using (FileStream outputStream = new FileStream(destinationFilePath, FileMode.Create))
+                {
+                    // Create a Document object
+                    using (iTextSharp.text.Document document = new iTextSharp.text.Document())
+                    {
+                        // Create a PdfCopy object that will merge the PDFs
+                        using (PdfCopy copy = new PdfCopy(document, outputStream))
+                        {
+                            document.Open();
+
+                            // Open the existing PDF
+                            using (PdfReader reader = new PdfReader(existingPdfFilePath))
+                            {
+                                // Add the existing PDF to the new PDF
+                                for (int pageNum = 1; pageNum <= reader.NumberOfPages; pageNum++)
+                                {
+                                    copy.AddPage(copy.GetImportedPage(reader, pageNum));
+                                }
+                            }
+
+                            // Open the PDF to be added
+                            using (PdfReader pdfToBeAddedReader = new PdfReader(pdfToBeAddedFilePath))
+                            {
+                                // Add the pages from the PDF to be added to the new PDF
+                                for (int pageNum = 1; pageNum <= pdfToBeAddedReader.NumberOfPages; pageNum++)
+                                {
+                                    copy.AddPage(copy.GetImportedPage(pdfToBeAddedReader, pageNum));
+                                }
+                            }
+                        }
+                    }
+                }
+
+                //delete source file
+                try { File.Delete(sourceFilePath); } catch { }
+
+                //copy destination to source file
+                File.Copy(destinationFilePath, sourceFilePath);
+
+                //delete destination file
+                try { File.Delete(destinationFilePath); } catch { }
+            }
+            catch { }
+
+            return "";
         }
 
         public string export_hazop_atendeesheet(ReportModel param)
@@ -692,6 +814,8 @@ namespace Class
 
             return cls_json.SetJSONresult(dtdef);
         }
+
+
         public string excel_hazop_worksheet(string seq, string _Path, string _FolderTemplate, string _DownloadPath, string _excel_name, string export_type, Boolean report_all)
         {
             sqlstr = @" select distinct nl.no, nl.id as id_node
@@ -739,12 +863,16 @@ namespace Class
             ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
             using (ExcelPackage excelPackage = new ExcelPackage(template))
             {
-                //foreach (ExcelWorksheet worksheet in excelPackage.Workbook.Worksheets)
-                //{ } 
+                string worksheet_name = "";
+                string worksheet_name_target = "";
                 for (int inode = 0; inode < dtNode.Rows.Count; inode++)
                 {
+                    if (worksheet_name_target == "") { worksheet_name_target = "WorksheetTemplate"; }
+                    else { worksheet_name_target = "HAZOP Worksheet Node (" + (inode) + ")"; }
+                    worksheet_name = "HAZOP Worksheet Node (" + (inode + 1) + ")";
+
                     ExcelWorksheet sourceWorksheet = excelPackage.Workbook.Worksheets["WorksheetTemplate"];  // Replace "SourceSheet" with the actual source sheet name
-                    ExcelWorksheet worksheet = excelPackage.Workbook.Worksheets.Add("HAZOP Worksheet Node (" + (inode + 1) + ")", sourceWorksheet);
+                    ExcelWorksheet worksheet = excelPackage.Workbook.Worksheets.Add(worksheet_name, sourceWorksheet);
 
                     string id_node = (dtNode.Rows[inode]["id_node"] + "");
                     //worksheet.Name = "HAZOP Worksheet Node (No." + (inode + 1) + ")";
@@ -818,9 +946,8 @@ namespace Class
 
                     }
 
-
-                    startRows++;
-
+                    //new worksheet move after WorksheetTemplate 
+                    excelPackage.Workbook.Worksheets.MoveBefore(worksheet_name, worksheet_name_target);
                 }
 
                 if (report_all == true && bCheckNewFile == false)
@@ -1130,8 +1257,7 @@ namespace Class
             return _DownloadPath + _excel_name;
         }
 
-        public string excel_hazop_recommendation_by_responder(string seq, string _Path, string _FolderTemplate, string _DownloadPath, string _excel_name, string export_type
-            , Boolean report_all)
+        public string excel_hazop_recommendation_by_responder(string seq, string _Path, string _FolderTemplate, string _DownloadPath, string _excel_name, string export_type, Boolean report_all)
         {
             sqlstr = @" select distinct h.pha_no, g.pha_request_name, nw.responder_user_name, nw.responder_user_displayname
                         from EPHA_F_HEADER h 
@@ -1517,7 +1643,7 @@ namespace Class
             dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
 
 
-            FileInfo template = new FileInfo(_FolderTemplate + "FileTemplate.xlsx");
+            FileInfo template = new FileInfo(_FolderTemplate + "Risk Assessment Matrix Template.xlsx");
             if (report_all == true) { template = new FileInfo(_excel_name); }
 
 
@@ -1525,13 +1651,13 @@ namespace Class
             ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
             using (ExcelPackage excelPackage = new ExcelPackage(template))
             {
-                ExcelWorksheet worksheet = excelPackage.Workbook.Worksheets.Add("RAM");
+                ExcelWorksheet worksheet = excelPackage.Workbook.Worksheets["Risk Assessment Matrix"];
 
                 // Define picture dimensions and position
                 int left = 2;     // column index
                 int top = 2;      // row index
-                int width = 600;  // width in pixels
-                int height = 450; // height in pixels 
+                int width = 400;  // width in pixels
+                int height = 400; // height in pixels 
 
                 // Define the picture file path
                 string _FolderFile = MapPathFiles("/wwwroot/AttachedFileTemp/");
@@ -1548,14 +1674,14 @@ namespace Class
 
                 if (report_all == true)
                 {
-                    ExcelWorksheet SheetTemplate = excelPackage.Workbook.Worksheets["SheetTemplate"];
-                    SheetTemplate.Hidden = eWorkSheetHidden.Hidden;
+                    //ExcelWorksheet SheetTemplate = excelPackage.Workbook.Worksheets["Risk Assessment Matrix"];
+                    //SheetTemplate.Hidden = eWorkSheetHidden.Hidden;
                     excelPackage.Save();
                 }
                 else
                 {
-                    ExcelWorksheet SheetTemplate = excelPackage.Workbook.Worksheets["SheetTemplate"];
-                    SheetTemplate.Hidden = eWorkSheetHidden.Hidden;
+                    //ExcelWorksheet SheetTemplate = excelPackage.Workbook.Worksheets["Risk Assessment Matrix"];
+                    //SheetTemplate.Hidden = eWorkSheetHidden.Hidden;
                     excelPackage.SaveAs(new FileInfo(_Path + _excel_name));
 
                     // Save the workbook as PDF
@@ -1645,8 +1771,8 @@ namespace Class
             using (ExcelPackage excelPackage = new ExcelPackage(template))
             {
                 ExcelWorksheet sourceWorksheet = excelPackage.Workbook.Worksheets["GuidewordsTemplate"];
-                ExcelWorksheet worksheet = excelPackage.Workbook.Worksheets.Add("Guidewords", sourceWorksheet);
-
+                ExcelWorksheet worksheet = sourceWorksheet;// excelPackage.Workbook.Worksheets.Add("Guidewords", sourceWorksheet);
+                worksheet.Name = "Guidewords";
 
                 int startRows = 3;
                 int i = 0;
@@ -1683,14 +1809,15 @@ namespace Class
 
                 if (report_all == true)
                 {
-                    ExcelWorksheet SheetTemplate = excelPackage.Workbook.Worksheets["GuidewordsTemplate"];
-                    SheetTemplate.Hidden = eWorkSheetHidden.Hidden;
+                    //excelPackage.Workbook.Worksheets.MoveBefore("HAZOP Attendee Sheet", "HAZOP Cover Page"); 
+                    //ExcelWorksheet SheetTemplate = excelPackage.Workbook.Worksheets["GuidewordsTemplate"];
+                    //SheetTemplate.Hidden = eWorkSheetHidden.Hidden;
                     excelPackage.Save();
                 }
                 else
                 {
-                    ExcelWorksheet SheetTemplate = excelPackage.Workbook.Worksheets["GuidewordsTemplate"];
-                    SheetTemplate.Hidden = eWorkSheetHidden.Hidden;
+                    //ExcelWorksheet SheetTemplate = excelPackage.Workbook.Worksheets["GuidewordsTemplate"];
+                    //SheetTemplate.Hidden = eWorkSheetHidden.Hidden;
                     excelPackage.SaveAs(new FileInfo(_Path + _excel_name));
 
                     // Save the workbook as PDF
@@ -1709,8 +1836,6 @@ namespace Class
 
             return _DownloadPath + _excel_name;
         }
-
-
 
         static void DrawTableBorders(ExcelWorksheet worksheet, int startRow, int startCol, int endRow, int endCol)
         {
@@ -2161,7 +2286,18 @@ namespace Class
                 #endregion connection transaction
                 try
                 {
-                    if (sub_expense_type == "Study")
+                    if (pha_status == "11" || pha_status == "21")
+                    {
+                        if (pha_status == "21")
+                        {
+                            dsData.Tables["header"].Rows[0]["PHA_VERSION"] = Convert.ToInt32((dsData.Tables["header"].Rows[0]["PHA_VERSION"] + "")) + 1;
+                            dsData.AcceptChanges();
+                        }
+                        ret = set_hazop_header(ref dsData, ref cls_conn_header, seq_header_now);
+                        if (ret == "") { ret = "true"; }
+                        if (ret != "true") { goto Next_Line; }
+                    }
+                    if (pha_status == "11" || pha_status == "12" || pha_status == "22")
                     {
                         ret = set_hazop_header(ref dsData, ref cls_conn_header, seq_header_now);
                         if (ret == "") { ret = "true"; }
@@ -2183,45 +2319,7 @@ namespace Class
                         if (ret == "") { ret = "true"; }
                         if (ret != "true") { goto Next_Line; }
 
-                    }
-                    else
-                    {
-                        if (pha_status == "11" || pha_status == "21")
-                        {
-                            if (pha_status == "21")
-                            {
-                                dsData.Tables["header"].Rows[0]["PHA_VERSION"] = Convert.ToInt32((dsData.Tables["header"].Rows[0]["PHA_VERSION"] + "")) + 1;
-                                dsData.AcceptChanges();
-                            }
-                            ret = set_hazop_header(ref dsData, ref cls_conn_header, seq_header_now);
-                            if (ret == "") { ret = "true"; }
-                            if (ret != "true") { goto Next_Line; }
-                        }
-                        if (pha_status == "11" || pha_status == "22")
-                        {
-                            ret = set_hazop_parti(ref dsData, ref cls_conn_header, seq_header_now, dsDataOld);
-                            if (ret == "") { ret = "true"; }
-                            if (ret != "true") { goto Next_Line; }
-
-                            ret = set_hazop_partii(ref dsData, ref cls_conn_node, seq_header_now);
-                            if (ret == "") { ret = "true"; }
-                            if (ret != "true") { goto Next_Line; }
-                        }
-                        if (pha_status == "12" || pha_status == "22")
-                        {
-                            ret = set_hazop_partii(ref dsData, ref cls_conn_node, seq_header_now);
-                            if (ret == "") { ret = "true"; }
-                            if (ret != "true") { goto Next_Line; }
-
-                            ret = set_hazop_partiii(ref dsData, ref cls_conn_worksheet, seq_header_now);
-                            if (ret == "") { ret = "true"; }
-                            if (ret != "true") { goto Next_Line; }
-
-                            ret = set_hazop_partiv(ref dsData, ref cls_conn_managerecom, seq_header_now);
-                            if (ret == "") { ret = "true"; }
-                            if (ret != "true") { goto Next_Line; }
-                        }
-                    }
+                    } 
                 }
                 catch (Exception ex) { ret = ex.Message.ToString(); goto Next_Line; }
 
@@ -3008,8 +3106,7 @@ namespace Class
                 string action_type = (dt.Rows[i]["action_type"] + "").ToString();
 
                 if (action_type == "insert")
-                {
-
+                { 
                     #region insert
                     //SEQ Auto running
                     sqlstr = "insert into EPHA_T_SESSION (" +
