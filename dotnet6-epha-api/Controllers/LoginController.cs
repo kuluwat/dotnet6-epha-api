@@ -10,6 +10,10 @@ namespace Controllers
     [ApiController]
     public class LoginController : ControllerBase
     {
+
+        //string service_api_url = _IConfiguration["EndPoint:service_api_url"] + "/get_emp_data_login";
+        //var person = new { emp_id = "", user_pass = "", indicator = "", user_name = user_name };
+ 
         [HttpPost("check_authorization", Name = "check_authorization")]
         public string check_authorization(LoginUserModel param)
         {

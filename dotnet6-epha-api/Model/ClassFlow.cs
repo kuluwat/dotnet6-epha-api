@@ -68,6 +68,7 @@ namespace Model
         public string? json_nodeguidwords  { get; set; } = "";
         public string? json_nodeworksheet { get; set; } = "";
         public string? json_managerecom { get; set; } = "";
+        public string? json_ram_level { get; set; } = "";
          
         public string? flow_action  { get; set; } = "";
          

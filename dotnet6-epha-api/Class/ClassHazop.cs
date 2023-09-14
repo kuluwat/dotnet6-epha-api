@@ -432,6 +432,7 @@ namespace Class
             sqlstr = @"  select  b.*, 0 as selected_type ,a.category_type
                          , b.security_text
                          , people as people_text, assets as assets_text, enhancement as enhancement_text, reputation as reputation_text, product_quality as product_quality_text
+                         , 'update' as action_type, 0 as action_change
                          from  EPHA_M_RAM a
                          inner join EPHA_M_RAM_LEVEL b on a.id = b.id_ram 
                          order by a.id , b.sort_by ";
@@ -456,7 +457,7 @@ namespace Class
             }
             dt.TableName = "ram_level";
             _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
- 
+
 
             if (dt.Rows.Count > 0)
             {
@@ -704,7 +705,6 @@ namespace Class
                 id_pha = (get_max("EPHA_F_HEADER"));
                 set_max_id(ref dtma, "header", id_pha.ToString());
 
-
                 //กรณีที่เป็นใบงานใหม่
                 dt.Rows.Add(dt.NewRow());
                 dt.Rows[0]["seq"] = id_pha;
@@ -777,7 +777,6 @@ namespace Class
             dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
             #endregion general
 
-
             #region functional_audition 
             sqlstr = @" select b.* , 'update' as action_type, 0 as action_change
                         from EPHA_F_HEADER a inner join EPHA_T_FUNCTIONAL_AUDITION b on a.id  = b.id_pha
@@ -843,7 +842,6 @@ namespace Class
             dt.TableName = "session";
             dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
             #endregion session
-
 
             #region memberteam 
             sqlstr = @" select c.* , 'assets/img/team/avatar.webp' as user_img, 'update' as action_type, 0 as action_change
@@ -1101,48 +1099,48 @@ namespace Class
             //id_managerecom = (get_max("EPHA_T_MANAGE_RECOM"));
             //set_max_id(ref dtma, "managerecom", id_managerecom.ToString());
 
-
-            sqlstr = @" select b.seq, b.id, b.id_pha, b.recommendations_no, n.no as node_no, n.node, b.causes_no, b.recommendations, b.responder_user_displayname
-                         , b.action_status,  b.ram_after_risk, b.ram_after_risk_action, b.estimated_start_date, b.estimated_end_date
-                         , b.responder_action_type, b.document_file_path, b.document_file_name
-                         , b.*
-                         , 0 as no, 'update' as action_type, 0 as action_change
-                         , vw.user_id as responder_user_id, 'assets/img/team/avatar.webp' as responder_user_img  
-                         from EPHA_F_HEADER a 
-                         inner join EPHA_T_NODE_WORKSHEET b on a.id  = b.id_pha
-                         inner join EPHA_T_NODE n on a.id  = n.id_pha and b.id_node = n.id 
-                         left join VW_EPHA_PERSON_DETAILS vw on lower(b.responder_user_name) = lower(vw.user_name)
-                         where 1=1 ";
-            sqlstr += " and lower(a.seq) = lower(" + cls.ChkSqlStr(seq, 50) + ")  ";
-            sqlstr += " order by a.seq,b.seq";
-
-
-            cls_conn = new ClassConnectionDb();
-            dt = new DataTable();
-            dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
-
-            id_managerecom = (get_max("EPHA_T_NODE_WORKSHEET"));
-            set_max_id(ref dtma, "nodeworksheet", id_managerecom.ToString());
+            //ยกเลิกไปใช้กับ node worksheet
+            //sqlstr = @" select b.seq, b.id, b.id_pha, b.recommendations_no, n.no as node_no, n.node, b.causes_no, b.recommendations, b.responder_user_displayname
+            //             , b.action_status,  b.ram_after_risk, b.ram_after_risk_action, b.estimated_start_date, b.estimated_end_date
+            //             , b.responder_action_type, b.document_file_path, b.document_file_name
+            //             , b.*
+            //             , 0 as no, 'update' as action_type, 0 as action_change
+            //             , vw.user_id as responder_user_id, 'assets/img/team/avatar.webp' as responder_user_img  
+            //             from EPHA_F_HEADER a 
+            //             inner join EPHA_T_NODE_WORKSHEET b on a.id  = b.id_pha
+            //             inner join EPHA_T_NODE n on a.id  = n.id_pha and b.id_node = n.id 
+            //             left join VW_EPHA_PERSON_DETAILS vw on lower(b.responder_user_name) = lower(vw.user_name)
+            //             where 1=1 ";
+            //sqlstr += " and lower(a.seq) = lower(" + cls.ChkSqlStr(seq, 50) + ")  ";
+            //sqlstr += " order by a.seq,b.seq";
 
 
-            if (dt.Rows.Count == 0)
-            {
-                //กรณีที่เป็นใบงานใหม่ เดียวให้หน้าบ้านเช็คแล้ว loop เอา -> logic เดียวต้องรวมกับ functions add อยู่แล้ว
-                dt.Rows.Add(dt.NewRow());
-                dt.Rows[0]["seq"] = id_managerecom;
-                dt.Rows[0]["id"] = id_managerecom;
-                dt.Rows[0]["id_pha"] = id_pha;
+            //cls_conn = new ClassConnectionDb();
+            //dt = new DataTable();
+            //dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
 
-                dt.Rows[0]["no"] = 1;
+            //id_managerecom = (get_max("EPHA_T_NODE_WORKSHEET"));
+            //set_max_id(ref dtma, "nodeworksheet", id_managerecom.ToString());
 
-                dt.Rows[0]["create_by"] = user_name;
-                dt.Rows[0]["action_type"] = "insert";
-                dt.Rows[0]["action_change"] = 0;
-                dt.AcceptChanges();
-            }
 
-            dt.TableName = "managerecom";
-            dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
+            //if (dt.Rows.Count == 0)
+            //{
+            //    //กรณีที่เป็นใบงานใหม่ เดียวให้หน้าบ้านเช็คแล้ว loop เอา -> logic เดียวต้องรวมกับ functions add อยู่แล้ว
+            //    dt.Rows.Add(dt.NewRow());
+            //    dt.Rows[0]["seq"] = id_managerecom;
+            //    dt.Rows[0]["id"] = id_managerecom;
+            //    dt.Rows[0]["id_pha"] = id_pha;
+
+            //    dt.Rows[0]["no"] = 1;
+
+            //    dt.Rows[0]["create_by"] = user_name;
+            //    dt.Rows[0]["action_type"] = "insert";
+            //    dt.Rows[0]["action_change"] = 0;
+            //    dt.AcceptChanges();
+            //}
+
+            //dt.TableName = "managerecom";
+            //dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
             #endregion managerecom
 
             dtma.TableName = "max";
@@ -1290,6 +1288,19 @@ namespace Class
                     if (role_type == "admin") { break; }
                 }
             }
+            else
+            {
+                dtrole = new DataTable();
+                dtrole = cls_conn.ExecuteAdapterSQL(sqlstr.Replace("inner join", "left join")).Tables[0];
+                if (dtrole.Rows.Count > 0)
+                {
+                    for (int i = 0; i < dtrole.Rows.Count; i++)
+                    {
+                        role_type = (dtrole.Rows[0]["role_type"] + "").ToString();
+                        if (role_type == "admin") { break; }
+                    }
+                }
+            }
         }
         public void DataHazopSearchFollowUp(ref DataSet dsData, string user_name, string seq, string sub_software)
         {
@@ -1319,40 +1330,41 @@ namespace Class
             string sqlstr_r = "";
             sqlstr_w = @" select 0 as no, a.pha_sub_software, a.seq as pha_seq,a.pha_no, g.pha_request_name, '' as responder_user_displayname 
                          ,count(1) as status_total
-                         , count(case when lower(w.action_status) = 'closed' then null else 1 end) status_open
-                         , count(case when lower(w.action_status) = 'closed' then 1 else null end) status_closed
+                         , count(case when lower(nw.action_status) = 'closed' then null else 1 end) status_open
+                         , count(case when lower(nw.action_status) = 'closed' then 1 else null end) status_closed
                          , 'worksheet' as data_by, '' as responder_user_name
-                         , case when a.pha_status  = 13 then 'Waiting Follow Up' else 'Waiting Review Follow Up' end as pha_status_name
+                         , a.pha_status, case when a.pha_status  = 13 then 'Waiting Follow Up' else 'Waiting Review Follow Up' end as pha_status_name
                          , 'update' as action_type, 0 as action_change
                          from EPHA_F_HEADER a 
                          inner join EPHA_T_GENERAL g on a.id = g.id_pha 
-						 inner join EPHA_T_NODE_WORKSHEET nw on a.id = nw.id_pha 
-                         inner join EPHA_T_MANAGE_RECOM w on a.id = w.id_pha and  lower(nw.responder_user_name) =  lower(w.responder_user_name) 
+						 inner join EPHA_T_NODE_WORKSHEET nw on a.id = nw.id_pha  
                          where a.pha_status in (13,14) and nw.responder_user_name is not null";
             if (seq != "") { sqlstr_w += @" and lower(a.seq) = lower(" + cls.ChkSqlStr(seq, 50) + ")  "; }
-
-            if (role_type != "admin") { sqlstr_w += @" and ( a.pha_status in (13,14) and isnull(nw.responder_action_type,0) <> 2 )"; }
+            if (role_type != "admin") { sqlstr_w += @" and ( a.pha_status in (13,14) and isnull(nw.responder_action_type,0) <> 2 )"; } 
+            if (user_name != "") { sqlstr_w += @" and lower(nw.responder_user_name) = lower(" + cls.ChkSqlStr(user_name, 50) + ")  "; }
 
             sqlstr_w += @" group by a.pha_status, a.pha_sub_software, a.seq, a.pha_no, g.pha_request_name ";
 
             sqlstr_r = @" select  0 as no, a.pha_sub_software, '' as pha_seq, '' as pha_no, '' as pha_request_name, vw.user_displayname as responder_user_displayname
                          ,count(1) as status_total
-                         , count(case when lower(w.action_status) = 'closed' then null else 1 end) status_open
-                         , count(case when lower(w.action_status) = 'closed' then 1 else null end) status_closed
-                         , 'responder' as data_by, w.responder_user_name
-                         , case when a.pha_status  = 13 then 'Waiting Follow Up' else 'Waiting Review Follow Up' end as pha_status_name
+                         , count(case when lower(nw.action_status) = 'closed' then null else 1 end) status_open
+                         , count(case when lower(nw.action_status) = 'closed' then 1 else null end) status_closed
+                         , 'responder' as data_by, nw.responder_user_name
+                         , a.pha_status, case when a.pha_status  = 13 then 'Waiting Follow Up' else 'Waiting Review Follow Up' end as pha_status_name
                          , 'update' as action_type, 0 as action_change
                          from EPHA_F_HEADER a 
                          inner join EPHA_T_GENERAL g on a.id = g.id_pha 
-						 inner join EPHA_T_NODE_WORKSHEET nw on a.id = nw.id_pha 
-                         inner join EPHA_T_MANAGE_RECOM w on a.id = w.id_pha and  lower(nw.responder_user_name) =  lower(w.responder_user_name) 
-                         inner join VW_EPHA_PERSON_DETAILS vw on lower(w.responder_user_name) = lower(vw.user_name) 
+						 inner join EPHA_T_NODE_WORKSHEET nw on a.id = nw.id_pha  
+                         inner join VW_EPHA_PERSON_DETAILS vw on lower(nw.responder_user_name) = lower(vw.user_name) 
                          where a.pha_status in (13,14) and nw.responder_user_name is not null";
             if (seq != "") { sqlstr_r += @" and lower(a.seq) = lower(" + cls.ChkSqlStr(seq, 50) + ")  "; }
-            if (role_type != "admin") { sqlstr_w += @" and ( a.pha_status in (13,14) and isnull(nw.responder_action_type,0) <> 2 )"; }
+            if (role_type != "admin") { sqlstr_r += @" and ( a.pha_status in (13,14) and isnull(nw.responder_action_type,0) <> 2 )"; }
+            if (user_name != "") { sqlstr_r += @" and lower(nw.responder_user_name) = lower(" + cls.ChkSqlStr(user_name, 50) + ")  "; }
 
-            sqlstr_r += @" group by a.pha_status, a.pha_sub_software, vw.user_displayname, w.responder_user_name ";
+            sqlstr_r += @" group by a.pha_status, a.pha_sub_software, vw.user_displayname, nw.responder_user_name ";
 
+
+            //รวม
             sqlstr = " select t.* from (" + sqlstr_w + " union " + sqlstr_r + ")t order by data_by, pha_sub_software, pha_no, pha_request_name, responder_user_displayname  ";
 
             cls_conn = new ClassConnectionDb();
@@ -1363,7 +1375,7 @@ namespace Class
             {
                 //กรณีที่เป็นใบงานใหม่
                 dt.Rows.Add(dt.NewRow());
-                dt.Rows[0]["pha_sub_software"] = pha_no;
+                dt.Rows[0]["pha_sub_software"] = sub_software;
 
                 dt.Rows[0]["action_type"] = "insert";
                 dt.Rows[0]["action_change"] = 0;
@@ -1418,7 +1430,7 @@ namespace Class
             dsData.DataSetName = "dsData"; dsData.AcceptChanges();
 
         }
-
+     
         public string QueryFollowUpDetail(string seq, string pha_no, string responder_user_name, string sub_software, Boolean bOrderBy)
         {
 
@@ -1464,8 +1476,9 @@ namespace Class
 						 , format(nw.estimated_end_date,'dd MMM yyyy') as estimated_end_date_text 
 						 , isnull(datediff(day,case when nw.estimated_end_date > getdate() then getdate() else nw.estimated_end_date end,getdate()),0) as over_due
                          , nw.seq, nw.id, isnull(nw.responder_action_type,'') as responder_action_type
-						 , nw.recommendations, nw.causes_no as causes, nw.recommendations_no, n.no as node_no, n.node
-                         , nw.ram_after_risk, nw.ram_after_risk_action
+						 , nw.consequences_no, nw.recommendations, nw.causes_no as causes, nw.recommendations_no, n.no as node_no, n.node
+                         , g.id_ram
+                         , nw.ram_after_risk, nw.ram_action_security, nw.ram_action_likelihood, nw.ram_action_risk
                          from EPHA_F_HEADER a 
                          inner join EPHA_T_GENERAL g on a.id = g.id_pha 
 						 inner join EPHA_T_NODE_WORKSHEET nw on a.id = nw.id_pha  
@@ -1479,7 +1492,8 @@ namespace Class
 
             sqlstr += @"  group by a.id, nw.seq, nw.id, a.pha_sub_software, a.pha_no, g.pha_request_name, vw.user_displayname, nw.responder_user_name
                          , nw.document_file_name, nw.document_file_path, nw.estimated_start_date, nw.estimated_end_date, nw.action_status, isnull(nw.responder_action_type,'') 
-						 , nw.recommendations, nw.causes_no, nw.recommendations_no, n.no, n.node, nw.ram_after_risk, nw.ram_after_risk_action";
+						 , nw.recommendations, nw.causes_no, nw.consequences_no, nw.recommendations_no, n.no, n.node, g.id_ram
+                         , nw.ram_after_risk, nw.ram_action_security, nw.ram_action_likelihood, nw.ram_action_risk";
 
             if (bOrderBy) { sqlstr += @" order by convert(int, a.id), a.pha_sub_software, a.pha_no, g.pha_request_name, vw.user_displayname, nw.responder_user_name"; }
 

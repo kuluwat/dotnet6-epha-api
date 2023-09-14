@@ -70,7 +70,14 @@ namespace Controllers
         public string uploadfile_data([FromForm] uploadFile param)
         {
             ClassHazopSet cls = new ClassHazopSet();
-            return cls.uploadfile_data(param);
+            return cls.uploadfile_data(param, "hazop");
+
+        }
+        [HttpPost("uploadfile_data_followup", Name = "uploadfile_data_followup")]
+        public string uploadfile_data_followup([FromForm] uploadFile param)
+        {
+            ClassHazopSet cls = new ClassHazopSet();
+            return cls.uploadfile_data(param, "followup");
 
         }
 

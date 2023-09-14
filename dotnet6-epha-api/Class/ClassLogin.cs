@@ -1,4 +1,5 @@
 ﻿using dotnet6_epha_api.Class;
+using iTextSharp.text;
 using Model;
 using System.Data;
 using System.Diagnostics.Eventing.Reader;
@@ -41,6 +42,7 @@ namespace Class
         {
             sqlstr = @" select a.user_name, a.user_id, a.user_email, a.user_displayname
                         ,lower(coalesce(c.name,'employee')) as role_type
+                        ,'images/user-avatar.png' as user_img
                         from EPHA_PERSON_DETAILS a  
                         inner join EPHA_M_ROLE_SETTING b on lower(a.user_name) = lower(b.user_name) and b.active_type = 1 
                         inner join EPHA_M_ROLE_TYPE c on lower(c.id) = lower(b.id_role_group) and c.active_type = 1   
@@ -56,6 +58,19 @@ namespace Class
         public string login(LoginUserModel param)
         {
             string user_name = (param.user_name + "").Trim();
+            try
+            {
+                if (user_name.IndexOf("@") > -1)
+                {
+                    string[] x = user_name.Split('@');
+                    if (x.Length > 1)
+                    {
+                        user_name = x[0];
+                    }
+                }
+            }
+            catch { }
+
 
             DataTable dt = new DataTable();
             cls = new ClassFunctions();

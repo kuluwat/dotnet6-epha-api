@@ -3,9 +3,12 @@
     public class ClassModel
     {
     }
+
     public class LoginUserModel
     {
+        public string? emp_id { get; set; } = "";  
         public string? user_name { get; set; } = "";  
+        public string? user_pass { get; set; } = "";  
     }
     public class LoginUserDetailModel
     {

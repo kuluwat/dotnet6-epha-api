@@ -620,7 +620,7 @@ namespace Class
                 //approve
                 plainText = "seq=" + seq + "&pha_no=" + doc_no + "&step=4" + "&approver_type=approve";
                 cipherText = EncryptDataWithAes(plainText, keyBase64, out vectorBase64);
-                url_reject = server_url + cipherText + "&" + keyBase64 + "&" + vectorBase64;
+                url_approver = server_url + cipherText + "&" + keyBase64 + "&" + vectorBase64;
 
             }
             #endregion url 
