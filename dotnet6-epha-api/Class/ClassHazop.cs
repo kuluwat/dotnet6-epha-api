@@ -259,6 +259,18 @@ namespace Class
             _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
 
 
+            sqlstr = @" select * from (select distinct c.safety_critical_equipment_tag  as name
+            from EPHA_F_HEADER a 
+			inner join EPHA_T_GENERAL b on a.id = b.id_pha 
+			inner join EPHA_T_NODE_WORKSHEET c on a.id = c.id_pha 
+            where a.pha_status not in (81) )t where t.name is not null order by t.name  ";
+
+            cls_conn = new ClassConnectionDb();
+            dt = new DataTable();
+            dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+            dt.TableName = "his_safety_critical_equipment_tag";
+            _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
+
             sqlstr = @" select * from (select distinct c.recommendations  as name
             from EPHA_F_HEADER a 
 			inner join EPHA_T_GENERAL b on a.id = b.id_pha 
@@ -687,7 +699,7 @@ namespace Class
                         ,case when a.year = year(getdate()) then vw.user_name else a.request_user_name end request_user_name
                         ,case when a.year = year(getdate()) then vw.user_name else a.request_user_displayname end request_user_displayname
                         ,null as approver_user_img
-                        , 'update' as action_type, 0 as action_change
+                        , 'update' as action_type, 0 as action_change, 1 as active_notification
                         from EPHA_F_HEADER a
                         left join EPHA_M_STATUS b on a.pha_status = b.id
                         left join VW_EPHA_PERSON_DETAILS vw on lower(a.pha_request_by) = lower(vw.user_name)
@@ -699,12 +711,12 @@ namespace Class
             dt = new DataTable();
             dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
 
+            id_pha = (get_max("EPHA_F_HEADER"));
+
             if (dt.Rows.Count == 0)
             {
                 pha_no = get_pha_no(sub_software, year_now);
-                id_pha = (get_max("EPHA_F_HEADER"));
-                set_max_id(ref dtma, "header", id_pha.ToString());
-
+             
                 //กรณีที่เป็นใบงานใหม่
                 dt.Rows.Add(dt.NewRow());
                 dt.Rows[0]["seq"] = id_pha;
@@ -727,8 +739,11 @@ namespace Class
                 dt.Rows[0]["create_by"] = user_name;
                 dt.Rows[0]["action_type"] = "insert";
                 dt.Rows[0]["action_change"] = 0;
+
+                dt.Rows[0]["active_notification"] = 1;
                 dt.AcceptChanges();
             }
+            set_max_id(ref dtma, "header", (id_pha+1).ToString());
 
             pha_no = (dt.Rows[0]["pha_no"] + "");
             id_pha = Convert.ToInt32(dt.Rows[0]["id"] + "");
@@ -789,8 +804,6 @@ namespace Class
             dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
 
             int id_functional_audition = (get_max("EPHA_T_FUNCTIONAL_AUDITION"));
-            set_max_id(ref dtma, "functional_audition", id_functional_audition.ToString());
-
             if (dt.Rows.Count == 0)
             {
                 //กรณีที่เป็นใบงานใหม่
@@ -803,6 +816,7 @@ namespace Class
                 dt.Rows[0]["action_change"] = 0;
                 dt.AcceptChanges();
             }
+            set_max_id(ref dtma, "functional_audition", (id_functional_audition + 1).ToString());
 
             dt.TableName = "functional_audition";
             dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
@@ -820,7 +834,6 @@ namespace Class
             dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
 
             int id_session = (get_max("EPHA_T_SESSION"));
-            set_max_id(ref dtma, "session", id_session.ToString());
 
             if (dt.Rows.Count == 0)
             {
@@ -836,8 +849,8 @@ namespace Class
                 dt.Rows[0]["action_type"] = "insert";
                 dt.Rows[0]["action_change"] = 0;
                 dt.AcceptChanges();
-            }
-            id_session = Convert.ToInt32(dt.Rows[0]["id"]);
+            } 
+            set_max_id(ref dtma, "session", (id_session + 1).ToString());
 
             dt.TableName = "session";
             dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
@@ -856,7 +869,6 @@ namespace Class
             dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
 
             int id_memberteam = (get_max("EPHA_T_MEMBER_TEAM"));
-            set_max_id(ref dtma, "memberteam", id_memberteam.ToString());
 
             if (dt.Rows.Count == 0)
             {
@@ -876,6 +888,7 @@ namespace Class
                 dt.Rows[0]["action_change"] = 0;
                 dt.AcceptChanges();
             }
+            set_max_id(ref dtma, "memberteam", (id_memberteam + 1).ToString());
 
             dt.TableName = "memberteam";
             dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
@@ -893,7 +906,6 @@ namespace Class
             dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
 
             int id_drawing = (get_max("EPHA_T_DRAWING"));
-            set_max_id(ref dtma, "drawing", id_drawing.ToString());
 
             if (dt.Rows.Count == 0)
             {
@@ -910,6 +922,8 @@ namespace Class
                 dt.Rows[0]["action_change"] = 0;
                 dt.AcceptChanges();
             }
+            set_max_id(ref dtma, "drawing", (id_drawing + 1).ToString());
+
             dt.TableName = "drawing";
             dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
             #endregion drawing
@@ -926,10 +940,9 @@ namespace Class
             dt = new DataTable();
             dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
 
+            id_node = (get_max("EPHA_T_NODE"));
             if (dt.Rows.Count == 0)
-            {
-                id_node = (get_max("EPHA_T_NODE"));
-
+            { 
                 //กรณีที่เป็นใบงานใหม่
                 dt.Rows.Add(dt.NewRow());
                 dt.Rows[0]["seq"] = id_node;
@@ -942,9 +955,9 @@ namespace Class
                 dt.Rows[0]["action_type"] = "insert";
                 dt.Rows[0]["action_change"] = 0;
                 dt.AcceptChanges();
-            }
-            id_node = Convert.ToInt32(dt.Rows[0]["id"] + "");
-            set_max_id(ref dtma, "node", id_node.ToString());
+
+            } 
+            set_max_id(ref dtma, "node", (id_node + 1).ToString());
 
             dt.TableName = "node";
             dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
@@ -963,11 +976,9 @@ namespace Class
             dt = new DataTable();
             dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
 
-            int id_nodedrawing = 0;
+            int id_nodedrawing = (get_max("EPHA_T_NODE_DRAWING")); 
             if (dt.Rows.Count == 0)
             {
-                id_nodedrawing = (get_max("EPHA_T_NODE_DRAWING"));
-
                 //กรณีที่เป็นใบงานใหม่
                 dt.Rows.Add(dt.NewRow());
                 dt.Rows[0]["seq"] = id_nodedrawing;
@@ -983,9 +994,8 @@ namespace Class
                 dt.Rows[0]["action_type"] = "insert";
                 dt.Rows[0]["action_change"] = 0;
                 dt.AcceptChanges();
-            }
-            id_nodedrawing = Convert.ToInt32(dt.Rows[0]["id"] + "");
-            set_max_id(ref dtma, "nodedrawing", id_nodedrawing.ToString());
+            } 
+            set_max_id(ref dtma, "nodedrawing", (id_nodedrawing + 1).ToString());
 
             dt.TableName = "nodedrawing";
             dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
@@ -1005,7 +1015,6 @@ namespace Class
             dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
 
             int id_nodeguidwords = (get_max("EPHA_T_NODE_GUIDE_WORDS"));
-            set_max_id(ref dtma, "nodeguidwords", id_nodeguidwords.ToString());
 
             if (dt.Rows.Count == 0)
             {
@@ -1027,6 +1036,7 @@ namespace Class
                 dt.Rows[0]["action_change"] = 0;
                 dt.AcceptChanges();
             }
+            set_max_id(ref dtma, "nodeguidwords", (id_nodeguidwords + 1).ToString());
 
             DataTable dtnodeguidwords = new DataTable();
             dtnodeguidwords = dt.Copy(); dtnodeguidwords.AcceptChanges();
@@ -1054,8 +1064,6 @@ namespace Class
             dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
 
             id_nodeworksheet = (get_max("EPHA_T_NODE_WORKSHEET"));
-            set_max_id(ref dtma, "nodeworksheet", id_nodeworksheet.ToString());
-
             if (dt.Rows.Count == 0)
             {
                 //กรณีที่เป็นใบงานใหม่ เดียวให้หน้าบ้านเช็คแล้ว loop เอา -> logic เดียวต้องรวมกับ functions add อยู่แล้ว
@@ -1077,72 +1085,12 @@ namespace Class
                 dt.Rows[0]["action_status"] = "Open";
                 dt.AcceptChanges();
             }
+            set_max_id(ref dtma, "nodeworksheet", (id_nodeworksheet + 1).ToString());
 
             dt.TableName = "nodeworksheet";
             dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
             #endregion nodeworksheet
-
-
-            #region managerecom 
-            //sqlstr = @" select b.* , 0 as no, 'update' as action_type, 0 as action_change
-            //            , vw.user_id as responder_user_id, 'assets/img/team/avatar.webp' as responder_user_img
-            //            , '' as node_no
-            //            from EPHA_F_HEADER a inner join EPHA_T_MANAGE_RECOM b on a.id  = b.id_pha
-            //            left join VW_EPHA_PERSON_DETAILS vw on lower(b.responder_user_name) = lower(vw.user_name)
-            //            where 1=1 ";
-            //sqlstr += " and lower(a.seq) = lower(" + cls.ChkSqlStr(seq, 50) + ")  ";
-            //sqlstr += " order by a.seq,b.seq";
-
-            //cls_conn = new ClassConnectionDb();
-            //dt = new DataTable();
-            //dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
-            //id_managerecom = (get_max("EPHA_T_MANAGE_RECOM"));
-            //set_max_id(ref dtma, "managerecom", id_managerecom.ToString());
-
-            //ยกเลิกไปใช้กับ node worksheet
-            //sqlstr = @" select b.seq, b.id, b.id_pha, b.recommendations_no, n.no as node_no, n.node, b.causes_no, b.recommendations, b.responder_user_displayname
-            //             , b.action_status,  b.ram_after_risk, b.ram_after_risk_action, b.estimated_start_date, b.estimated_end_date
-            //             , b.responder_action_type, b.document_file_path, b.document_file_name
-            //             , b.*
-            //             , 0 as no, 'update' as action_type, 0 as action_change
-            //             , vw.user_id as responder_user_id, 'assets/img/team/avatar.webp' as responder_user_img  
-            //             from EPHA_F_HEADER a 
-            //             inner join EPHA_T_NODE_WORKSHEET b on a.id  = b.id_pha
-            //             inner join EPHA_T_NODE n on a.id  = n.id_pha and b.id_node = n.id 
-            //             left join VW_EPHA_PERSON_DETAILS vw on lower(b.responder_user_name) = lower(vw.user_name)
-            //             where 1=1 ";
-            //sqlstr += " and lower(a.seq) = lower(" + cls.ChkSqlStr(seq, 50) + ")  ";
-            //sqlstr += " order by a.seq,b.seq";
-
-
-            //cls_conn = new ClassConnectionDb();
-            //dt = new DataTable();
-            //dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
-
-            //id_managerecom = (get_max("EPHA_T_NODE_WORKSHEET"));
-            //set_max_id(ref dtma, "nodeworksheet", id_managerecom.ToString());
-
-
-            //if (dt.Rows.Count == 0)
-            //{
-            //    //กรณีที่เป็นใบงานใหม่ เดียวให้หน้าบ้านเช็คแล้ว loop เอา -> logic เดียวต้องรวมกับ functions add อยู่แล้ว
-            //    dt.Rows.Add(dt.NewRow());
-            //    dt.Rows[0]["seq"] = id_managerecom;
-            //    dt.Rows[0]["id"] = id_managerecom;
-            //    dt.Rows[0]["id_pha"] = id_pha;
-
-            //    dt.Rows[0]["no"] = 1;
-
-            //    dt.Rows[0]["create_by"] = user_name;
-            //    dt.Rows[0]["action_type"] = "insert";
-            //    dt.Rows[0]["action_change"] = 0;
-            //    dt.AcceptChanges();
-            //}
-
-            //dt.TableName = "managerecom";
-            //dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
-            #endregion managerecom
-
+             
             dtma.TableName = "max";
             dsData.Tables.Add(dtma.Copy()); dsData.AcceptChanges();
 
@@ -1340,7 +1288,7 @@ namespace Class
 						 inner join EPHA_T_NODE_WORKSHEET nw on a.id = nw.id_pha  
                          where a.pha_status in (13,14) and nw.responder_user_name is not null";
             if (seq != "") { sqlstr_w += @" and lower(a.seq) = lower(" + cls.ChkSqlStr(seq, 50) + ")  "; }
-            if (role_type != "admin") { sqlstr_w += @" and ( a.pha_status in (13,14) and isnull(nw.responder_action_type,0) <> 2 )"; } 
+            if (role_type != "admin") { sqlstr_w += @" and ( a.pha_status in (13,14) and isnull(nw.responder_action_type,0) <> 2 )"; }
             if (user_name != "") { sqlstr_w += @" and lower(nw.responder_user_name) = lower(" + cls.ChkSqlStr(user_name, 50) + ")  "; }
 
             sqlstr_w += @" group by a.pha_status, a.pha_sub_software, a.seq, a.pha_no, g.pha_request_name ";
@@ -1430,7 +1378,7 @@ namespace Class
             dsData.DataSetName = "dsData"; dsData.AcceptChanges();
 
         }
-     
+
         public string QueryFollowUpDetail(string seq, string pha_no, string responder_user_name, string sub_software, Boolean bOrderBy)
         {
 
