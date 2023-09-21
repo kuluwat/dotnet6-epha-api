@@ -931,7 +931,7 @@ namespace Class
 
                     string id_node = (dtNode.Rows[inode]["id_node"] + "");
 
-                    if (report_all == true)
+                    if (report_all == false)
                     {
                         //delete column : P & K  , safety_critical_equipment
                         worksheet.DeleteColumn(16);
@@ -1016,6 +1016,7 @@ namespace Class
                             startRows++;
                         }
                         // วาดเส้นตาราง โดยใช้เซลล์ A1 ถึง C3
+                        int icell_last = (report_all == true ? 17 : 15);
                         DrawTableBorders(worksheet, 14, 1, startRows - 1, 15);
 
                         worksheet.Cells["A" + (startRows)].Value = (dr[0]["descriptions_worksheet"] + "");
@@ -1896,7 +1897,7 @@ namespace Class
         }
         public string excel_hazop_ram(string seq, string _Path, string _FolderTemplate, string _DownloadPath, string _excel_name, string export_type, Boolean report_all)
         {
-            sqlstr = @"  select a.descriptions, a.document_file_name
+            sqlstr = @"  select a.name as ram_type, a.descriptions, a.document_file_name
                         from epha_m_ram a where a.active_type = 1
                         and a.id in (select b.id_ram from epha_t_general b where b.id_pha = '" + seq + "'  )";
             cls_conn = new ClassConnectionDb();
@@ -1927,6 +1928,13 @@ namespace Class
                 var picture = worksheet.Drawings.AddPicture("RAM", new FileInfo(pictureFilePath));
                 picture.From.Column = left;
                 picture.From.Row = top;
+
+                if ( (dt.Rows[0]["ram_type"] +"") == "4x4") { width = 300; height = 300; }
+                else if ( (dt.Rows[0]["ram_type"] +"") == "5x5") { width = 400; height = 400; }
+                else if ( (dt.Rows[0]["ram_type"] +"") == "6x6") { width = 400; height = 400; }
+                else if ( (dt.Rows[0]["ram_type"] +"") == "7x7") { width = 400; height = 400; }
+                else if ( (dt.Rows[0]["ram_type"] +"") == "8x8") { width = 400; height = 400; }
+
                 picture.SetSize(width, height);
 
                 //descriptions  
@@ -2634,14 +2642,14 @@ namespace Class
                                 int i = 0;
                                 sqlstr = "update  EPHA_F_HEADER set ";
                                 sqlstr += " SAFETY_CRITICAL_EQUIPMENT_SHOW = " + cls.ChkSqlNum((dt.Rows[i]["SAFETY_CRITICAL_EQUIPMENT_SHOW"] + "").ToString(), "N");
-                                 
+
                                 sqlstr += " where SEQ = " + cls.ChkSqlNum((dt.Rows[i]["SEQ"] + "").ToString(), "N");
                                 sqlstr += " and ID = " + cls.ChkSqlNum((dt.Rows[i]["ID"] + "").ToString(), "N");
                                 sqlstr += " and YEAR = " + cls.ChkSqlNum((dt.Rows[i]["YEAR"] + "").ToString(), "N");
                                 sqlstr += " and PHA_NO = " + cls.ChkSqlStr((dt.Rows[i]["PHA_NO"] + "").ToString(), 200);
                                 ret = cls_conn_header.ExecuteNonQuery(sqlstr);
                                 if (ret == "") { ret = "true"; }
-                                if (ret != "true") { goto Next_Line; } 
+                                if (ret != "true") { goto Next_Line; }
                             }
                         }
                         #endregion update case SAFETY_CRITICAL_EQUIPMENT_SHOW

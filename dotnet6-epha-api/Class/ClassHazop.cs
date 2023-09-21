@@ -754,8 +754,9 @@ namespace Class
             #endregion header
 
             #region general 
-            sqlstr = @" select b.* , '' as functional_location_audition, '' as business_unit_name, '' as unit_no_name, 'update' as action_type, 0 as action_change
+            sqlstr = @" select b.* , isnull(fa.functional_location,'') as functional_location_audition, '' as business_unit_name, '' as unit_no_name, 'update' as action_type, 0 as action_change
                         from EPHA_F_HEADER a inner join EPHA_T_GENERAL b on a.id  = b.id_pha
+                        left join EPHA_T_FUNCTIONAL_AUDITION fa on b.id_pha = fa.id_pha 
                         where 1=1 ";
             sqlstr += " and lower(a.seq) = lower(" + cls.ChkSqlStr(seq, 50) + ")  ";
             sqlstr += " order by a.seq,b.seq";
