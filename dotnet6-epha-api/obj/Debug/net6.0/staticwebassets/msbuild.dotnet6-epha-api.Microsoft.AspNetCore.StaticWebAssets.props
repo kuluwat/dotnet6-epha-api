@@ -48,6 +48,22 @@
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\FollowUp\BOE-TIE XP software Manual.pdf))</OriginalItemSpec>
     </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\FollowUp\Chayanan-Resume (1) (1).pdf))">
+      <SourceType>Package</SourceType>
+      <SourceId>dotnet6-epha-api</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/dotnet6-epha-api</BasePath>
+      <RelativePath>AttachedFileTemp/FollowUp/Chayanan-Resume (1) (1).pdf</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\FollowUp\Chayanan-Resume (1) (1).pdf))</OriginalItemSpec>
+    </StaticWebAsset>
     <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\FollowUp\Diagram - Thaioil KPI (2).png))">
       <SourceType>Package</SourceType>
       <SourceId>dotnet6-epha-api</SourceId>
@@ -127,6 +143,22 @@
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\FollowUp\SPVP KPI Result -20230811083115.xlsx))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\FollowUp\SuwannaratB_Resume.pdf))">
+      <SourceType>Package</SourceType>
+      <SourceId>dotnet6-epha-api</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/dotnet6-epha-api</BasePath>
+      <RelativePath>AttachedFileTemp/FollowUp/SuwannaratB_Resume.pdf</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\FollowUp\SuwannaratB_Resume.pdf))</OriginalItemSpec>
     </StaticWebAsset>
     <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\FollowUp\Thaioil Corporate Logo stroke (1).png))">
       <SourceType>Package</SourceType>
@@ -464,6 +496,54 @@
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP Guidewords 202309111014.xlsx))</OriginalItemSpec>
     </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP Guidewords 202309261253.xlsx))">
+      <SourceType>Package</SourceType>
+      <SourceId>dotnet6-epha-api</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/dotnet6-epha-api</BasePath>
+      <RelativePath>AttachedFileTemp/Hazop/HAZOP Guidewords 202309261253.xlsx</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP Guidewords 202309261253.xlsx))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP Guidewords 202309261254.pdf))">
+      <SourceType>Package</SourceType>
+      <SourceId>dotnet6-epha-api</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/dotnet6-epha-api</BasePath>
+      <RelativePath>AttachedFileTemp/Hazop/HAZOP Guidewords 202309261254.pdf</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP Guidewords 202309261254.pdf))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP Guidewords 202309261254.xlsx))">
+      <SourceType>Package</SourceType>
+      <SourceId>dotnet6-epha-api</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/dotnet6-epha-api</BasePath>
+      <RelativePath>AttachedFileTemp/Hazop/HAZOP Guidewords 202309261254.xlsx</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP Guidewords 202309261254.xlsx))</OriginalItemSpec>
+    </StaticWebAsset>
     <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP RAM 202309111014.xlsx))">
       <SourceType>Package</SourceType>
       <SourceId>dotnet6-epha-api</SourceId>
@@ -479,6 +559,38 @@
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP RAM 202309111014.xlsx))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP RAM 202309261253.pdf))">
+      <SourceType>Package</SourceType>
+      <SourceId>dotnet6-epha-api</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/dotnet6-epha-api</BasePath>
+      <RelativePath>AttachedFileTemp/Hazop/HAZOP RAM 202309261253.pdf</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP RAM 202309261253.pdf))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP RAM 202309261253.xlsx))">
+      <SourceType>Package</SourceType>
+      <SourceId>dotnet6-epha-api</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/dotnet6-epha-api</BasePath>
+      <RelativePath>AttachedFileTemp/Hazop/HAZOP RAM 202309261253.xlsx</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP RAM 202309261253.xlsx))</OriginalItemSpec>
     </StaticWebAsset>
     <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP RECOMMENDATION RESPONSE SHEET &amp; RECCOMENDATION STATUS TRACKING TABLE 202309111013.xlsx))">
       <SourceType>Package</SourceType>
@@ -559,6 +671,70 @@
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP RECOMMENDATION RESPONSE SHEET &amp; RECCOMENDATION STATUS TRACKING TABLE 202309201101.xlsx))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP RECOMMENDATION RESPONSE SHEET &amp; RECCOMENDATION STATUS TRACKING TABLE 202309261253.pdf))">
+      <SourceType>Package</SourceType>
+      <SourceId>dotnet6-epha-api</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/dotnet6-epha-api</BasePath>
+      <RelativePath>AttachedFileTemp/Hazop/HAZOP RECOMMENDATION RESPONSE SHEET &amp; RECCOMENDATION STATUS TRACKING TABLE 202309261253.pdf</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP RECOMMENDATION RESPONSE SHEET &amp; RECCOMENDATION STATUS TRACKING TABLE 202309261253.pdf))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP RECOMMENDATION RESPONSE SHEET &amp; RECCOMENDATION STATUS TRACKING TABLE 202309261253.xlsx))">
+      <SourceType>Package</SourceType>
+      <SourceId>dotnet6-epha-api</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/dotnet6-epha-api</BasePath>
+      <RelativePath>AttachedFileTemp/Hazop/HAZOP RECOMMENDATION RESPONSE SHEET &amp; RECCOMENDATION STATUS TRACKING TABLE 202309261253.xlsx</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP RECOMMENDATION RESPONSE SHEET &amp; RECCOMENDATION STATUS TRACKING TABLE 202309261253.xlsx))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP RECOMMENDATION RESPONSE SHEET &amp; RECCOMENDATION STATUS TRACKING TABLE 202309261324.pdf))">
+      <SourceType>Package</SourceType>
+      <SourceId>dotnet6-epha-api</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/dotnet6-epha-api</BasePath>
+      <RelativePath>AttachedFileTemp/Hazop/HAZOP RECOMMENDATION RESPONSE SHEET &amp; RECCOMENDATION STATUS TRACKING TABLE 202309261324.pdf</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP RECOMMENDATION RESPONSE SHEET &amp; RECCOMENDATION STATUS TRACKING TABLE 202309261324.pdf))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP RECOMMENDATION RESPONSE SHEET &amp; RECCOMENDATION STATUS TRACKING TABLE 202309261324.xlsx))">
+      <SourceType>Package</SourceType>
+      <SourceId>dotnet6-epha-api</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/dotnet6-epha-api</BasePath>
+      <RelativePath>AttachedFileTemp/Hazop/HAZOP RECOMMENDATION RESPONSE SHEET &amp; RECCOMENDATION STATUS TRACKING TABLE 202309261324.xlsx</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP RECOMMENDATION RESPONSE SHEET &amp; RECCOMENDATION STATUS TRACKING TABLE 202309261324.xlsx))</OriginalItemSpec>
     </StaticWebAsset>
     <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP Report 202309071413.xlsx))">
       <SourceType>Package</SourceType>
@@ -1152,6 +1328,118 @@
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP Report 202309211153.xlsx))</OriginalItemSpec>
     </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP Report 202309211159.xlsx))">
+      <SourceType>Package</SourceType>
+      <SourceId>dotnet6-epha-api</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/dotnet6-epha-api</BasePath>
+      <RelativePath>AttachedFileTemp/Hazop/HAZOP Report 202309211159.xlsx</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP Report 202309211159.xlsx))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP Report 202309251413.pdf))">
+      <SourceType>Package</SourceType>
+      <SourceId>dotnet6-epha-api</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/dotnet6-epha-api</BasePath>
+      <RelativePath>AttachedFileTemp/Hazop/HAZOP Report 202309251413.pdf</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP Report 202309251413.pdf))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP Report 202309251413.xlsx))">
+      <SourceType>Package</SourceType>
+      <SourceId>dotnet6-epha-api</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/dotnet6-epha-api</BasePath>
+      <RelativePath>AttachedFileTemp/Hazop/HAZOP Report 202309251413.xlsx</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP Report 202309251413.xlsx))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP Report 202309251425.pdf))">
+      <SourceType>Package</SourceType>
+      <SourceId>dotnet6-epha-api</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/dotnet6-epha-api</BasePath>
+      <RelativePath>AttachedFileTemp/Hazop/HAZOP Report 202309251425.pdf</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP Report 202309251425.pdf))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP Report 202309251425.xlsx))">
+      <SourceType>Package</SourceType>
+      <SourceId>dotnet6-epha-api</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/dotnet6-epha-api</BasePath>
+      <RelativePath>AttachedFileTemp/Hazop/HAZOP Report 202309251425.xlsx</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP Report 202309251425.xlsx))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP Report 202309261203.pdf))">
+      <SourceType>Package</SourceType>
+      <SourceId>dotnet6-epha-api</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/dotnet6-epha-api</BasePath>
+      <RelativePath>AttachedFileTemp/Hazop/HAZOP Report 202309261203.pdf</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP Report 202309261203.pdf))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP Report 202309261203.xlsx))">
+      <SourceType>Package</SourceType>
+      <SourceId>dotnet6-epha-api</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/dotnet6-epha-api</BasePath>
+      <RelativePath>AttachedFileTemp/Hazop/HAZOP Report 202309261203.xlsx</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP Report 202309261203.xlsx))</OriginalItemSpec>
+    </StaticWebAsset>
     <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP Template xx.docx))">
       <SourceType>Package</SourceType>
       <SourceId>dotnet6-epha-api</SourceId>
@@ -1376,6 +1664,134 @@
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP WORKSHEET &amp; RECOMMENDATION RESPONSE SHEET 202309201047.xlsx))</OriginalItemSpec>
     </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP WORKSHEET &amp; RECOMMENDATION RESPONSE SHEET 202309261214.xlsx))">
+      <SourceType>Package</SourceType>
+      <SourceId>dotnet6-epha-api</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/dotnet6-epha-api</BasePath>
+      <RelativePath>AttachedFileTemp/Hazop/HAZOP WORKSHEET &amp; RECOMMENDATION RESPONSE SHEET 202309261214.xlsx</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP WORKSHEET &amp; RECOMMENDATION RESPONSE SHEET 202309261214.xlsx))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP WORKSHEET &amp; RECOMMENDATION RESPONSE SHEET 202309261221.xlsx))">
+      <SourceType>Package</SourceType>
+      <SourceId>dotnet6-epha-api</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/dotnet6-epha-api</BasePath>
+      <RelativePath>AttachedFileTemp/Hazop/HAZOP WORKSHEET &amp; RECOMMENDATION RESPONSE SHEET 202309261221.xlsx</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP WORKSHEET &amp; RECOMMENDATION RESPONSE SHEET 202309261221.xlsx))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP WORKSHEET &amp; RECOMMENDATION RESPONSE SHEET 202309261223.xlsx))">
+      <SourceType>Package</SourceType>
+      <SourceId>dotnet6-epha-api</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/dotnet6-epha-api</BasePath>
+      <RelativePath>AttachedFileTemp/Hazop/HAZOP WORKSHEET &amp; RECOMMENDATION RESPONSE SHEET 202309261223.xlsx</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP WORKSHEET &amp; RECOMMENDATION RESPONSE SHEET 202309261223.xlsx))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP WORKSHEET &amp; RECOMMENDATION RESPONSE SHEET 202309261225.xlsx))">
+      <SourceType>Package</SourceType>
+      <SourceId>dotnet6-epha-api</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/dotnet6-epha-api</BasePath>
+      <RelativePath>AttachedFileTemp/Hazop/HAZOP WORKSHEET &amp; RECOMMENDATION RESPONSE SHEET 202309261225.xlsx</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP WORKSHEET &amp; RECOMMENDATION RESPONSE SHEET 202309261225.xlsx))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP WORKSHEET &amp; RECOMMENDATION RESPONSE SHEET 202309261229.xlsx))">
+      <SourceType>Package</SourceType>
+      <SourceId>dotnet6-epha-api</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/dotnet6-epha-api</BasePath>
+      <RelativePath>AttachedFileTemp/Hazop/HAZOP WORKSHEET &amp; RECOMMENDATION RESPONSE SHEET 202309261229.xlsx</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP WORKSHEET &amp; RECOMMENDATION RESPONSE SHEET 202309261229.xlsx))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP WORKSHEET &amp; RECOMMENDATION RESPONSE SHEET 202309261248.xlsx))">
+      <SourceType>Package</SourceType>
+      <SourceId>dotnet6-epha-api</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/dotnet6-epha-api</BasePath>
+      <RelativePath>AttachedFileTemp/Hazop/HAZOP WORKSHEET &amp; RECOMMENDATION RESPONSE SHEET 202309261248.xlsx</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP WORKSHEET &amp; RECOMMENDATION RESPONSE SHEET 202309261248.xlsx))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP WORKSHEET &amp; RECOMMENDATION RESPONSE SHEET 202309261249.pdf))">
+      <SourceType>Package</SourceType>
+      <SourceId>dotnet6-epha-api</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/dotnet6-epha-api</BasePath>
+      <RelativePath>AttachedFileTemp/Hazop/HAZOP WORKSHEET &amp; RECOMMENDATION RESPONSE SHEET 202309261249.pdf</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP WORKSHEET &amp; RECOMMENDATION RESPONSE SHEET 202309261249.pdf))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP WORKSHEET &amp; RECOMMENDATION RESPONSE SHEET 202309261249.xlsx))">
+      <SourceType>Package</SourceType>
+      <SourceId>dotnet6-epha-api</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/dotnet6-epha-api</BasePath>
+      <RelativePath>AttachedFileTemp/Hazop/HAZOP WORKSHEET &amp; RECOMMENDATION RESPONSE SHEET 202309261249.xlsx</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\HAZOP WORKSHEET &amp; RECOMMENDATION RESPONSE SHEET 202309261249.xlsx))</OriginalItemSpec>
+    </StaticWebAsset>
     <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\outfile.pdf))">
       <SourceType>Package</SourceType>
       <SourceId>dotnet6-epha-api</SourceId>
@@ -1408,6 +1824,38 @@
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\output.pdf))</OriginalItemSpec>
     </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\Phatsaraporn_Joradon_Resume.pdf))">
+      <SourceType>Package</SourceType>
+      <SourceId>dotnet6-epha-api</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/dotnet6-epha-api</BasePath>
+      <RelativePath>AttachedFileTemp/Hazop/Phatsaraporn_Joradon_Resume.pdf</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\Phatsaraporn_Joradon_Resume.pdf))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\Qmossfr67_Bow-Tie Diagram.pdf))">
+      <SourceType>Package</SourceType>
+      <SourceId>dotnet6-epha-api</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/dotnet6-epha-api</BasePath>
+      <RelativePath>AttachedFileTemp/Hazop/Qmossfr67_Bow-Tie Diagram.pdf</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\Qmossfr67_Bow-Tie Diagram.pdf))</OriginalItemSpec>
+    </StaticWebAsset>
     <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\Resume of Wattana Jewton.pdf))">
       <SourceType>Package</SourceType>
       <SourceId>dotnet6-epha-api</SourceId>
@@ -1423,6 +1871,22 @@
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\Resume of Wattana Jewton.pdf))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\SuwannaratB_Resume.pdf))">
+      <SourceType>Package</SourceType>
+      <SourceId>dotnet6-epha-api</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/dotnet6-epha-api</BasePath>
+      <RelativePath>AttachedFileTemp/Hazop/SuwannaratB_Resume.pdf</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\SuwannaratB_Resume.pdf))</OriginalItemSpec>
     </StaticWebAsset>
     <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\_copy\BOE-TIE XP software Manual202309201120.pdf))">
       <SourceType>Package</SourceType>
@@ -1536,6 +2000,70 @@
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\_copy\CA overall202309191523.pdf))</OriginalItemSpec>
     </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\_copy\Phatsaraporn_Joradon_Resume202309211234.pdf))">
+      <SourceType>Package</SourceType>
+      <SourceId>dotnet6-epha-api</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/dotnet6-epha-api</BasePath>
+      <RelativePath>AttachedFileTemp/Hazop/_copy/Phatsaraporn_Joradon_Resume202309211234.pdf</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\_copy\Phatsaraporn_Joradon_Resume202309211234.pdf))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\_copy\Phatsaraporn_Joradon_Resume202309211235.pdf))">
+      <SourceType>Package</SourceType>
+      <SourceId>dotnet6-epha-api</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/dotnet6-epha-api</BasePath>
+      <RelativePath>AttachedFileTemp/Hazop/_copy/Phatsaraporn_Joradon_Resume202309211235.pdf</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\_copy\Phatsaraporn_Joradon_Resume202309211235.pdf))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\_copy\Qmossfr67_Bow-Tie Diagram202309251642.pdf))">
+      <SourceType>Package</SourceType>
+      <SourceId>dotnet6-epha-api</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/dotnet6-epha-api</BasePath>
+      <RelativePath>AttachedFileTemp/Hazop/_copy/Qmossfr67_Bow-Tie Diagram202309251642.pdf</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\_copy\Qmossfr67_Bow-Tie Diagram202309251642.pdf))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\_copy\Qmossfr67_Bow-Tie Diagram202309251643.pdf))">
+      <SourceType>Package</SourceType>
+      <SourceId>dotnet6-epha-api</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/dotnet6-epha-api</BasePath>
+      <RelativePath>AttachedFileTemp/Hazop/_copy/Qmossfr67_Bow-Tie Diagram202309251643.pdf</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\_copy\Qmossfr67_Bow-Tie Diagram202309251643.pdf))</OriginalItemSpec>
+    </StaticWebAsset>
     <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\_copy\Resume of Wattana Jewton202309191442.pdf))">
       <SourceType>Package</SourceType>
       <SourceId>dotnet6-epha-api</SourceId>
@@ -1551,6 +2079,22 @@
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\_copy\Resume of Wattana Jewton202309191442.pdf))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\_copy\SuwannaratB_Resume202309251641.pdf))">
+      <SourceType>Package</SourceType>
+      <SourceId>dotnet6-epha-api</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/dotnet6-epha-api</BasePath>
+      <RelativePath>AttachedFileTemp/Hazop/_copy/SuwannaratB_Resume202309251641.pdf</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Hazop\_copy\SuwannaratB_Resume202309251641.pdf))</OriginalItemSpec>
     </StaticWebAsset>
     <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\ram-4x4.jpg))">
       <SourceType>Package</SourceType>
@@ -1599,6 +2143,86 @@
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\Risk Assessment Matrix Template.xlsx))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\rma-img-4x4.png))">
+      <SourceType>Package</SourceType>
+      <SourceId>dotnet6-epha-api</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/dotnet6-epha-api</BasePath>
+      <RelativePath>AttachedFileTemp/rma-img-4x4.png</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\rma-img-4x4.png))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\rma-img-5x5.png))">
+      <SourceType>Package</SourceType>
+      <SourceId>dotnet6-epha-api</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/dotnet6-epha-api</BasePath>
+      <RelativePath>AttachedFileTemp/rma-img-5x5.png</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\rma-img-5x5.png))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\rma-img-6x6.png))">
+      <SourceType>Package</SourceType>
+      <SourceId>dotnet6-epha-api</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/dotnet6-epha-api</BasePath>
+      <RelativePath>AttachedFileTemp/rma-img-6x6.png</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\rma-img-6x6.png))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\rma-img-7x7.png))">
+      <SourceType>Package</SourceType>
+      <SourceId>dotnet6-epha-api</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/dotnet6-epha-api</BasePath>
+      <RelativePath>AttachedFileTemp/rma-img-7x7.png</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\rma-img-7x7.png))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\rma-img-8x8.png))">
+      <SourceType>Package</SourceType>
+      <SourceId>dotnet6-epha-api</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/dotnet6-epha-api</BasePath>
+      <RelativePath>AttachedFileTemp/rma-img-8x8.png</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\AttachedFileTemp\rma-img-8x8.png))</OriginalItemSpec>
     </StaticWebAsset>
   </ItemGroup>
 </Project>

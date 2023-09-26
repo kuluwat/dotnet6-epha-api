@@ -297,6 +297,129 @@ namespace Class
             _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
 
         }
+
+        public void get_master_ram(ref DataSet _dsData)
+        {
+
+            sqlstr = @" select seq, id, name, 0 as selected_type, category_type, document_file_size, document_file_name, document_file_path, a.rows_level, a.columns_level
+                        , 'update' as action_type, 0 as action_change
+                        from EPHA_M_RAM a where active_type = 1
+                        order by seq ";
+
+            cls_conn = new ClassConnectionDb();
+            dt = new DataTable();
+            dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+
+            dt.TableName = "ram";
+            _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
+
+            sqlstr = @" select a.category_type, b.id_ram, b.security_level, b.security_text
+                        , people as people_text, assets as assets_text, enhancement as enhancement_text, reputation as reputation_text, product_quality as product_quality_text 
+                        from EPHA_M_RAM a 
+                        inner join EPHA_M_RAM_LEVEL b on a.id = b.id_ram 
+                        order by b.id_ram, b.sort_by ";
+
+            cls_conn = new ClassConnectionDb();
+            dt = new DataTable();
+            dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+
+            dt.TableName = "security_level";
+            _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
+
+            sqlstr = @"  select  b.*, 0 as selected_type ,a.category_type
+                         , b.security_text
+                         , people as people_text, assets as assets_text, enhancement as enhancement_text, reputation as reputation_text, product_quality as product_quality_text
+                         , a.rows_level, a.columns_level
+                         , 'update' as action_type, 0 as action_change
+                         from  EPHA_M_RAM a
+                         inner join EPHA_M_RAM_LEVEL b on a.id = b.id_ram 
+                         order by a.id , b.sort_by ";
+
+            cls_conn = new ClassConnectionDb();
+            dt = new DataTable();
+            dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+            for (int i = 0; i < dt.Rows.Count; i++)
+            { 
+            }
+            dt.TableName = "ram_level";
+            _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
+
+
+            if (dt.Rows.Count > 0)
+            {
+                DataTable dtNew = new DataTable();
+                dtNew.Columns.Add("id_ram", typeof(int));
+                dtNew.Columns.Add("selected_type", typeof(int)); 
+                dtNew.Columns.Add("rows_level", typeof(int));
+                dtNew.Columns.Add("columns_level", typeof(int)); 
+                dtNew.Columns.Add("likelihood_level");
+                dtNew.Columns.Add("likelihood_show");
+                dtNew.Columns.Add("likelihood_text");
+                dtNew.Columns.Add("likelihood_desc");
+                dtNew.Columns.Add("likelihood_criterion"); 
+                dtNew.AcceptChanges();
+
+                dt = new DataTable();
+                dt = dsData.Tables["ram"].Copy(); dt.AcceptChanges();
+
+                if (dt.Rows.Count > 0)
+                {
+                    for (int i = 0; i < dt.Rows.Count; i++)
+                    {
+                        int id_ram = Convert.ToInt32(dt.Rows[i]["id"]);
+                        int rows_level = Convert.ToInt32(dt.Rows[i]["rows_level"]);
+                        int columns_level = Convert.ToInt32(dt.Rows[i]["columns_level"]);
+                        int iNo = (i + 1);
+
+                        DataRow[] dr = (dsData.Tables["ram_level"]).Select("id_ram=" + id_ram);
+                        if (dr.Length > 0)
+                        {
+                            for (int rl = 0; rl < dr.Length; rl++)
+                            {
+                                for (int j = 1; j < 8; j++)
+                                {
+                                    if ((dr[rl]["likelihood" + j + "_level"] + "") == "") { break; }
+                                    int iNewRow = dtNew.Rows.Count;
+                                    dtNew.Rows.Add(dtNew.NewRow()); dtNew.AcceptChanges();
+                                    dtNew.Rows[iNewRow]["id_ram"] = id_ram;
+                                    dtNew.Rows[iNewRow]["selected_type"] = 0;
+                                    dtNew.Rows[iNewRow]["rows_level"] = rows_level;
+                                    dtNew.Rows[iNewRow]["columns_level"] = columns_level; 
+                                    try
+                                    {
+                                        dtNew.Rows[iNewRow]["likelihood_level"] = (dr[rl]["likelihood" + j + "_level"] + "");
+                                        dtNew.Rows[iNewRow]["likelihood_show"] = (dr[rl]["likelihood" + j + "_text"] + "");
+                                        if (columns_level == 5)
+                                        {
+                                            dtNew.Rows[iNewRow]["likelihood_text"] = (dr[rl]["likelihood" + j + "_text"] + "");
+                                            dtNew.Rows[iNewRow]["likelihood_desc"] = (dr[rl]["likelihood" + j + "_desc"] + "");
+                                            dtNew.Rows[iNewRow]["likelihood_criterion"] = (dr[rl]["likelihood" + j + "_criterion"] + "");
+                                        }
+                                    }
+                                    catch { }
+
+                                    dtNew.AcceptChanges();
+                                    if (j == columns_level) { break; }
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+                dtNew.TableName = "likelihood_level";
+                _dsData.Tables.Add(dtNew.Copy()); dsData.AcceptChanges();
+
+
+            }
+
+
+            sqlstr = @" select seq,name,descriptions from  EPHA_M_RAM_COLOR a where active_type = 1 order by sort_by ";
+            cls_conn = new ClassConnectionDb();
+            dt = new DataTable();
+            dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+            dt.TableName = "ram_color";
+            _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
+        }
         private void get_master_hazop(ref DataSet _dsData)
         {
             sqlstr = @" select seq,seq as id,user_id as employee_id, user_name as employee_name, user_displayname as employee_displayname, user_email as employee_email
@@ -417,131 +540,7 @@ namespace Class
             #endregion functional location  
 
             #region master ram
-            sqlstr = @" select seq, id, name, 0 as selected_type, category_type
-                        from EPHA_M_RAM where active_type = 1
-                        order by seq ";
-
-            cls_conn = new ClassConnectionDb();
-            dt = new DataTable();
-            dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
-
-            dt.TableName = "ram";
-            _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
-
-            sqlstr = @" select a.category_type, b.id_ram, b.security_level, b.security_text
-                        , people as people_text, assets as assets_text, enhancement as enhancement_text, reputation as reputation_text, product_quality as product_quality_text 
-                        from EPHA_M_RAM a 
-                        inner join EPHA_M_RAM_LEVEL b on a.id = b.id_ram 
-                        order by b.id_ram, b.sort_by ";
-
-            cls_conn = new ClassConnectionDb();
-            dt = new DataTable();
-            dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
-
-            dt.TableName = "security_level";
-            _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
-
-            sqlstr = @"  select  b.*, 0 as selected_type ,a.category_type
-                         , b.security_text
-                         , people as people_text, assets as assets_text, enhancement as enhancement_text, reputation as reputation_text, product_quality as product_quality_text
-                         , 'update' as action_type, 0 as action_change
-                         from  EPHA_M_RAM a
-                         inner join EPHA_M_RAM_LEVEL b on a.id = b.id_ram 
-                         order by a.id , b.sort_by ";
-
-            cls_conn = new ClassConnectionDb();
-            dt = new DataTable();
-            dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
-            for (int i = 0; i < dt.Rows.Count; i++)
-            {
-                //string security_level = (dt.Rows[i]["security_level"] + "");
-                //DataRow[] dr = dsData.Tables["security_level"].Select("security_level = " + security_level);
-                //if (dr.Length > 0)
-                //{
-                //    dt.Rows[i]["security_text"] = (dr[0]["security_text"] + "");
-                //    dt.Rows[i]["people_text"] = (dr[0]["people_text"] + "");
-                //    dt.Rows[i]["assets_text"] = (dr[0]["assets_text"] + "");
-                //    dt.Rows[i]["enhancement_text"] = (dr[0]["enhancement_text"] + "");
-                //    dt.Rows[i]["reputation_text"] = (dr[0]["reputation_text"] + "");
-                //    dt.Rows[i]["product_quality_text"] = (dr[0]["product_quality_text"] + "");
-                //    dt.AcceptChanges();
-                //}
-            }
-            dt.TableName = "ram_level";
-            _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
-
-
-            if (dt.Rows.Count > 0)
-            {
-                DataTable dtNew = new DataTable();
-                dtNew.Columns.Add("id_ram", typeof(int));
-                dtNew.Columns.Add("selected_type", typeof(int));
-                dtNew.Columns.Add("category_type", typeof(int));
-                dtNew.Columns.Add("likelihood_level");
-                dtNew.Columns.Add("likelihood_show");
-                dtNew.Columns.Add("likelihood_text");
-                dtNew.Columns.Add("likelihood_desc");
-                dtNew.Columns.Add("likelihood_criterion");
-                dtNew.AcceptChanges();
-
-                dt = new DataTable();
-                dt = dsData.Tables["ram"].Copy(); dt.AcceptChanges();
-
-                if (dt.Rows.Count > 0)
-                {
-                    for (int i = 0; i < dt.Rows.Count; i++)
-                    {
-                        int id_ram = Convert.ToInt32(dt.Rows[i]["id"]);
-                        int category_type = Convert.ToInt32(dt.Rows[i]["category_type"]);
-                        int iNo = (i + 1);
-
-                        DataRow[] dr = (dsData.Tables["ram_level"]).Select("id_ram=" + id_ram);
-                        if (dr.Length > 0)
-                        {
-                            for (int rl = 0; rl < dr.Length; rl++)
-                            {
-                                for (int j = 1; j < 8; j++)
-                                {
-                                    if ((dr[rl]["likelihood" + j + "_level"] + "") == "") { break; }
-                                    int iNewRow = dtNew.Rows.Count;
-                                    dtNew.Rows.Add(dtNew.NewRow()); dtNew.AcceptChanges();
-                                    dtNew.Rows[iNewRow]["id_ram"] = id_ram;
-                                    dtNew.Rows[iNewRow]["selected_type"] = 0;
-                                    dtNew.Rows[iNewRow]["category_type"] = category_type;
-                                    try
-                                    {
-                                        dtNew.Rows[iNewRow]["likelihood_level"] = (dr[rl]["likelihood" + j + "_level"] + "");
-                                        dtNew.Rows[iNewRow]["likelihood_show"] = (dr[rl]["likelihood" + j + "_text"] + "");
-                                        if (category_type == 5)
-                                        {
-                                            dtNew.Rows[iNewRow]["likelihood_text"] = (dr[rl]["likelihood" + j + "_text"] + "");
-                                            dtNew.Rows[iNewRow]["likelihood_desc"] = (dr[rl]["likelihood" + j + "_desc"] + "");
-                                            dtNew.Rows[iNewRow]["likelihood_criterion"] = (dr[rl]["likelihood" + j + "_criterion"] + "");
-                                        }
-                                    }
-                                    catch { }
-
-                                    dtNew.AcceptChanges();
-                                    if (j == category_type) { break; }
-                                }
-                                break;
-                            }
-                        }
-                    }
-                }
-                dtNew.TableName = "likelihood_level";
-                _dsData.Tables.Add(dtNew.Copy()); dsData.AcceptChanges();
-
-
-            }
-
-
-            sqlstr = @" select seq,name,descriptions from  EPHA_M_RAM_COLOR a where active_type = 1 order by sort_by ";
-            cls_conn = new ClassConnectionDb();
-            dt = new DataTable();
-            dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
-            dt.TableName = "ram_color";
-            _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
+            get_master_ram(ref _dsData); 
             #endregion ram
 
             #region master apu
@@ -1052,13 +1051,15 @@ namespace Class
                         , b.id_node as seq_node, g.guide_words as guidewords, g.deviations
                         , vw.user_id as responder_user_id, vw.user_email as responder_user_email
                         , 'assets/img/team/avatar.webp' as responder_user_img
-                        from EPHA_F_HEADER a 
-                        inner join EPHA_T_NODE_WORKSHEET b on a.id  = b.id_pha
+                        , n.no as node_no
+                        from EPHA_F_HEADER a   
+                        inner join EPHA_T_NODE n on a.id  = n.id_pha 
+                        inner join EPHA_T_NODE_WORKSHEET b on a.id  = b.id_pha and n.id = b.id_node 
                         inner join EPHA_M_GUIDE_WORDS g on b.id_guide_word = g.id    
                         left join VW_EPHA_PERSON_DETAILS vw on lower(b.responder_user_name) = lower(vw.user_name) 
                         where 1=1";
             sqlstr += " and lower(a.seq) = lower(" + cls.ChkSqlStr(seq, 50) + ")  ";
-            sqlstr += " order by b.no, b.causes_no, b.consequences_no, b.category_no";
+            sqlstr += " order by n.no, g.id, b.no, b.causes_no, b.consequences_no, b.category_no";
 
             cls_conn = new ClassConnectionDb();
             dt = new DataTable();
@@ -1074,7 +1075,7 @@ namespace Class
                 dt.Rows[0]["id_node"] = id_node;
                 dt.Rows[0]["id_pha"] = id_pha;
 
-                dt.Rows[0]["seq_node"] = id_node;
+                dt.Rows[0]["seq_node"] = id_node; 
 
                 dt.Rows[0]["no"] = 1;
 
@@ -1290,7 +1291,7 @@ namespace Class
                          where a.pha_status in (13,14) and nw.responder_user_name is not null";
             if (seq != "") { sqlstr_w += @" and lower(a.seq) = lower(" + cls.ChkSqlStr(seq, 50) + ")  "; }
             if (role_type != "admin") { sqlstr_w += @" and ( a.pha_status in (13,14) and isnull(nw.responder_action_type,0) <> 2 )"; }
-            if (user_name != "") { sqlstr_w += @" and lower(nw.responder_user_name) = lower(" + cls.ChkSqlStr(user_name, 50) + ")  "; }
+            if (user_name != "" && role_type != "admin") { sqlstr_w += @" and lower(nw.responder_user_name) = lower(" + cls.ChkSqlStr(user_name, 50) + ")  "; }
 
             sqlstr_w += @" group by a.pha_status, a.pha_sub_software, a.seq, a.pha_no, g.pha_request_name ";
 
@@ -1308,7 +1309,8 @@ namespace Class
                          where a.pha_status in (13,14) and nw.responder_user_name is not null";
             if (seq != "") { sqlstr_r += @" and lower(a.seq) = lower(" + cls.ChkSqlStr(seq, 50) + ")  "; }
             if (role_type != "admin") { sqlstr_r += @" and ( a.pha_status in (13,14) and isnull(nw.responder_action_type,0) <> 2 )"; }
-            if (user_name != "") { sqlstr_r += @" and lower(nw.responder_user_name) = lower(" + cls.ChkSqlStr(user_name, 50) + ")  "; }
+           
+            if (user_name != "" && role_type != "admin") { sqlstr_r += @" and lower(nw.responder_user_name) = lower(" + cls.ChkSqlStr(user_name, 50) + ")  "; }
 
             sqlstr_r += @" group by a.pha_status, a.pha_sub_software, vw.user_displayname, nw.responder_user_name ";
 
@@ -1382,44 +1384,13 @@ namespace Class
 
         public string QueryFollowUpDetail(string seq, string pha_no, string responder_user_name, string sub_software, Boolean bOrderBy)
         {
-
-            //     sqlstr = @"  select  'update' as action_type, 0 as action_change
-            //                  , 0 as no,a.id as id_pha, upper(a.pha_sub_software) as pha_sub_software, a.pha_no, g.pha_request_name, vw.user_displayname as responder_user_displayname, nw.responder_user_name
-            //                  , (w.action_status) as action_status
-            //, count(1) as status_total
-            //                  , count(case when lower(w.action_status) = 'closed' then null else 1 end) status_open
-            //                  , count(case when lower(w.action_status) = 'closed' then 1 else null end) status_closed
-            //, w.document_file_name, w.document_file_path, 0 as document_file_size
-            //, format(w.estimated_start_date,'dd MMM yyyy') as estimated_start_date_text 
-            //, format(w.estimated_end_date,'dd MMM yyyy') as estimated_end_date_text 
-            //, isnull(datediff(day,case when w.estimated_end_date > getdate() then getdate() else w.estimated_end_date end,getdate()),0) as over_due
-            //                  , '' as recommendations, '' as causes
-            //                  , w.seq, w.id, isnull(w.responder_action_type,'') as responder_action_type
-            //                  from EPHA_F_HEADER a 
-            //                  inner join EPHA_T_GENERAL g on a.id = g.id_pha 
-            //inner join EPHA_T_NODE_WORKSHEET nw on a.id = nw.id_pha 
-            //                  inner join EPHA_T_MANAGE_RECOM w on a.id = w.id_pha and  lower(nw.responder_user_name) =  lower(w.responder_user_name) 
-            //                  inner join VW_EPHA_PERSON_DETAILS vw on lower(w.responder_user_name) = lower(vw.user_name) 
-            //                  where nw.responder_user_name is not null ";
-
-            //     //ใช้จริงค่อยเปืด
-            //     //sqlstr += " and a.pha_status in (14,15)"; 
-
-            //     if (seq != "") { sqlstr += @" and lower(a.seq) = lower(" + cls.ChkSqlStr(seq, 50) + ")  "; }
-            //     if (pha_no != "") { sqlstr += @" and lower(a.pha_no) = lower(" + cls.ChkSqlStr(pha_no, 50) + ")  "; }
-            //     if (responder_user_name != "") { sqlstr += @" and lower(w.responder_user_name) = lower(" + cls.ChkSqlStr(responder_user_name, 50) + ")  "; }
-
-            //     sqlstr += @" group by a.id, w.seq, w.id, a.pha_sub_software, a.pha_no, g.pha_request_name, vw.user_displayname, nw.responder_user_name
-            //                  , document_file_name, document_file_path, w.estimated_start_date, w.estimated_end_date, w.action_status, isnull(w.responder_action_type,'') ";
-
-            //     if (bOrderBy) { sqlstr += @" order by convert(int, a.id), a.pha_sub_software, a.pha_no, g.pha_request_name, vw.user_displayname, nw.responder_user_name"; }
-
+             
             sqlstr = @"  select  'update' as action_type, 0 as action_change
                          , 0 as no,a.id as id_pha, upper(a.pha_sub_software) as pha_sub_software, a.pha_no, g.pha_request_name, vw.user_displayname as responder_user_displayname, nw.responder_user_name
                          , (nw.action_status) as action_status
 						 , count(1) as status_total
-                         , count(case when lower(nw.action_status) = 'closed' then null else 1 end) status_open
-                         , count(case when lower(nw.action_status) = 'closed' then 1 else null end) status_closed
+                         , count(case when lower(nw.action_status) in ( 'closed','responed') then null else 1 end) status_open
+                         , count(case when lower(nw.action_status) in ( 'closed','responed') then 1 else null end) status_closed
 						 , nw.document_file_name, nw.document_file_path, 0 as document_file_size
 						 , format(nw.estimated_start_date,'dd MMM yyyy') as estimated_start_date_text 
 						 , format(nw.estimated_end_date,'dd MMM yyyy') as estimated_end_date_text 
@@ -1476,59 +1447,7 @@ namespace Class
 
                 dt.AcceptChanges();
                 bNewRow = true;
-            }
-
-            //if (bNewRow == false)
-            //{
-            //    #region worksheet 
-            //    sqlstr = @" select a.pha_no, lower(w.responder_user_name) as responder_user_name, w.causes_no, isnull(w.recommendations,'') as recommendations
-            //            from EPHA_F_HEADER a 
-            //            inner join EPHA_T_NODE_WORKSHEET w on a.id  = w.id_pha  
-            //            inner join VW_EPHA_PERSON_DETAILS vw on lower(w.responder_user_name) = lower(vw.user_name) 
-            //            where w.responder_user_name is not null  ";
-            //    if (seq != "") { sqlstr += @" and lower(a.seq) = lower(" + cls.ChkSqlStr(seq, 50) + ")  "; }
-            //    if (pha_no != "") { sqlstr += @" and lower(a.pha_no) = lower(" + cls.ChkSqlStr(pha_no, 50) + ")  "; }
-            //    if (responder_user_name != "") { sqlstr += @" and lower(w.responder_user_name) = lower(" + cls.ChkSqlStr(responder_user_name, 50) + ")  "; }
-            //    sqlstr += " order by a.pha_no, w.causes_no, w.recommendations ";
-
-            //    cls_conn = new ClassConnectionDb();
-            //    DataTable dtworksheet = new DataTable();
-            //    dtworksheet = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
-
-            //    #endregion group recommendations, causes
-            //    for (int i = 0; i < dt.Rows.Count; i++)
-            //    {
-            //        int ino = 1;
-            //        string responder_user_name_def = (dt.Rows[i]["responder_user_name"] + "");
-            //        DataRow[] arr_recomm = dtworksheet.Select("responder_user_name='" + responder_user_name_def + "'");
-            //        string recomm_text = "";
-            //        string cause_text = ""; 
-            //        for (int r = 0; r < arr_recomm.Length; r++)
-            //        {
-            //            if ((arr_recomm[r]["recommendations"] + "") != "")
-            //            {
-            //                if (recomm_text != "") { recomm_text += '\n'; }
-            //                recomm_text += ino + "." + arr_recomm[r]["recommendations"];
-            //                ino += 1;
-            //            }
-            //            if ((arr_recomm[r]["causes_no"] + "") != "")
-            //            {
-            //                if (cause_text != "") { cause_text += '\n'; }
-            //                cause_text += arr_recomm[r]["causes_no"];
-            //            }
-            //        }
-            //        dt.Rows[i]["recommendations"] = recomm_text;
-            //        dt.Rows[i]["causes"] = cause_text;
-            //        ///get document_file_size จาก document_file_path
-            //        try
-            //        {
-            //            dt.Rows[i]["document_file_size"] = file_size((dt.Rows[i]["document_file_path"] + ""));
-            //        }
-            //        catch { }
-
-            //        dt.AcceptChanges();
-            //    }
-            //}
+            } 
             dt.TableName = "details";
             dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
             #endregion header

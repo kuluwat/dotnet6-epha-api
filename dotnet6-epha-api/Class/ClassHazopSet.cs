@@ -21,6 +21,8 @@ using System.IO.Packaging;
 using Microsoft.Exchange.WebServices.Data;
 using Microsoft.AspNetCore.Http;
 using iTextSharp.text.pdf.qrcode;
+using Newtonsoft.Json;
+using System;
 
 namespace Class
 {
@@ -423,9 +425,9 @@ namespace Class
                     // วาดเส้นตาราง โดยใช้เซลล์ XX ถึง XX
                     DrawTableBorders(worksheet, 1, 1, startRows - 1, icol_end - 1);
 
-                    var eRange = worksheet.Cells[worksheet.Cells["A3"].Address + ":" + worksheet.Cells["D" + startRows].Address];
-                    eRange.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                    eRange.Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+                    //var eRange = worksheet.Cells[worksheet.Cells["A3"].Address + ":" + worksheet.Cells["D" + startRows].Address];
+                    //eRange.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                    //eRange.Style.VerticalAlignment = ExcelVerticalAlignment.Center;
                 }
                 #endregion Drawing & Reference
 
@@ -876,7 +878,7 @@ namespace Class
                         , nw.major_accident_event, nw.safety_critical_equipment, nw.safety_critical_equipment_tag, nw.existing_safeguards, nw.ram_after_security, nw.ram_after_likelihood, nw.ram_after_risk, nw.recommendations, nw.responder_user_displayname
                         , g.descriptions
                         , nl.no as node_no, nw.no, nw.causes_no, nw.consequences_no, nw.category_no
-                        
+                        , case when g.id_ram = 5 then 1 else 0 end show_cat
                         from EPHA_F_HEADER h 
                         inner join EPHA_T_GENERAL g on h.id = g.id_pha 
                         inner join EPHA_T_NODE nl on h.id = nl.id_pha 
@@ -931,19 +933,19 @@ namespace Class
 
                     string id_node = (dtNode.Rows[inode]["id_node"] + "");
 
-                    if (report_all == false)
+                    if (true)
                     {
                         //delete column : P & K  , safety_critical_equipment
                         worksheet.DeleteColumn(16);
                         worksheet.DeleteColumn(10);
                     }
 
-
                     int i = 0;
                     int startRows = 3;
 
                     DataRow[] dr = dtWorksheet.Select("id_node=" + id_node);
 
+                    string show_cat = (dr[0]["show_cat"] + "");
                     if (dr.Length > 0)
                     {
                         #region head text
@@ -992,34 +994,39 @@ namespace Class
                             worksheet.Cells["G" + (startRows)].Value = dr[i]["ram_befor_likelihood"].ToString();
                             worksheet.Cells["H" + (startRows)].Value = dr[i]["ram_befor_risk"];
                             worksheet.Cells["I" + (startRows)].Value = dr[i]["major_accident_event"].ToString();
-                            //?? เดียวเพิ่ม กรณีที่ทเป้น full report safety_critical_equipment
-                            if (report_all == true)
+                            worksheet.Cells["J" + (startRows)].Value = dr[i]["existing_safeguards"].ToString();
+                            ////?? เดียวเพิ่ม กรณีที่ทเป้น full report safety_critical_equipment
+                            //if (report_all == true && false)
+                            //{ 
+                            //    worksheet.Cells["K" + (startRows)].Value = dr[i]["safety_critical_equipment"].ToString();
+                            //    worksheet.Cells["L" + (startRows)].Value = dr[i]["ram_after_security"].ToString();
+                            //    worksheet.Cells["M" + (startRows)].Value = dr[i]["ram_after_likelihood"].ToString();
+                            //    worksheet.Cells["N" + (startRows)].Value = dr[i]["ram_after_risk"].ToString();
+                            //    worksheet.Cells["O" + (startRows)].Value = dr[i]["recommendations"].ToString();
+                            //    worksheet.Cells["P" + (startRows)].Value = dr[i]["safety_critical_equipment_tag"].ToString();
+                            //    worksheet.Cells["Q" + (startRows)].Value = dr[i]["responder_user_displayname"].ToString();
+                            //}
+                            //else
                             {
-                                worksheet.Cells["J" + (startRows)].Value = dr[i]["existing_safeguards"].ToString();
-                                worksheet.Cells["K" + (startRows)].Value = dr[i]["safety_critical_equipment"].ToString();
-                                worksheet.Cells["L" + (startRows)].Value = dr[i]["ram_after_security"].ToString();
-                                worksheet.Cells["M" + (startRows)].Value = dr[i]["ram_after_likelihood"].ToString();
-                                worksheet.Cells["N" + (startRows)].Value = dr[i]["ram_after_risk"].ToString();
-                                worksheet.Cells["O" + (startRows)].Value = dr[i]["recommendations"].ToString();
-                                worksheet.Cells["P" + (startRows)].Value = dr[i]["safety_critical_equipment_tag"].ToString();
-                                worksheet.Cells["Q" + (startRows)].Value = dr[i]["responder_user_displayname"].ToString();
-                            }
-                            else
-                            {
-                                worksheet.Cells["J" + (startRows)].Value = dr[i]["existing_safeguards"].ToString();
                                 worksheet.Cells["K" + (startRows)].Value = dr[i]["ram_after_security"].ToString();
                                 worksheet.Cells["L" + (startRows)].Value = dr[i]["ram_after_likelihood"].ToString();
                                 worksheet.Cells["M" + (startRows)].Value = dr[i]["ram_after_risk"].ToString();
                                 worksheet.Cells["N" + (startRows)].Value = dr[i]["recommendations"].ToString();
                                 worksheet.Cells["O" + (startRows)].Value = dr[i]["responder_user_displayname"].ToString();
                             }
+
                             startRows++;
                         }
                         // วาดเส้นตาราง โดยใช้เซลล์ A1 ถึง C3
-                        int icell_last = (report_all == true ? 17 : 15);
+                        //int icell_last = (report_all == true ? 17 : 15);
                         DrawTableBorders(worksheet, 14, 1, startRows - 1, 15);
 
                         worksheet.Cells["A" + (startRows)].Value = (dr[0]["descriptions_worksheet"] + "");
+
+                        if (show_cat == "0")
+                        {
+                            worksheet.DeleteColumn(5);
+                        }
 
                     }
 
@@ -1929,11 +1936,11 @@ namespace Class
                 picture.From.Column = left;
                 picture.From.Row = top;
 
-                if ( (dt.Rows[0]["ram_type"] +"") == "4x4") { width = 300; height = 300; }
-                else if ( (dt.Rows[0]["ram_type"] +"") == "5x5") { width = 400; height = 400; }
-                else if ( (dt.Rows[0]["ram_type"] +"") == "6x6") { width = 400; height = 400; }
-                else if ( (dt.Rows[0]["ram_type"] +"") == "7x7") { width = 400; height = 400; }
-                else if ( (dt.Rows[0]["ram_type"] +"") == "8x8") { width = 400; height = 400; }
+                if ((dt.Rows[0]["ram_type"] + "") == "4x4") { width = 300; height = 300; }
+                else if ((dt.Rows[0]["ram_type"] + "") == "5x5") { width = 400; height = 400; }
+                else if ((dt.Rows[0]["ram_type"] + "") == "6x6") { width = 400; height = 400; }
+                else if ((dt.Rows[0]["ram_type"] + "") == "7x7") { width = 400; height = 400; }
+                else if ((dt.Rows[0]["ram_type"] + "") == "8x8") { width = 400; height = 400; }
 
                 picture.SetSize(width, height);
 
@@ -2211,7 +2218,7 @@ namespace Class
 
                 }
             }
-            catch (Exception ex) { export_file_name = ""; export_file_name_full = ""; }
+            catch (Exception ex) { }
 
             try
             {
@@ -2398,19 +2405,6 @@ namespace Class
             }
             catch (Exception ex) { msg = ex.Message.ToString() + ""; ret = "Error"; return; }
 
-            //jsper = param.json_managerecom + "";
-            //try
-            //{
-            //    dt = new DataTable();
-            //    dt = cls_json.ConvertJSONresult(jsper);
-            //    if (dt != null)
-            //    {
-            //        dt.TableName = "managerecom";
-            //        dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
-            //    }
-            //}
-            //catch (Exception ex) { msg = ex.Message.ToString() + ""; ret = "Error"; return; }
-
             jsper = param.json_ram_level + "";
             try
             {
@@ -2419,6 +2413,19 @@ namespace Class
                 if (dt != null)
                 {
                     dt.TableName = "ram_level";
+                    dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
+                }
+            }
+            catch (Exception ex) { msg = ex.Message.ToString() + ""; ret = "Error"; return; }
+
+            jsper = param.json_ram_master + "";
+            try
+            {
+                dt = new DataTable();
+                dt = cls_json.ConvertJSONresult(jsper);
+                if (dt != null)
+                {
+                    dt.TableName = "ram_master";
                     dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
                 }
             }
@@ -2678,6 +2685,13 @@ namespace Class
                             if (ret == "") { ret = "true"; }
                             if (ret != "true") { goto Next_Line; }
                         }
+                        if (dsData.Tables["ram_master"] != null)
+                        {
+                            DataTable dtDef = dsData.Tables["ram_master"].Copy(); dtDef.AcceptChanges();
+                            ret = set_ram_master(dtDef, ref cls_conn_node, seq_header_now);
+                            if (ret == "") { ret = "true"; }
+                            if (ret != "true") { goto Next_Line; }
+                        }
                     }
 
                 }
@@ -2731,7 +2745,7 @@ namespace Class
                     //81	CN	Cancle
 
                     ClassEmail clsmail = new ClassEmail();
-                    if (param.flow_action == "submit" && sub_expense_type == "Normal")
+                    if ((param.flow_action == "submit" || param.flow_action == "submit_without") && sub_expense_type == "Normal")
                     {
                         if (pha_status == "11")
                         {
@@ -2819,17 +2833,20 @@ namespace Class
                             cls_conn.CloseConnection();
 
 
-                            if (pha_status_new == "13")
+                            if (param.flow_action == "submit")
                             {
-                                //13	WF	Waiting Follow Up
-                                clsmail = new ClassEmail();
-                                clsmail.MailToActionOwner((dt.Rows[i]["SEQ"] + "").ToString(), "hazop");
-                            }
-                            else
-                            {
-                                //21	WA	Waiting Approve Review
-                                clsmail = new ClassEmail();
-                                clsmail.MailToApproverReview((dt.Rows[i]["SEQ"] + "").ToString(), "hazop");
+                                if (pha_status_new == "13")
+                                {
+                                    //13	WF	Waiting Follow Up
+                                    clsmail = new ClassEmail();
+                                    clsmail.MailToActionOwner((dt.Rows[i]["SEQ"] + "").ToString(), "hazop");
+                                }
+                                else
+                                {
+                                    //21	WA	Waiting Approve Review
+                                    clsmail = new ClassEmail();
+                                    clsmail.MailToApproverReview((dt.Rows[i]["SEQ"] + "").ToString(), "hazop");
+                                }
                             }
 
                         }
@@ -2871,22 +2888,24 @@ namespace Class
                             }
                             cls_conn.CloseConnection();
 
-                            //13	WF	Waiting Follow Up
-                            if (pha_status_new == "13")
+                            if (param.flow_action == "submit")
                             {
-                                clsmail = new ClassEmail();
-                                clsmail.MailApprovByApprover((dt.Rows[i]["SEQ"] + "").ToString(), "hazop");
+                                //13	WF	Waiting Follow Up
+                                if (pha_status_new == "13")
+                                {
+                                    clsmail = new ClassEmail();
+                                    clsmail.MailApprovByApprover((dt.Rows[i]["SEQ"] + "").ToString(), "hazop");
 
-                                clsmail = new ClassEmail();
-                                clsmail.MailToActionOwner((dt.Rows[i]["SEQ"] + "").ToString(), "hazop");
+                                    clsmail = new ClassEmail();
+                                    clsmail.MailToActionOwner((dt.Rows[i]["SEQ"] + "").ToString(), "hazop");
+                                }
+                                else if (pha_status_new == "21")
+                                {
+                                    //22	AR	Approve Reject
+                                    clsmail = new ClassEmail();
+                                    clsmail.MailRejectByApprover((dt.Rows[i]["SEQ"] + "").ToString(), "hazop");
+                                }
                             }
-                            else if (pha_status_new == "21")
-                            {
-                                //22	AR	Approve Reject
-                                clsmail = new ClassEmail();
-                                clsmail.MailRejectByApprover((dt.Rows[i]["SEQ"] + "").ToString(), "hazop");
-                            }
-
                         }
                         else if (pha_status == "22")
                         {
@@ -4209,74 +4228,68 @@ namespace Class
                     sqlstr += " ,product_quality = " + cls.ChkSqlStr((dt.Rows[i]["product_quality"] + "").ToString(), 4000);
                     sqlstr += " ,security_level = " + cls.ChkSqlStr((dt.Rows[i]["security_level"] + "").ToString(), 4000);
 
-                    sqlstr += " ,likelihood1_level = " + cls.ChkSqlStr((dt.Rows[i]["likelihood1_level"] + "").ToString(), 4000);
-                    sqlstr += " ,likelihood2_level = " + cls.ChkSqlStr((dt.Rows[i]["likelihood2_level"] + "").ToString(), 4000);
-                    sqlstr += " ,likelihood3_level = " + cls.ChkSqlStr((dt.Rows[i]["likelihood3_level"] + "").ToString(), 4000);
-                    sqlstr += " ,likelihood4_level = " + cls.ChkSqlStr((dt.Rows[i]["likelihood4_level"] + "").ToString(), 4000);
-                    sqlstr += " ,likelihood5_level = " + cls.ChkSqlStr((dt.Rows[i]["likelihood5_level"] + "").ToString(), 4000);
-                    sqlstr += " ,likelihood6_level = " + cls.ChkSqlStr((dt.Rows[i]["likelihood6_level"] + "").ToString(), 4000);
-                    sqlstr += " ,likelihood7_level = " + cls.ChkSqlStr((dt.Rows[i]["likelihood7_level"] + "").ToString(), 4000);
-                    sqlstr += " ,likelihood1_text = " + cls.ChkSqlStr((dt.Rows[i]["likelihood1_text"] + "").ToString(), 4000);
-                    sqlstr += " ,likelihood2_text = " + cls.ChkSqlStr((dt.Rows[i]["likelihood2_text"] + "").ToString(), 4000);
-                    sqlstr += " ,likelihood3_text = " + cls.ChkSqlStr((dt.Rows[i]["likelihood3_text"] + "").ToString(), 4000);
-                    sqlstr += " ,likelihood4_text = " + cls.ChkSqlStr((dt.Rows[i]["likelihood4_text"] + "").ToString(), 4000);
-                    sqlstr += " ,likelihood5_text = " + cls.ChkSqlStr((dt.Rows[i]["likelihood5_text"] + "").ToString(), 4000);
-                    sqlstr += " ,likelihood6_text = " + cls.ChkSqlStr((dt.Rows[i]["likelihood6_text"] + "").ToString(), 4000);
-                    sqlstr += " ,likelihood7_text = " + cls.ChkSqlStr((dt.Rows[i]["likelihood7_text"] + "").ToString(), 4000);
-                    sqlstr += " ,likelihood1_desc = " + cls.ChkSqlStr((dt.Rows[i]["likelihood1_desc"] + "").ToString(), 4000);
-                    sqlstr += " ,likelihood2_desc = " + cls.ChkSqlStr((dt.Rows[i]["likelihood2_desc"] + "").ToString(), 4000);
-                    sqlstr += " ,likelihood3_desc = " + cls.ChkSqlStr((dt.Rows[i]["likelihood3_desc"] + "").ToString(), 4000);
-                    sqlstr += " ,likelihood4_desc = " + cls.ChkSqlStr((dt.Rows[i]["likelihood4_desc"] + "").ToString(), 4000);
-                    sqlstr += " ,likelihood5_desc = " + cls.ChkSqlStr((dt.Rows[i]["likelihood5_desc"] + "").ToString(), 4000);
-                    sqlstr += " ,likelihood6_desc = " + cls.ChkSqlStr((dt.Rows[i]["likelihood6_desc"] + "").ToString(), 4000);
-                    sqlstr += " ,likelihood7_desc = " + cls.ChkSqlStr((dt.Rows[i]["likelihood7_desc"] + "").ToString(), 4000);
-
-                    sqlstr += " ,likelihood1_criterion = " + cls.ChkSqlStr((dt.Rows[i]["likelihood1_criterion"] + "").ToString(), 4000);
-                    sqlstr += " ,likelihood2_criterion = " + cls.ChkSqlStr((dt.Rows[i]["likelihood2_criterion"] + "").ToString(), 4000);
-                    sqlstr += " ,likelihood3_criterion = " + cls.ChkSqlStr((dt.Rows[i]["likelihood3_criterion"] + "").ToString(), 4000);
-                    sqlstr += " ,likelihood4_criterion = " + cls.ChkSqlStr((dt.Rows[i]["likelihood4_criterion"] + "").ToString(), 4000);
-                    sqlstr += " ,likelihood5_criterion = " + cls.ChkSqlStr((dt.Rows[i]["likelihood5_criterion"] + "").ToString(), 4000);
-                    sqlstr += " ,likelihood6_criterion = " + cls.ChkSqlStr((dt.Rows[i]["likelihood6_criterion"] + "").ToString(), 4000);
-                    sqlstr += " ,likelihood7_criterion = " + cls.ChkSqlStr((dt.Rows[i]["likelihood7_criterion"] + "").ToString(), 4000);
-
-                    sqlstr += " ,ram1_text = " + cls.ChkSqlStr((dt.Rows[i]["ram1_text"] + "").ToString(), 4000);
-                    sqlstr += " ,ram2_text = " + cls.ChkSqlStr((dt.Rows[i]["ram2_text"] + "").ToString(), 4000);
-                    sqlstr += " ,ram3_text = " + cls.ChkSqlStr((dt.Rows[i]["ram3_text"] + "").ToString(), 4000);
-                    sqlstr += " ,ram4_text = " + cls.ChkSqlStr((dt.Rows[i]["ram4_text"] + "").ToString(), 4000);
-                    sqlstr += " ,ram5_text = " + cls.ChkSqlStr((dt.Rows[i]["ram5_text"] + "").ToString(), 4000);
-                    sqlstr += " ,ram6_text = " + cls.ChkSqlStr((dt.Rows[i]["ram6_text"] + "").ToString(), 4000);
-                    sqlstr += " ,ram7_text = " + cls.ChkSqlStr((dt.Rows[i]["ram7_text"] + "").ToString(), 4000);
-
-                    sqlstr += " ,ram1_priority = " + cls.ChkSqlStr((dt.Rows[i]["ram1_priority"] + "").ToString(), 4000);
-                    sqlstr += " ,ram2_priority = " + cls.ChkSqlStr((dt.Rows[i]["ram2_priority"] + "").ToString(), 4000);
-                    sqlstr += " ,ram3_priority = " + cls.ChkSqlStr((dt.Rows[i]["ram3_priority"] + "").ToString(), 4000);
-                    sqlstr += " ,ram4_priority = " + cls.ChkSqlStr((dt.Rows[i]["ram4_priority"] + "").ToString(), 4000);
-                    sqlstr += " ,ram5_priority = " + cls.ChkSqlStr((dt.Rows[i]["ram5_priority"] + "").ToString(), 4000);
-                    sqlstr += " ,ram6_priority = " + cls.ChkSqlStr((dt.Rows[i]["ram6_priority"] + "").ToString(), 4000);
-                    sqlstr += " ,ram7_priority = " + cls.ChkSqlStr((dt.Rows[i]["ram7_priority"] + "").ToString(), 4000);
-
-                    sqlstr += " ,ram1_desc = " + cls.ChkSqlStr((dt.Rows[i]["ram1_desc"] + "").ToString(), 4000);
-                    sqlstr += " ,ram2_desc = " + cls.ChkSqlStr((dt.Rows[i]["ram2_desc"] + "").ToString(), 4000);
-                    sqlstr += " ,ram3_desc = " + cls.ChkSqlStr((dt.Rows[i]["ram3_desc"] + "").ToString(), 4000);
-                    sqlstr += " ,ram4_desc = " + cls.ChkSqlStr((dt.Rows[i]["ram4_desc"] + "").ToString(), 4000);
-                    sqlstr += " ,ram5_desc = " + cls.ChkSqlStr((dt.Rows[i]["ram5_desc"] + "").ToString(), 4000);
-                    sqlstr += " ,ram6_desc = " + cls.ChkSqlStr((dt.Rows[i]["ram6_desc"] + "").ToString(), 4000);
-                    sqlstr += " ,ram7_desc = " + cls.ChkSqlStr((dt.Rows[i]["ram7_desc"] + "").ToString(), 4000);
+                    for (int c = 1; c < 11; c++)
+                    {
+                        sqlstr += " ,likelihood" + c + "_level = " + cls.ChkSqlStr((dt.Rows[i]["likelihood" + c + "_level"] + "").ToString(), 4000);
+                        sqlstr += " ,likelihood" + c + "_text = " + cls.ChkSqlStr((dt.Rows[i]["likelihood" + c + "_text"] + "").ToString(), 4000);
+                        sqlstr += " ,likelihood" + c + "_desc = " + cls.ChkSqlStr((dt.Rows[i]["likelihood" + c + "_desc"] + "").ToString(), 4000);
+                        sqlstr += " ,likelihood" + c + "_criterion = " + cls.ChkSqlStr((dt.Rows[i]["likelihood" + c + "_criterion"] + "").ToString(), 4000);
+                        sqlstr += " ,ram" + c + "_text = " + cls.ChkSqlStr((dt.Rows[i]["ram" + c + "_text"] + "").ToString(), 4000);
+                        sqlstr += " ,ram" + c + "_priority = " + cls.ChkSqlStr((dt.Rows[i]["ram" + c + "_priority"] + "").ToString(), 4000);
+                        sqlstr += " ,ram" + c + "_desc = " + cls.ChkSqlStr((dt.Rows[i]["ram" + c + "_desc"] + "").ToString(), 4000);
+                        sqlstr += " ,ram" + c + "_color = " + cls.ChkSqlStr((dt.Rows[i]["ram" + c + "_color"] + "").ToString(), 4000);
+                    }
 
                     sqlstr += " ,opportunity_level = " + cls.ChkSqlNum((dt.Rows[i]["opportunity_level"] + "").ToString(), "N");
                     sqlstr += " ,opportunity_desc = " + cls.ChkSqlStr((dt.Rows[i]["opportunity_desc"] + "").ToString(), 4000);
-
                     sqlstr += " ,security_text = " + cls.ChkSqlStr((dt.Rows[i]["security_text"] + "").ToString(), 4000);
-                    sqlstr += " ,ram1_color = " + cls.ChkSqlStr((dt.Rows[i]["ram1_color"] + "").ToString(), 4000);
-                    sqlstr += " ,ram2_color = " + cls.ChkSqlStr((dt.Rows[i]["ram2_color"] + "").ToString(), 4000);
-                    sqlstr += " ,ram3_color = " + cls.ChkSqlStr((dt.Rows[i]["ram3_color"] + "").ToString(), 4000);
-                    sqlstr += " ,ram4_color = " + cls.ChkSqlStr((dt.Rows[i]["ram4_color"] + "").ToString(), 4000);
-                    sqlstr += " ,ram5_color = " + cls.ChkSqlStr((dt.Rows[i]["ram5_color"] + "").ToString(), 4000);
-                    sqlstr += " ,ram6_color = " + cls.ChkSqlStr((dt.Rows[i]["ram6_color"] + "").ToString(), 4000);
-                    sqlstr += " ,ram7_color = " + cls.ChkSqlStr((dt.Rows[i]["ram7_color"] + "").ToString(), 4000);
+
 
                     sqlstr += " ,UPDATE_DATE = getdate()";
-                    sqlstr += " ,UPDATE_BY = " + cls.ChkSqlStr((dt.Rows[i]["UPDATE_BY"] + "").ToString(), 50);
+                    //sqlstr += " ,UPDATE_BY = " + cls.ChkSqlStr((dt.Rows[i]["UPDATE_BY"] + "").ToString(), 50);
+
+                    sqlstr += " where SEQ = " + cls.ChkSqlNum((dt.Rows[i]["SEQ"] + "").ToString(), "N");
+                    sqlstr += " and ID_RAM = " + cls.ChkSqlNum((dt.Rows[i]["ID_RAM"] + "").ToString(), "N");
+
+                    #endregion update
+
+                }
+                if (action_type != "")
+                {
+                    ret = cls_conn.ExecuteNonQuery(sqlstr);
+                    if (ret != "true") { break; }
+                }
+            }
+            if (ret == "") { ret = "true"; }
+            if (ret != "true") { return ret; }
+
+            #endregion update data ram level
+            return ret;
+
+        }
+        public string set_ram_master(DataTable _dtDef, ref ClassConnectionDb cls_conn, string seq_header_now)
+        {
+            string ret = "";
+            #region update data ram level
+            dt = new DataTable();
+            dt = _dtDef.Copy(); dt.AcceptChanges();
+
+            for (int i = 0; i < dt.Rows.Count; i++)
+            {
+                string action_type = (dt.Rows[i]["action_type"] + "").ToString();
+                if (action_type == "update")
+                {
+                    #region update
+                    cls = new ClassFunctions();
+                    sqlstr = "update EPHA_M_RAM set ";
+
+                    sqlstr += " DOCUMENT_FILE_NAME = " + cls.ChkSqlStr((dt.Rows[i]["DOCUMENT_FILE_NAME"] + "").ToString(), 4000);
+                    sqlstr += " ,DOCUMENT_FILE_PATH = " + cls.ChkSqlStr((dt.Rows[i]["DOCUMENT_FILE_PATH"] + "").ToString(), 4000);
+                    sqlstr += " ,ROWS_LEVEL = " + cls.ChkSqlNum((dt.Rows[i]["ROWS_LEVEL"] + "").ToString(), "N");
+                    sqlstr += " ,COLUMNS_LEVEL = " + cls.ChkSqlNum((dt.Rows[i]["COLUMNS_LEVEL"] + "").ToString(), "N");
+
+                    sqlstr += " ,UPDATE_DATE = getdate()";
+                    //sqlstr += " ,UPDATE_BY = " + cls.ChkSqlStr((dt.Rows[i]["UPDATE_BY"] + "").ToString(), 50);
 
                     sqlstr += " where SEQ = " + cls.ChkSqlNum((dt.Rows[i]["SEQ"] + "").ToString(), "N");
                     sqlstr += " and ID_RAM = " + cls.ChkSqlNum((dt.Rows[i]["ID_RAM"] + "").ToString(), "N");
@@ -4401,93 +4414,63 @@ namespace Class
                 {
                     if (flow_action == "update")
                     {
-                        sqlstr_check = "";
-                        for (int i = 0; i < dt.Rows.Count; i++)
+                        #region กรณีที่ update รายการเดียว
+                        cls = new ClassFunctions();
+                        cls_conn = new ClassConnectionDb();
+                        cls_conn.OpenConnection();
+                        cls_conn.BeginTransaction();
+
+                        #region update responder_action_type ให้เป็น responder_action_type = 2 ห้ามแก้ไข
+                        sqlstr = "update EPHA_T_NODE_WORKSHEET set responder_action_type = 2 ";
+                        sqlstr += " where SEQ = " + cls.ChkSqlNum((dt.Rows[0]["SEQ"] + "").ToString(), "N");
+                        sqlstr += " and ID_PHA = " + cls.ChkSqlNum((dt.Rows[0]["ID_PHA"] + "").ToString(), "N");
+                        ret = cls_conn.ExecuteNonQuery(sqlstr);
+                        #endregion update responder_action_type ให้เป็น responder_action_type = 2 ห้ามแก้ไข
+
+                        if (ret == "") { ret = "true"; }
+                        if (ret == "true")
                         {
-                            //ไว้สำหรับส่ง mail แจ้งเตือน admin ข้อมูลต้องเรียงตาม id_pha, responder_user_name
-                            string seq = (dt.Rows[i]["ID_PHA"] + "").ToString();
-                            string responder_user_name = (dt.Rows[i]["RESPONDER_USER_NAME"] + "").ToString();
-                            ClassEmail clsmail = new ClassEmail();
-                            clsmail.MailNotificationToAdminOwnerUpdateAction(seq, responder_user_name, "hazop");
-
-
-                            //ไว้สำหรับส่ง mail แจ้งเตือน admin ข้อมูลต้องเรียงตาม id_pha, responder_user_name
-                            //ตอนนี้จะมีแค่ รายการเดียว เท่านั้นก่อน 
-                            if (sqlstr_check != "") { sqlstr_check += " or "; }
-                            sqlstr_check += " t.id_pha = " + cls.ChkSqlNum(seq, "N");
+                            cls_conn.CommitTransaction();
                         }
+                        else
+                        {
+                            cls_conn.RollbackTransaction();
+                        }
+                        cls_conn.CloseConnection();
+                        #endregion กรณีที่ update รายการเดียว
 
                         #region check pha no - Action Owner update action items closed all  -> คนสุดท้ายของใบงาน
                         if (true)
                         {
-                            ClassHazop classHazop = new ClassHazop();
-                            sqlstr = classHazop.QueryFollowUpDetail("", "", "", "hazop", false);
-
-                            sqlstr = "select t.id_pha,sum(t.status_open) as status_open, t.responder_action_type from (" + sqlstr + ")t where (" + sqlstr_check + ") group by t.id_pha,t.responder_action_type";
-                            sqlstr = "select distinct t2.id_pha from (" + sqlstr + ")t2 where t2.status_open = 0 and t2.responder_action_type = '2' ";
-
+                            string id_pha = (dt.Rows[0]["SEQ"] + "").ToString();
+                            string responder_user_name = (dt.Rows[0]["RESPONDER_USER_NAME"] + "").ToString();
+                            sqlstr = @" select t.* from (
+                                        select nw.id_pha, count(isnull(nw.responder_action_type,0)) - sum(case when isnull(nw.responder_action_type,0) = 2 then 1 else 0 end)  check_action_type
+                                        from EPHA_T_NODE_WORKSHEET nw where nw.responder_user_name is not null and nw.id_pha = " + id_pha + " group by nw.id_pha ) t where t.check_action_type =  0 ";
                             cls_conn = new ClassConnectionDb();
                             DataTable dtaction = new DataTable();
                             dtaction = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
                             if (dtaction.Rows.Count > 0)
                             {
-                                for (int i = 0; i < dtaction.Rows.Count; i++)
-                                {
-                                    string seq = (dtaction.Rows[i]["ID_PHA"] + "").ToString();
-                                    //mail not admin กรณีที่ Action Owner Update status Closed All 
-                                    ClassEmail clsmail = new ClassEmail();
-                                    clsmail.MailToAdminReviewAll(seq, "hazop");
+                                //mail not admin กรณีที่ Action Owner Update status Closed All 
+                                ClassEmail clsmail = new ClassEmail();
+                                clsmail.MailToAdminReviewAll(id_pha, "hazop");
 
-                                    #region update pha status 
-                                    string pha_status_new = "14";
+                                #region update pha status 
+                                string pha_status_new = "14";
 
-                                    cls = new ClassFunctions();
-                                    cls_conn = new ClassConnectionDb();
-                                    cls_conn.OpenConnection();
-                                    cls_conn.BeginTransaction();
-
-                                    #region update responder_action_type ให้เป็น responder_action_type = 2 ห้ามแก้ไข
-                                    sqlstr = "update EPHA_T_MANAGE_RECOM set responder_action_type = 2 where id_pha = " + cls.ChkSqlNum(seq, "N");
-                                    ret = cls_conn.ExecuteNonQuery(sqlstr);
-                                    #endregion update responder_action_type ให้เป็น responder_action_type = 2 ห้ามแก้ไข
-
-                                    #region update
-                                    sqlstr = "update EPHA_F_HEADER set ";
-                                    sqlstr += " PHA_STATUS = " + cls.ChkSqlNum((pha_status_new).ToString(), "N");
-                                    sqlstr += " where SEQ = " + cls.ChkSqlNum(seq, "N");
-                                    #endregion update
-
-                                    ret = cls_conn.ExecuteNonQuery(sqlstr);
-                                    if (ret == "") { ret = "true"; }
-                                    if (ret == "true")
-                                    {
-                                        cls_conn.CommitTransaction();
-                                    }
-                                    else
-                                    {
-                                        cls_conn.RollbackTransaction();
-                                    }
-                                    cls_conn.CloseConnection();
-
-                                    #endregion update pha status 
-
-                                }
-                            }
-                            else
-                            {
-                                //กรณีที่ update รายการเดียว
                                 cls = new ClassFunctions();
                                 cls_conn = new ClassConnectionDb();
                                 cls_conn.OpenConnection();
                                 cls_conn.BeginTransaction();
 
-                                #region update responder_action_type ให้เป็น responder_action_type = 2 ห้ามแก้ไข
-                                sqlstr = "update EPHA_T_MANAGE_RECOM set responder_action_type = 2 ";
-                                sqlstr += " where SEQ = " + cls.ChkSqlNum((dt.Rows[0]["SEQ"] + "").ToString(), "N");
-                                sqlstr += " and ID_PHA = " + cls.ChkSqlNum((dt.Rows[0]["ID_PHA"] + "").ToString(), "N");
-                                ret = cls_conn.ExecuteNonQuery(sqlstr);
-                                #endregion update responder_action_type ให้เป็น responder_action_type = 2 ห้ามแก้ไข
+                                #region update
+                                sqlstr = "update EPHA_F_HEADER set ";
+                                sqlstr += " PHA_STATUS = " + cls.ChkSqlNum((pha_status_new).ToString(), "N");
+                                sqlstr += " where SEQ = " + cls.ChkSqlNum(id_pha, "N");
+                                #endregion update
 
+                                ret = cls_conn.ExecuteNonQuery(sqlstr);
                                 if (ret == "") { ret = "true"; }
                                 if (ret == "true")
                                 {
@@ -4499,7 +4482,16 @@ namespace Class
                                 }
                                 cls_conn.CloseConnection();
 
+                                #endregion update pha status 
+
                             }
+                            else
+                            {
+                                //ไว้สำหรับส่ง mail แจ้งเตือน admin ข้อมูลต้องเรียงตาม id_pha, responder_user_name 
+                                ClassEmail clsmail = new ClassEmail();
+                                clsmail.MailNotificationToAdminOwnerUpdateAction(id_pha, responder_user_name, "hazop");
+                            }
+
                         }
                         #endregion check pha no - Action Owner update action items closed all   -> คนสุดท้ายของใบงาน
                     }
@@ -4512,6 +4504,368 @@ namespace Class
             return cls_json.SetJSONresult(refMsg(ret, msg));
         }
 
+        public string set_follow_up_review(SetDocHazopModel param)
+        {
+            string msg = "";
+            string ret = "";
+            cls_json = new ClassJSON();
+
+            DataSet dsData = new DataSet();
+            string user_name = (param.user_name + "");
+            string flow_action = param.flow_action;
+            string sqlstr_check = "";
+
+            //$scope.flow_role_type = "admin";//admin,request,responder,approver
+            string role_type = ("admin");
+
+
+
+            jsper = param.json_managerecom + "";
+            try
+            {
+                if (jsper.Trim() != "")
+                {
+                    dt = new DataTable();
+                    dt = cls_json.ConvertJSONresult(jsper);
+                    if (dt != null)
+                    {
+                        dt.TableName = "managerecom";
+                        dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
+                        ret = "";
+                    }
+                }
+            }
+            catch (Exception ex) { msg = ex.Message.ToString() + ""; ret = "Error"; }
+            if (ret.ToLower() == "error") { goto Next_Line_Convert; }
+
+            if (true)
+            {
+                #region connection transaction
+                cls = new ClassFunctions();
+
+                cls_conn = new ClassConnectionDb();
+                cls_conn.OpenConnection();
+                cls_conn.BeginTransaction();
+                #endregion connection transaction
+                try
+                {
+                    dt = new DataTable();
+                    dt = dsData.Tables["managerecom"].Copy(); dt.AcceptChanges();
+                    for (int i = 0; i < dt.Rows.Count; i++)
+                    {
+                        #region update 
+                        sqlstr = "update EPHA_T_NODE_WORKSHEET set ";
+                        sqlstr += " DOCUMENT_FILE_NAME = " + cls.ChkSqlStr((dt.Rows[i]["DOCUMENT_FILE_NAME"] + "").ToString(), 4000);
+                        sqlstr += " ,DOCUMENT_FILE_PATH = " + cls.ChkSqlStr((dt.Rows[i]["DOCUMENT_FILE_PATH"] + "").ToString(), 4000);
+                        sqlstr += " ,ACTION_STATUS = " + cls.ChkSqlStr((dt.Rows[i]["ACTION_STATUS"] + "").ToString(), 50);
+
+
+                        //RAM_ACTION_SECURITY, RAM_ACTION_LIKELIHOOD, RAM_ACTION_RISK
+                        sqlstr += " ,RAM_ACTION_SECURITY = " + cls.ChkSqlStr((dt.Rows[i]["RAM_ACTION_SECURITY"] + "").ToString(), 50);
+                        sqlstr += " ,RAM_ACTION_LIKELIHOOD = " + cls.ChkSqlStr((dt.Rows[i]["RAM_ACTION_LIKELIHOOD"] + "").ToString(), 50);
+                        sqlstr += " ,RAM_ACTION_RISK = " + cls.ChkSqlStr((dt.Rows[i]["RAM_ACTION_RISK"] + "").ToString(), 50);
+
+                        //sqlstr += " ,RESPONDER_ACTION_TYPE = 1";//0,1,2-> 2 = ห้ามแก้ไข
+                        sqlstr += " ,RESPONDER_ACTION_TYPE = " + cls.ChkSqlNum((dt.Rows[i]["RESPONDER_ACTION_TYPE"] + "").ToString(), "N");
+
+                        sqlstr += " ,UPDATE_DATE = getdate()";
+                        sqlstr += " ,UPDATE_BY = " + cls.ChkSqlStr(user_name, 50);
+
+                        sqlstr += " where SEQ = " + cls.ChkSqlNum((dt.Rows[i]["SEQ"] + "").ToString(), "N");
+                        sqlstr += " and ID = " + cls.ChkSqlNum((dt.Rows[i]["ID"] + "").ToString(), "N");
+                        sqlstr += " and ID_PHA = " + cls.ChkSqlNum((dt.Rows[i]["ID_PHA"] + "").ToString(), "N");
+                        sqlstr += " and RESPONDER_USER_NAME = " + cls.ChkSqlStr((dt.Rows[i]["RESPONDER_USER_NAME"] + "").ToString(), 50);
+                        #endregion update
+
+                        ret = cls_conn.ExecuteNonQuery(sqlstr);
+                        if (ret == "") { ret = "true"; }
+                        if (ret != "true") { goto Next_Line; }
+
+                    }
+
+                }
+                catch (Exception ex) { ret = ex.Message.ToString(); goto Next_Line; }
+
+            Next_Line:;
+
+                #region connection transaction
+                if (ret == "") { ret = "true"; }
+                if (ret == "true")
+                {
+                    cls_conn.CommitTransaction();
+                }
+                else
+                {
+                    cls_conn.RollbackTransaction();
+                }
+                cls_conn.CloseConnection();
+                #endregion connection transaction
+
+
+                #region  flow action  submit  
+                if (ret == "true" && dt.Rows.Count > 0)
+                {
+                    if (flow_action == "update")
+                    {
+                        string seq = (dt.Rows[0]["ID_PHA"] + "").ToString();
+                        //mail not admin กรณีที่ Action Owner Update status Closed All 
+                        ClassEmail clsmail = new ClassEmail();
+                        clsmail.MailClosedAll(seq, "hazop");
+
+                        #region update pha status 
+                        string pha_status_new = "91";//Closed
+
+                        cls = new ClassFunctions();
+                        cls_conn = new ClassConnectionDb();
+                        cls_conn.OpenConnection();
+                        cls_conn.BeginTransaction();
+
+                        #region update
+                        sqlstr = "update EPHA_F_HEADER set ";
+                        sqlstr += " PHA_STATUS = " + cls.ChkSqlNum((pha_status_new).ToString(), "N");
+                        sqlstr += " where SEQ = " + cls.ChkSqlNum(seq, "N");
+                        #endregion update
+
+                        ret = cls_conn.ExecuteNonQuery(sqlstr);
+                        if (ret == "") { ret = "true"; }
+                        if (ret == "true")
+                        {
+                            cls_conn.CommitTransaction();
+                        }
+                        else
+                        {
+                            cls_conn.RollbackTransaction();
+                        }
+                        cls_conn.CloseConnection();
+
+                        #endregion update pha status 
+
+
+                    }
+                }
+                #endregion  flow action  submit 
+
+            }
+
+        Next_Line_Convert:;
+            return cls_json.SetJSONresult(refMsg(ret, msg));
+        }
+
+        public string set_master_ram(SetDocHazopModel param)
+        {
+            string msg = "";
+            string ret = "";
+            cls_json = new ClassJSON();
+
+            DataSet dsData = new DataSet();
+            string user_name = (param.user_name + "");
+
+            jsper = param.json_ram_master + "";
+            try
+            {
+                if (jsper.Trim() != "")
+                {
+                    dt = new DataTable();
+                    dt = cls_json.ConvertJSONresult(jsper);
+                    if (dt != null)
+                    {
+                        dt.TableName = "ram_master";
+                        dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
+                        ret = "";
+                    }
+                }
+            }
+            catch (Exception ex) { msg = ex.Message.ToString() + ""; ret = "Error"; }
+            if (ret.ToLower() == "error") { goto Next_Line_Convert; }
+
+            if (true)
+            {
+                #region connection transaction
+                int seq_now = 0; int seq_level_now = 0;
+
+                sqlstr = @" select max(a.seq)+1 as max_seq from EPHA_M_RAM a ";
+                cls_conn = new ClassConnectionDb();
+                dt = new DataTable();
+                dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+                if (dt.Rows.Count > 0)
+                {
+                    seq_now = Convert.ToInt32(dt.Rows[0]["max_seq"]);
+                }
+                sqlstr = @" select max(a.seq)+1 as max_seq from EPHA_M_RAM_LEVEL a ";
+                cls_conn = new ClassConnectionDb();
+                dt = new DataTable();
+                dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+                if (dt.Rows.Count > 0)
+                {
+                    seq_level_now = Convert.ToInt32(dt.Rows[0]["max_seq"]);
+                }
+
+                cls = new ClassFunctions();
+
+                cls_conn = new ClassConnectionDb();
+                cls_conn.OpenConnection();
+                cls_conn.BeginTransaction();
+                #endregion connection transaction
+                try
+                {
+                    dt = new DataTable();
+                    dt = dsData.Tables["ram_master"].Copy(); dt.AcceptChanges();
+                    for (int i = 0; i < dt.Rows.Count; i++)
+                    {
+                        string action_type = (dt.Rows[i]["action_type"] + "").ToString();
+                        if (action_type == "insert")
+                        {
+                            #region insert
+                            //SEQ Auto running
+                            sqlstr = "insert into EPHA_M_RAM (" +
+                                "SEQ,ID,NAME,DESCRIPTIONS,ACTIVE_TYPE,CATEGORY_TYPE,DOCUMENT_FILE_NAME,DOCUMENT_FILE_PATH,DOCUMENT_FILE_SIZE,ROWS_LEVEL,COLUMNS_LEVEL" +
+                                ",CREATE_DATE,UPDATE_DATE,CREATE_BY,UPDATE_BY" +
+                                ") values ";
+                            sqlstr += " ( ";
+                            sqlstr += " " + cls.ChkSqlNum(seq_now, "N");
+                            sqlstr += " ," + cls.ChkSqlNum(seq_now, "N");
+                            sqlstr += " ," + cls.ChkSqlStr((dt.Rows[i]["NAME"] + "").ToString(), 4000);
+                            sqlstr += " ," + cls.ChkSqlStr((dt.Rows[i]["DESCRIPTIONS"] + "").ToString(), 4000);
+                            sqlstr += " ," + cls.ChkSqlNum((dt.Rows[i]["ACTIVE_TYPE"] + "").ToString(), "N");
+                            sqlstr += " ," + cls.ChkSqlNum((dt.Rows[i]["CATEGORY_TYPE"] + "").ToString(), "N");
+
+                            sqlstr += " ," + cls.ChkSqlStr((dt.Rows[i]["DOCUMENT_FILE_NAME"] + "").ToString(), 4000);
+                            sqlstr += " ," + cls.ChkSqlStr((dt.Rows[i]["DOCUMENT_FILE_PATH"] + "").ToString(), 4000);
+                            sqlstr += " ," + cls.ChkSqlNum((dt.Rows[i]["DOCUMENT_FILE_SIZE"] + "").ToString(), "N");
+                            sqlstr += " ," + cls.ChkSqlNum((dt.Rows[i]["ROWS_LEVEL"] + "").ToString(), "N");
+                            sqlstr += " ," + cls.ChkSqlNum((dt.Rows[i]["COLUMNS_LEVEL"] + "").ToString(), "N");
+
+                            sqlstr += " ,getdate()";
+                            sqlstr += " ,null";
+                            sqlstr += " ," + cls.ChkSqlStr((dt.Rows[i]["CREATE_BY"] + "").ToString(), 50);
+                            sqlstr += " ," + cls.ChkSqlStr((dt.Rows[i]["UPDATE_BY"] + "").ToString(), 50);
+
+                            sqlstr += ")";
+                            #endregion insert
+                        }
+                        else if (action_type == "update")
+                        {
+                            #region update
+
+                            sqlstr = "update EPHA_M_RAM set ";
+
+                            sqlstr += " NAME = " + cls.ChkSqlStr((dt.Rows[i]["NAME"] + "").ToString(), 4000);
+                            sqlstr += " ,DESCRIPTIONS = " + cls.ChkSqlStr((dt.Rows[i]["DESCRIPTIONS"] + "").ToString(), 4000);
+                            sqlstr += " ,ACTIVE_TYPE = " + cls.ChkSqlNum((dt.Rows[i]["ACTIVE_TYPE"] + "").ToString(), "N");
+                            sqlstr += " ,CATEGORY_TYPE = " + cls.ChkSqlNum((dt.Rows[i]["CATEGORY_TYPE"] + "").ToString(), "N");
+
+                            sqlstr += " ,DOCUMENT_FILE_NAME = " + cls.ChkSqlStr((dt.Rows[i]["DOCUMENT_FILE_NAME"] + "").ToString(), 4000);
+                            sqlstr += " ,DOCUMENT_FILE_PATH = " + cls.ChkSqlStr((dt.Rows[i]["DOCUMENT_FILE_PATH"] + "").ToString(), 4000);
+                            sqlstr += " ,DOCUMENT_FILE_SIZE = " + cls.ChkSqlNum((dt.Rows[i]["DOCUMENT_FILE_SIZE"] + "").ToString(), "N");
+
+                            sqlstr += " ,ROWS_LEVEL = " + cls.ChkSqlNum((dt.Rows[i]["ROWS_LEVEL"] + "").ToString(), "N");
+                            sqlstr += " ,COLUMNS_LEVEL = " + cls.ChkSqlNum((dt.Rows[i]["COLUMNS_LEVEL"] + "").ToString(), "N");
+
+
+                            sqlstr += " ,UPDATE_DATE = getdate()";
+                            sqlstr += " ,UPDATE_BY = " + cls.ChkSqlStr((dt.Rows[i]["UPDATE_BY"] + "").ToString(), 50);
+
+                            sqlstr += " where SEQ = " + cls.ChkSqlNum((dt.Rows[i]["SEQ"] + "").ToString(), "N");
+
+                            #endregion update
+                        }
+                        else if (action_type == "delete")
+                        {
+                            #region delete
+                            sqlstr = "delete from EPHA_M_RAM ";
+
+                            sqlstr += " where SEQ = " + cls.ChkSqlNum((dt.Rows[i]["SEQ"] + "").ToString(), "N");
+                            #endregion delete
+                        }
+                        if (action_type != "")
+                        {
+                            ret = cls_conn.ExecuteNonQuery(sqlstr);
+                            if (ret == "") { ret = "true"; }
+                            if (ret != "true") { break; }
+                        }
+                    }
+
+                    #region genarate ram level  
+                    for (int i = 0; i < dt.Rows.Count; i++)
+                    {
+                        string action_type = (dt.Rows[i]["action_type"] + "").ToString();
+                        if (action_type == "insert")
+                        {
+                            int rows_level = Convert.ToInt32((dt.Rows[i]["rows_level"] + "").ToString());
+                            int columns_level = Convert.ToInt32((dt.Rows[i]["columns_level"] + "").ToString());
+                            for (int ir = 0; ir < rows_level; ir++)
+                            {
+                                sqlstr = "";
+                                sqlstr += @" insert into EPHA_M_RAM_LEVEL (SEQ, ID, ID_RAM, SORT_BY, SECURITY_LEVEL";
+                                for (int ic = 1; ic < (columns_level + 1); ic++)
+                                {
+                                    //likelihood1_text
+                                    sqlstr += @" ,LIKELIHOOD" + ic + "_TEXT";
+                                }
+                                sqlstr += @" ,CREATE_DATE,UPDATE_DATE,CREATE_BY,UPDATE_BY ) values ";
+                                sqlstr += " ( ";
+                                sqlstr += " " + cls.ChkSqlNum(seq_level_now, "N");
+                                sqlstr += " ," + cls.ChkSqlNum(seq_level_now, "N");
+                                sqlstr += " ," + cls.ChkSqlNum(seq_now, "N");
+                                sqlstr += " ," + cls.ChkSqlNum((ir + 1), "N");
+                                sqlstr += " ," + cls.ChkSqlNum(rows_level - ir, "N");
+                                for (int ic = 1; ic < (columns_level + 1); ic++)
+                                {
+                                    //likelihood1_text
+                                    sqlstr += " ," + cls.ChkSqlStr(ic, 4000);
+                                }
+                                sqlstr += " ,getdate()";
+                                sqlstr += " ,null";
+                                sqlstr += " ," + cls.ChkSqlStr((dt.Rows[i]["CREATE_BY"] + "").ToString(), 50);
+                                sqlstr += " ," + cls.ChkSqlStr((dt.Rows[i]["UPDATE_BY"] + "").ToString(), 50);
+                                sqlstr += @" )";
+
+                                ret = cls_conn.ExecuteNonQuery(sqlstr);
+                                if (ret == "") { ret = "true"; }
+                                if (ret != "true") { break; }
+
+                            }
+
+                            break;
+                        }
+                    }
+                    #endregion genarate ram level  
+                }
+                catch (Exception ex) { ret = ex.Message.ToString(); goto Next_Line; }
+
+            Next_Line:;
+
+                #region connection transaction
+                if (ret == "") { ret = "true"; }
+                if (ret == "true")
+                {
+                    cls_conn.CommitTransaction();
+                }
+                else
+                {
+                    cls_conn.RollbackTransaction();
+                }
+                cls_conn.CloseConnection();
+                #endregion connection transaction
+
+            }
+
+        Next_Line_Convert:;
+
+
+            dsData = new DataSet();
+            dt = new DataTable();
+            dt = refMsg(ret, msg);
+            dt.TableName = "msg";
+            dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
+            if (ret == "true")
+            {
+                ClassHazop cls = new ClassHazop();
+                cls.get_master_ram(ref dsData);
+            }
+            string json = Newtonsoft.Json.JsonConvert.SerializeObject(dsData, Newtonsoft.Json.Formatting.Indented);
+            return json;
+        }
 
     }
 }

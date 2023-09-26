@@ -1,6 +1,7 @@
 ﻿using Class;
 using Microsoft.AspNetCore.Mvc;
 using Model;
+using Newtonsoft.Json;
 using System.Data;
 using static Class.ClassEmail;
 
@@ -101,6 +102,13 @@ namespace Controllers
             ClassHazopSet cls = new ClassHazopSet();
             return cls.set_hazop(param);
         }
+        [HttpPost("set_master_ram", Name = "set_master_ram")]
+        public string set_master_ram(SetDocHazopModel param)
+        {
+            ClassHazopSet cls = new ClassHazopSet();
+
+            return cls.set_master_ram(param);
+        }
 
         #region mail test
         [HttpPost("MailToPHAConduct", Name = "MailToPHAConduct")]
@@ -137,6 +145,12 @@ namespace Controllers
         {
             ClassHazopSet cls = new ClassHazopSet();
             return cls.set_follow_up(param);
+        }
+        [HttpPost("set_follow_up_review", Name = "set_follow_up_review")]
+        public string set_follow_up_review(SetDocHazopModel param)
+        {
+            ClassHazopSet cls = new ClassHazopSet();
+            return cls.set_follow_up_review(param);
         }
         #endregion follow up 
 
@@ -220,6 +234,18 @@ namespace Controllers
 
             ClassEmail classEmail = new ClassEmail();
             return classEmail.sendMail(data);
+        }
+        [HttpPost("MailNotificationFollowUpItemToOwner", Name = "MailNotificationFollowUpItemToOwner")]
+        public string MailNotificationFollowUpItemToOwner(string seq)
+        {
+            ClassEmail classEmail = new ClassEmail();
+            return classEmail.MailNotificationFollowUpItemToOwner(seq);
+        }
+        [HttpPost("MailTest", Name = "MailTest")]
+        public string MailTest()
+        {
+            ClassEmail classEmail = new ClassEmail();
+            return classEmail.MailTest();
         }
 
     }

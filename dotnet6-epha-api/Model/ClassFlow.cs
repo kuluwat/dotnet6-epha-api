@@ -49,7 +49,7 @@ namespace Model
         public string? type_doc { get; set; } = "";
         public string? pha_no { get; set; } = "";
         public string? responder_user_name { get; set; } = "";
-    }
+    } 
     public class SetDocHazopModel
     {
         public string? user_name { get; set; } = "";
@@ -69,6 +69,7 @@ namespace Model
         public string? json_nodeworksheet { get; set; } = "";
         public string? json_managerecom { get; set; } = "";
         public string? json_ram_level { get; set; } = "";
+        public string? json_ram_master { get; set; } = "";
          
         public string? flow_action  { get; set; } = "";
          
