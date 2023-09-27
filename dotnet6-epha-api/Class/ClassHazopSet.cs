@@ -2899,7 +2899,7 @@ namespace Class
                                     clsmail = new ClassEmail();
                                     clsmail.MailToActionOwner((dt.Rows[i]["SEQ"] + "").ToString(), "hazop");
                                 }
-                                else if (pha_status_new == "21")
+                                else if (pha_status_new == "22")
                                 {
                                     //22	AR	Approve Reject
                                     clsmail = new ClassEmail();
@@ -3137,7 +3137,105 @@ namespace Class
         Next_Line_Convert:;
             return cls_json.SetJSONresult(refMsgSave(ret, msg, seq_new, pha_seq, pha_no));
         }
+        public string set_approve(SetDocApproveModel param)
+        {
+            string msg = "";
+            string ret = "";
+            cls_json = new ClassJSON();
 
+            string role_type = (param.role_type + "");
+            string user_name = (param.user_name + "");
+            string pha_seq = (param.token_doc + "");
+            string action = (param.action + "");
+
+
+            #region ตรวจสอบว่าเป็นผู้อนุมัติหรือป่าว หรือมีการอนุมัติไปแล้วหรือยัง
+            sqlstr = @" select distinct approver_user_name,approve_action_type from EPHA_F_HEADER where seq = " + pha_seq;
+            if (role_type != "admin")
+            {
+                sqlstr += @" and lower(approver_user_name) = lower('" + user_name + "')";
+            }
+            cls_conn = new ClassConnectionDb();
+            dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+            
+            if (dt.Rows.Count == 0)
+            {
+                return cls_json.SetJSONresult(refMsgSave("false", "", "", pha_seq, ""));
+            }
+            else
+            {
+                if ((dt.Rows[0]["approve_action_type"] + "") == "2") {
+                    return cls_json.SetJSONresult(refMsgSave("false", "", "", pha_seq, ""));
+                }
+            }
+            #endregion ตรวจสอบว่าเป็นผู้อนุมัติหรือป่าว หรือมีการอนุมัติไปแล้วหรือยัง
+             
+
+            //11	DF	Draft
+            //12	WP	PHA Conduct 
+            //21	WA	Waiting Approve Review
+            //22	AR	Approve Reject
+            //13	WF	Waiting Follow Up
+            //14	WR	Waiting Review Follow Up
+            //91	CL	Closed
+            //81	CN	Cancle
+            string pha_status_new = "13";
+            if (action == "approve") { }
+            else if (action == "reject" || action == "reject_no_comment") { pha_status_new = "22"; }
+
+            cls = new ClassFunctions();
+            cls_conn = new ClassConnectionDb();
+            cls_conn.OpenConnection();
+            cls_conn.BeginTransaction();
+
+            #region update
+            //APPROVER_USER_NAME, APPROVE_STATUS, APPROVE_COMMENT, UPDATE_BY, UPDATE_DATE
+            sqlstr = "update  EPHA_F_HEADER set ";
+            sqlstr += " PHA_STATUS = " + cls.ChkSqlNum((pha_status_new).ToString(), "N");
+            sqlstr += " ,APPROVE_ACTION_TYPE = 2";//1=save, 2=submit
+            sqlstr += " ,APPROVE_STATUS = " + cls.ChkSqlStr((action.ToLower() + "").ToString(), 200);
+
+            sqlstr += " ,UPDATE_BY = " + cls.ChkSqlStr((user_name.ToLower() + "").ToString(), 200);
+            sqlstr += " ,UPDATE_DATE = getdate()";
+
+            sqlstr += " where SEQ = " + cls.ChkSqlNum((pha_seq + "").ToString(), "N");
+            if (role_type != "admin") { sqlstr += " and lower(APPROVER_USER_NAME) = lower(" + cls.ChkSqlStr((user_name + "").ToString(), 200) + ")"; }
+
+
+            #endregion update
+
+            ret = cls_conn.ExecuteNonQuery(sqlstr);
+            if (ret == "") { ret = "true"; }
+            if (ret == "true")
+            {
+                cls_conn.CommitTransaction();
+            }
+            else
+            {
+                cls_conn.RollbackTransaction();
+            }
+            cls_conn.CloseConnection();
+
+            if (ret == "true")
+            {
+                ClassEmail clsmail = new ClassEmail();
+                if (pha_status_new == "13")
+                {
+                    //13	WF	Waiting Follow Up
+                    clsmail = new ClassEmail();
+                    clsmail.MailToActionOwner(pha_seq, "hazop");
+                }
+                else if (pha_status_new == "22")
+                {
+                    //22	AR	Approve Reject
+                    clsmail = new ClassEmail();
+                    clsmail.MailRejectByApprover(pha_seq, "hazop");
+                }
+
+            }
+
+            return cls_json.SetJSONresult(refMsgSave(ret, msg, "", pha_seq, ""));
+        }
         private string SeqTypeDelete(DataTable dt, DataTable dtOld)
         {
             //data type delete
@@ -3208,7 +3306,7 @@ namespace Class
                     sqlstr += " ," + cls.ChkSqlStr((dt.Rows[i]["APPROVER_USER_NAME"] + "").ToString(), 50);
                     sqlstr += " ," + cls.ChkSqlStr((dt.Rows[i]["APPROVER_USER_DISPLAYNAME"] + "").ToString(), 4000);
                     sqlstr += " ," + cls.ChkSqlNum((dt.Rows[i]["APPROVE_ACTION_TYPE"] + "").ToString(), "N");
-                    sqlstr += " ," + cls.ChkSqlNum((dt.Rows[i]["APPROVE_STATUS"] + "").ToString(), "N");
+                    sqlstr += " ," + cls.ChkSqlStr((dt.Rows[i]["APPROVE_STATUS"] + "").ToString(), 200);
                     sqlstr += " ," + cls.ChkSqlStr((dt.Rows[i]["APPROVE_COMMENT"] + "").ToString(), 200);
 
                     sqlstr += " ," + cls.ChkSqlStr((dt.Rows[i]["REQUEST_USER_NAME"] + "").ToString(), 50);
@@ -3241,7 +3339,7 @@ namespace Class
                         sqlstr += " ,APPROVER_USER_NAME = " + cls.ChkSqlStr((dt.Rows[i]["APPROVER_USER_NAME"] + "").ToString(), 50);
                         sqlstr += " ,APPROVER_USER_DISPLAYNAME = " + cls.ChkSqlStr((dt.Rows[i]["APPROVER_USER_DISPLAYNAME"] + "").ToString(), 4000);
                         sqlstr += " ,APPROVE_ACTION_TYPE = " + cls.ChkSqlNum((dt.Rows[i]["APPROVE_ACTION_TYPE"] + "").ToString(), "N");
-                        sqlstr += " ,APPROVE_STATUS = " + cls.ChkSqlNum((dt.Rows[i]["APPROVE_STATUS"] + "").ToString(), "N");
+                        sqlstr += " ,APPROVE_STATUS = " + cls.ChkSqlStr((dt.Rows[i]["APPROVE_STATUS"] + "").ToString(), 200);
                         sqlstr += " ,APPROVE_COMMENT = " + cls.ChkSqlStr((dt.Rows[i]["APPROVE_COMMENT"] + "").ToString(), 200);
                     }
 
@@ -3302,7 +3400,7 @@ namespace Class
                     //SEQ Auto running
                     sqlstr = "insert into EPHA_T_GENERAL (" +
                         "SEQ,ID,ID_PHA,ID_RAM,EXPENSE_TYPE,SUB_EXPENSE_TYPE,REFERENCE_MOC  " +
-                        ",ID_AREA,ID_APU,ID_BUSINESS_UNIT,ID_UNIT_NO,OTHER_AREA,OTHER_APU,OTHER_BUSINESS_UNIT,OTHER_UNIT_NO,FUNCTIONAL_LOCATION  " +
+                        ",ID_AREA,ID_APU,ID_BUSINESS_UNIT,ID_UNIT_NO,OTHER_AREA,OTHER_APU,OTHER_BUSINESS_UNIT,OTHER_UNIT_NO,OTHER_FUNCTIONAL_LOCATION,FUNCTIONAL_LOCATION  " +
                         ",PHA_REQUEST_NAME,TARGET_START_DATE,TARGET_END_DATE,ACTUAL_START_DATE,ACTUAL_END_DATE  " +
                         ",DESCRIPTIONS,WORK_SCOPE" +
                         ",CREATE_DATE,UPDATE_DATE,CREATE_BY,UPDATE_BY" +
@@ -3325,6 +3423,7 @@ namespace Class
                     sqlstr += " ," + cls.ChkSqlStr((dt.Rows[i]["OTHER_APU"] + "").ToString(), 4000);
                     sqlstr += " ," + cls.ChkSqlStr((dt.Rows[i]["OTHER_BUSINESS_UNIT"] + "").ToString(), 4000);
                     sqlstr += " ," + cls.ChkSqlStr((dt.Rows[i]["OTHER_UNIT_NO"] + "").ToString(), 4000);
+                    sqlstr += " ," + cls.ChkSqlStr((dt.Rows[i]["OTHER_FUNCTIONAL_LOCATION"] + "").ToString(), 4000);
 
                     sqlstr += " ," + cls.ChkSqlStr((dt.Rows[i]["FUNCTIONAL_LOCATION"] + "").ToString(), 4000);
                     sqlstr += " ," + cls.ChkSqlStr((dt.Rows[i]["PHA_REQUEST_NAME"] + "").ToString(), 4000);
@@ -3364,6 +3463,7 @@ namespace Class
                     sqlstr += " ,OTHER_APU = " + cls.ChkSqlStr((dt.Rows[i]["OTHER_APU"] + "").ToString(), 4000);
                     sqlstr += " ,OTHER_BUSINESS_UNIT = " + cls.ChkSqlStr((dt.Rows[i]["OTHER_BUSINESS_UNIT"] + "").ToString(), 4000);
                     sqlstr += " ,OTHER_UNIT_NO = " + cls.ChkSqlStr((dt.Rows[i]["OTHER_UNIT_NO"] + "").ToString(), 4000);
+                    sqlstr += " ,OTHER_FUNCTIONAL_LOCATION = " + cls.ChkSqlStr((dt.Rows[i]["OTHER_FUNCTIONAL_LOCATION"] + "").ToString(), 4000);
 
                     sqlstr += " ,FUNCTIONAL_LOCATION = " + cls.ChkSqlStr((dt.Rows[i]["FUNCTIONAL_LOCATION"] + "").ToString(), 4000);
                     sqlstr += " ,PHA_REQUEST_NAME = " + cls.ChkSqlStr((dt.Rows[i]["PHA_REQUEST_NAME"] + "").ToString(), 4000);

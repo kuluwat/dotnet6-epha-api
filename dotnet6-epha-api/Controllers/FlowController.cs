@@ -109,6 +109,12 @@ namespace Controllers
 
             return cls.set_master_ram(param);
         }
+        [HttpPost("set_approve", Name = "set_approve")]
+        public string set_approve(SetDocApproveModel param)
+        {
+            ClassHazopSet cls = new ClassHazopSet();
+            return cls.set_approve(param);
+        }
 
         #region mail test
         [HttpPost("MailToPHAConduct", Name = "MailToPHAConduct")]
@@ -246,6 +252,12 @@ namespace Controllers
         {
             ClassEmail classEmail = new ClassEmail();
             return classEmail.MailTest();
+        }
+        [HttpPost("MailMS365Test", Name = "MailMS365Test")]
+        public string MailMS365Test()
+        {
+            ClassEmail classEmail = new ClassEmail();
+            return classEmail.MailMS365Test();
         }
 
     }
