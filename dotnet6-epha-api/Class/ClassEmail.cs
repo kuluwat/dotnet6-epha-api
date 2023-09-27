@@ -12,6 +12,7 @@ using System.Data;
 using System.Drawing;
 using System.Net;
 using System.Net.Mail;
+using System.Net.Mime;
 using System.Security.Cryptography;
 using System.Security.Policy;
 
@@ -138,7 +139,7 @@ namespace Class
             String mail_server = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("MailConfig")["MailSMTPServer"];
             String mail_from = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("MailConfig")["MailFrom"];
             String mail_test = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("MailConfig")["MailTest"];
-             
+
             #region mail test
             sqlstr = @"select email, email as user_email from EPHA_M_CONFIGMAIL where active_type = 1 ";
             cls_conn = new ClassConnectionDb();
@@ -163,7 +164,7 @@ namespace Class
             string mail_password = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("MailConfig")["MailPassword"];
             mail_user = "zkuluwat@thaioilgroup.com";
             mail_password = "Initial1;Q4";
-             
+
             if (mail_test != "")
             {
                 s_mail_body += "</br></br>ข้อมูล mail to: " + s_mail_to + "</br></br>ข้อมูล mail cc: " + s_mail_cc;
@@ -360,7 +361,7 @@ namespace Class
             cls_conn = new ClassConnectionDb();
             dt = new DataTable();
             dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
-             
+
             #region mail to
             if (dt.Rows.Count > 0)
             {
@@ -556,7 +557,7 @@ namespace Class
 
                     if (file_ResponseSheet != "")
                     {
-                        if (Directory.Exists(file_ResponseSheet))
+                        if (File.Exists(file_ResponseSheet))
                         {
                             data.mail_attachments = file_ResponseSheet;
                         }
@@ -658,12 +659,15 @@ namespace Class
             #region url  
             using (Aes aesAlgorithm = Aes.Create())
             {
+                //https://dev-epha-web.azurewebsites.net/hazop/Index?
+                string approver_url = server_url.Replace("hazop", "approve");
+
                 aesAlgorithm.KeySize = 256;
                 aesAlgorithm.GenerateKey();
                 string keyBase64 = Convert.ToBase64String(aesAlgorithm.Key);
 
                 //insert keyBase64 to db 
-                string plainText = "seq=" + seq + "&pha_no=" + doc_no + "&step=4";
+                string plainText = "seq=" + seq + "&pha_no=" + doc_no + "&step=4" + "&approver_type=reject";
                 string cipherText = EncryptDataWithAes(plainText, keyBase64, out string vectorBase64);
 
                 url = server_url + cipherText + "&" + keyBase64 + "&" + vectorBase64;
@@ -672,7 +676,7 @@ namespace Class
                 url_reject_comment = url;
 
                 //reject no comment
-                plainText = "seq=" + seq + "&pha_no=" + doc_no + "&step=4" + "&approver_type=reject";
+                plainText = "seq=" + seq + "&pha_no=" + doc_no + "&step=4" + "&approver_type=reject_no_comment";
                 cipherText = EncryptDataWithAes(plainText, keyBase64, out vectorBase64);
                 url_approver = server_url + cipherText + "&" + keyBase64 + "&" + vectorBase64;
 
@@ -748,7 +752,7 @@ namespace Class
 
             if (file_ResponseSheet != "")
             {
-                if (Directory.Exists(file_ResponseSheet))
+                if (File.Exists(file_ResponseSheet))
                 {
                     data.mail_attachments = file_ResponseSheet;
                 }
@@ -763,11 +767,10 @@ namespace Class
             string doc_name = "";
             string reference_moc = "";
             string comment = "";
+            string approve_status = "";
             string approver_displayname = "XXXXX (TOP-XX)";
 
-            string url = "";
-            string url_approver = "";
-            string url_reject = "";
+            string url = ""; 
             string step_text = "Approver TA2 Approve.";
 
             string to_displayname = "All";
@@ -798,6 +801,9 @@ namespace Class
                 doc_no = (dt.Rows[0]["pha_no"] + "");
                 doc_name = (dt.Rows[0]["pha_name"] + "");
                 reference_moc = (dt.Rows[0]["reference_moc"] + "");
+                comment = (dt.Rows[0]["approve_comment"] + "");
+                approve_status = (dt.Rows[0]["approve_status"] + "");
+                approver_displayname = (dt.Rows[0]["user_displayname"] + "");
 
                 for (int i = 0; i < dt.Rows.Count; i++)
                 {
@@ -828,22 +834,13 @@ namespace Class
                 string plainText = "seq=" + seq + "&pha_no=" + doc_no + "&step=3";
                 string cipherText = EncryptDataWithAes(plainText, keyBase64, out string vectorBase64);
 
-                url = server_url + cipherText + "&" + keyBase64 + "&" + vectorBase64;
-
-                //reject 
-                url_reject = url;
-
-                //approve
-                plainText = "seq=" + seq + "&pha_no=" + doc_no + "&step=4" + "&approver_type=approve";
-                cipherText = EncryptDataWithAes(plainText, keyBase64, out vectorBase64);
-                url_reject = server_url + cipherText + "&" + keyBase64 + "&" + vectorBase64;
-
+                url = server_url + cipherText + "&" + keyBase64 + "&" + vectorBase64; 
             }
             #endregion url 
 
 
             s_subject = "ePHA Online System : " + doc_no + (doc_name == "" ? "" : "")
-                            + ",Please follow up item and update action.";
+                            + ",The approver has approved the conduct of PHA.";
 
             s_body = "<html><body><font face='tahoma' size='2'>";
             s_body += "Dear " + to_displayname + ",";
@@ -879,6 +876,7 @@ namespace Class
             string doc_name = "";
             string reference_moc = "";
             string comment = "";
+            string approve_status = "";
             string approver_displayname = "XXXXX (TOP-XX)";
 
             string url = "";
@@ -891,8 +889,12 @@ namespace Class
             string s_mail_cc = "";
             string s_mail_from = "";
 
-            DataTable dt = new DataTable();
+            #region mail to
+            string mail_admin_group = get_mail_admin_group();
+            s_mail_to = mail_admin_group;
+            #endregion mail to
 
+            DataTable dt = new DataTable(); 
             if (sub_software == "hazop")
             {
                 sqlstr = @"  select h.approver_user_name,h.pha_status, h.pha_no, g.pha_request_name, emp.user_displayname, emp.user_email 
@@ -907,28 +909,21 @@ namespace Class
             dt = new DataTable();
             dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
 
-            #region mail to
             if (dt.Rows.Count > 0)
             {
                 doc_no = (dt.Rows[0]["pha_no"] + "");
                 doc_name = (dt.Rows[0]["pha_name"] + "");
                 reference_moc = (dt.Rows[0]["reference_moc"] + "");
+                comment = (dt.Rows[0]["approve_comment"] + "");
+                approve_status = (dt.Rows[0]["approve_status"] + "");
+                approver_displayname = (dt.Rows[0]["user_displayname"] + "");
 
-                for (int i = 0; i < dt.Rows.Count; i++)
+                s_mail_cc += (dt.Rows[0]["user_email"] + "");
+                if ((dt.Rows[0]["request_email"] + "") != "")
                 {
-                    if (i > 0) { s_mail_to += ";"; }
-                    s_mail_to += (dt.Rows[i]["user_email"] + "");
+                    s_mail_cc += ";" + (dt.Rows[0]["request_email"] + "");
                 }
-            }
-            #endregion mail to
-
-            #region mail cc 
-            if (dt.Rows.Count > 0)
-            {
-                //cc to pha_request_email
-                s_mail_cc = (dt.Rows[0]["request_email"] + "");
-            }
-            #endregion mail cc
+            } 
 
             #region url  
             using (Aes aesAlgorithm = Aes.Create())
@@ -938,25 +933,17 @@ namespace Class
                 string keyBase64 = Convert.ToBase64String(aesAlgorithm.Key);
 
                 //insert keyBase64 to db 
-                string plainText = "seq=" + seq + "&pha_no=" + doc_no + "&step=4";
+                string plainText = "seq=" + seq + "&pha_no=" + doc_no + "&step=2";
                 string cipherText = EncryptDataWithAes(plainText, keyBase64, out string vectorBase64);
 
                 url = server_url + cipherText + "&" + keyBase64 + "&" + vectorBase64;
-
-                //reject 
-                url_reject = url;
-
-                //approve
-                plainText = "seq=" + seq + "&pha_no=" + doc_no + "&step=4" + "&approver_type=approve";
-                cipherText = EncryptDataWithAes(plainText, keyBase64, out vectorBase64);
-                url_reject = server_url + cipherText + "&" + keyBase64 + "&" + vectorBase64;
 
             }
             #endregion url 
 
 
             s_subject = "ePHA Online System : " + doc_no + (doc_name == "" ? "" : "")
-                + ",Please be invited to meeting to conduct of PHA.";
+                + ",The approver has rejected the conduct of PHA.";
 
             s_body = "<html><body><font face='tahoma' size='2'>";
             s_body += "Dear " + to_displayname + ",";
@@ -965,8 +952,13 @@ namespace Class
             s_body += "<br/><b>Reference MOC</b> : " + reference_moc;
             s_body += "<br/><b>Project Name</b> : " + doc_name;
 
-            s_body += "<br/><b>" + approver_displayname + ",  Send back with Comment</b>";
-            s_body += "<br/><b>Comment: " + comment;
+
+            s_body += "<br/><b>" + approver_displayname + ", has rejected the conduct of PHA</b>";  
+            if (approve_status == "reject")
+            {
+                s_body += "<br/><b> Send back with comment :</b>";
+                s_body += "<br/><b>" + comment;
+            } 
 
             s_body += "<br/><br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Please review data of PHA No." + doc_no;
             s_body += "<br/>To see the detailed infromation,<font color='red'> please click <a href='" + url + "'>here</a></font>";
@@ -1660,7 +1652,7 @@ namespace Class
 
                     if (file_ResponseSheet != "")
                     {
-                        if (Directory.Exists(file_ResponseSheet))
+                        if (File.Exists(file_ResponseSheet))
                         {
                             data.mail_attachments = file_ResponseSheet;
                         }
@@ -2086,6 +2078,77 @@ namespace Class
 
 
             #endregion mail to
+
+            return msg;
+
+
+        }
+        public string MailMS365Test()
+        {
+            #region call function  export excel 
+            string file_ResponseSheet = @"D:\dotnet6-epha-api\dotnet6-epha-api/wwwroot/AttachedFileTemp/Hazop/HAZOP Report 202309261913.pdf";
+            if (false)
+            {
+                ReportModel param = new ReportModel();
+                param.seq = "48";
+                param.export_type = "pdf";
+                param.user_name = "";
+
+                ClassHazopSet classHazopSet = new ClassHazopSet();
+                string jsper = classHazopSet.export_hazop_report(param);
+                DataTable dtReport = new DataTable();
+                cls_json = new ClassJSON();
+                dtReport = cls_json.ConvertJSONresult(jsper);
+                if (dtReport.Rows.Count > 0)
+                {
+                    file_ResponseSheet = (Path.Combine(Directory.GetCurrentDirectory(), "") + @"/wwwroot" + (dtReport.Rows[0]["ATTACHED_FILE_PATH"] + "").Replace("~", "").Replace(".xlsx", "." + param.export_type));
+                }
+            }
+            #endregion call function  export excel 
+
+            string msg = "";
+            string mail_name_def = "PROOnline@thaioilgroup.com";
+            string mail_pass_def = "KUeou245REyjr740!MsEQAngh4";
+
+
+            SmtpClient smtpClient = new SmtpClient("smtp.office365.com");
+            smtpClient.Port = 587; // Microsoft 365 SMTP port
+            smtpClient.EnableSsl = true; // Use SSL/TLS encryption
+
+            // Set your email credentials
+            smtpClient.Credentials = new NetworkCredential(mail_name_def, mail_pass_def);
+
+            // Create the email message
+            System.Net.Mail.MailMessage mailMessage = new System.Net.Mail.MailMessage();
+            mailMessage.From = new MailAddress(mail_name_def, "KPI Online system.");
+            mailMessage.To.Add("zkuluwat@thaioilgroup.com");
+            mailMessage.To.Add("kuluwat@adb-thailand.com");
+            mailMessage.Subject = "KPI Online : Subject of your email";
+            mailMessage.Body = "This is the body of your email.";
+
+
+            if (file_ResponseSheet != "")
+            {
+                if (File.Exists(file_ResponseSheet))
+                {
+                    System.Net.Mail.Attachment attachment = new System.Net.Mail.Attachment(file_ResponseSheet, MediaTypeNames.Application.Pdf);
+                    mailMessage.Attachments.Add(attachment);
+                }
+            }
+
+            try
+            {
+                // Send the email
+                smtpClient.Send(mailMessage);
+                Console.WriteLine("Email sent successfully.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error sending email: " + ex.Message);
+            }
+
+            if (msg != "") { }
+
 
             return msg;
 

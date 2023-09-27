@@ -3,16 +3,16 @@
 namespace Model
 {
     public class uploadFile
-    { 
+    {
         public IFormFileCollection file_obj { get; set; }
         public string? file_of { get; set; }
-        public string? file_name { get; set; } 
-        public string? file_seq { get; set; } 
+        public string? file_name { get; set; }
+        public string? file_seq { get; set; }
     }
     public class ReportModel
     {
         public string? user_name { get; set; } = "";
-        public string? seq { get; set; } = ""; 
+        public string? seq { get; set; } = "";
         public string? export_type { get; set; } = "";
 
     }
@@ -29,8 +29,8 @@ namespace Model
     }
     public class EmailConfigModel
     {
-        public string? user_name { get; set; } = ""; 
-        public string? user_email { get; set; } = ""; 
+        public string? user_name { get; set; } = "";
+        public string? user_email { get; set; } = "";
 
     }
     public class LoadDocModel
@@ -38,7 +38,7 @@ namespace Model
         public string? user_name { get; set; } = "";
         public string? token_doc { get; set; } = "";
         public string? sub_software { get; set; } = "";
-        public string? type_doc { get; set; } = ""; 
+        public string? type_doc { get; set; } = "";
 
     }
     public class LoadDocFollowModel
@@ -49,7 +49,7 @@ namespace Model
         public string? type_doc { get; set; } = "";
         public string? pha_no { get; set; } = "";
         public string? responder_user_name { get; set; } = "";
-    } 
+    }
     public class SetDocHazopModel
     {
         public string? user_name { get; set; } = "";
@@ -65,17 +65,17 @@ namespace Model
         public string? json_drawing { get; set; } = "";
         public string? json_node { get; set; } = "";
         public string? json_nodedrawing { get; set; } = "";
-        public string? json_nodeguidwords  { get; set; } = "";
+        public string? json_nodeguidwords { get; set; } = "";
         public string? json_nodeworksheet { get; set; } = "";
         public string? json_managerecom { get; set; } = "";
         public string? json_ram_level { get; set; } = "";
         public string? json_ram_master { get; set; } = "";
-         
-        public string? flow_action  { get; set; } = "";
-         
-    } 
 
-        public class HeaderModel
+        public string? flow_action { get; set; } = "";
+
+    }
+
+    public class HeaderModel
     {
         public int? seq { get; set; } = 0;
         public int? id { get; set; } = 0;
@@ -112,7 +112,7 @@ namespace Model
         public string? update_by { get; set; } = "";
 
 
-        public string? action_type { get; set; } = ""; 
+        public string? action_type { get; set; } = "";
 
     }
     public class GeneralModel
@@ -465,4 +465,12 @@ namespace Model
         public string? recommendations { get; set; } = "";
 
     }
-} 
+    public class SetDocApproveModel
+    {
+        public string? role_type { get; set; } = "";
+        public string? user_name { get; set; } = "";
+        public string? token_doc { get; set; } = ""; 
+        public string? action { get; set; } = "";
+
+    }
+}
