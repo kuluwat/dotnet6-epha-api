@@ -8,12 +8,14 @@ namespace Model
         public string? file_of { get; set; }
         public string? file_name { get; set; }
         public string? file_seq { get; set; }
+        public string? sub_software { get; set; } = "";
     }
     public class ReportModel
     {
         public string? user_name { get; set; } = "";
         public string? seq { get; set; } = "";
         public string? export_type { get; set; } = "";
+        public string? sub_software { get; set; } = "";
 
     }
     public class CopyFileModel
@@ -63,15 +65,28 @@ namespace Model
         public string? json_session { get; set; } = "";
         public string? json_memberteam { get; set; } = "";
         public string? json_drawing { get; set; } = "";
-        public string? json_node { get; set; } = "";
-        public string? json_nodedrawing { get; set; } = "";
-        public string? json_nodeguidwords { get; set; } = "";
-        public string? json_nodeworksheet { get; set; } = "";
+
         public string? json_managerecom { get; set; } = "";
         public string? json_ram_level { get; set; } = "";
         public string? json_ram_master { get; set; } = "";
 
         public string? flow_action { get; set; } = "";
+        public string? sub_software { get; set; } = "";
+
+        //hazop
+        public string? json_node { get; set; } = "";
+        public string? json_nodedrawing { get; set; } = "";
+        public string? json_nodeguidwords { get; set; } = "";
+        public string? json_nodeworksheet { get; set; } = "";
+          
+        //jsea
+        public string? json_tasksworksheet { get; set; } = "";
+
+        //whatif
+        public string? json_list { get; set; } = "";
+        public string? json_listdrawing { get; set; } = "";
+        public string? json_listworksheet { get; set; } = "";
+
 
     }
 
