@@ -70,8 +70,11 @@ namespace Controllers
         [HttpPost("uploadfile_data", Name = "uploadfile_data")]
         public string uploadfile_data([FromForm] uploadFile param)
         {
+            string sub_software = "hazop";
+            try { sub_software = param.sub_software; } catch { }
+
             ClassHazopSet cls = new ClassHazopSet();
-            return cls.uploadfile_data(param, "hazop");
+            return cls.uploadfile_data(param, sub_software);
 
         }
         [HttpPost("uploadfile_data_followup", Name = "uploadfile_data_followup")]
@@ -81,14 +84,30 @@ namespace Controllers
             return cls.uploadfile_data(param, "followup");
 
         }
-
         [HttpPost("get_hazop_details", Name = "get_hazop_details")]
         public string get_hazop_details(LoadDocModel param)
         {
+            param.sub_software = "hazop";
             ClassHazop cls = new ClassHazop();
-            return cls.get_hazop_details(param);
+            return cls.get_details(param);
 
         }
+        [HttpPost("get_jsea_details", Name = "get_jsea_details")]
+        public string get_jsea_details(LoadDocModel param)
+        {
+            param.sub_software = "jsea";
+            ClassHazop cls = new ClassHazop();
+            return cls.get_details(param);
+        }
+        [HttpPost("get_whatif_details", Name = "get_whatif_details")]
+        public string get_whatif_details(LoadDocModel param)
+        {
+            param.sub_software = "whatif";
+            ClassHazop cls = new ClassHazop();
+            return cls.get_details(param);
+        }
+
+
         [HttpPost("load_hazop_details", Name = "load_hazop_details")]
         public string load_hazop_details(LoadDocModel param)
         {
@@ -96,12 +115,28 @@ namespace Controllers
             return cls.get_hazop_search(param);
 
         }
+
         [HttpPost("set_hazop", Name = "set_hazop")]
         public string set_hazop(SetDocHazopModel param)
         {
             ClassHazopSet cls = new ClassHazopSet();
             return cls.set_hazop(param);
         }
+        [HttpPost("set_jsea", Name = "set_jsea")]
+        public string set_jsea(SetDocHazopModel param)
+        {
+            ClassHazopSet cls = new ClassHazopSet();
+            return cls.set_jsea(param);
+        }
+        
+        [HttpPost("set_whatif", Name = "set_whatif")]
+        public string set_whatif(SetDocHazopModel param)
+        {
+            ClassHazopSet cls = new ClassHazopSet();
+            return cls.set_whatif(param);
+        }
+
+
         [HttpPost("set_master_ram", Name = "set_master_ram")]
         public string set_master_ram(SetDocHazopModel param)
         {
@@ -114,6 +149,18 @@ namespace Controllers
         {
             ClassHazopSet cls = new ClassHazopSet();
             return cls.set_approve(param);
+        }
+        [HttpPost("set_email_member_review", Name = "set_email_member_review")]
+        public string set_email_member_review(SetDocHazopModel param)
+        {
+            ClassHazopSet cls = new ClassHazopSet();
+            return cls.set_email_member_review(param);
+        }
+        [HttpPost("set_email_member_review_stamp", Name = "set_email_member_review_stamp")]
+        public string set_email_member_review_stamp(SetDocHazopModel param)
+        {
+            ClassHazopSet cls = new ClassHazopSet();
+            return cls.set_email_member_review_stamp(param);
         }
 
         #region mail test
@@ -132,23 +179,23 @@ namespace Controllers
         #endregion mail test
 
         #region follow up  
-        [HttpPost("load_hazop_follow_up", Name = "load_hazop_follow_up")]
-        public string load_hazop_follow_up(LoadDocModel param)
+        [HttpPost("load_follow_up", Name = "load_follow_up")]
+        public string load_follow_up(LoadDocModel param)
         {
             ClassHazop cls = new ClassHazop();
-            return cls.get_hazop_followup(param);
+            return cls.get_followup(param);
 
         }
-        [HttpPost("load_hazop_follow_up_details", Name = "load_hazop_follow_up_details")]
-        public string load_hazop_follow_up_details(LoadDocFollowModel param)
+        [HttpPost("load_follow_up_details", Name = "load_follow_up_details")]
+        public string load_follow_up_details(LoadDocFollowModel param)
         {
             ClassHazop cls = new ClassHazop();
-            return cls.get_hazop_followup_detail(param);
+            return cls.get_followup_detail(param);
 
         }
         [HttpPost("set_follow_up", Name = "set_follow_up")]
         public string set_follow_up(SetDocHazopModel param)
-        {
+        { 
             ClassHazopSet cls = new ClassHazopSet();
             return cls.set_follow_up(param);
         }
@@ -199,6 +246,35 @@ namespace Controllers
 
         #endregion export hazop
 
+
+        #region export jsea
+
+        [HttpPost("export_template_data", Name = "export_template_data")]
+        public string export_template_data(ReportModel param)
+        {
+            ClassHazopSet cls = new ClassHazopSet();
+            return cls.export_template_data(param);
+        }
+        #endregion export jsea
+        //[HttpPost("MailNotificationFollowUpItemToOwner", Name = "MailNotificationFollowUpItemToOwner")]
+        //public string MailNotificationFollowUpItemToOwner(string seq)
+        //{
+        //    ClassEmail classEmail = new ClassEmail();
+        //    return classEmail.MailNotificationFollowUpItemToOwner(seq);
+        //}
+        [HttpPost("MailNotificationDaily", Name = "MailNotificationDaily")]
+        public string MailNotificationDaily(LoadDocModel param)
+        {
+            string user_name = (param.user_name + "");
+            string seq = (param.token_doc + "");
+            string sub_software = (param.sub_software + "");
+
+            ClassEmail classEmail = new ClassEmail();
+            return classEmail.MailNotificationDaily(user_name, seq, sub_software);
+        }
+
+
+
         [HttpPost("copy_pdf_file", Name = "copy_pdf_file")]
         public string copy_pdf_file(CopyFileModel param)
         {
@@ -241,12 +317,7 @@ namespace Controllers
             ClassEmail classEmail = new ClassEmail();
             return classEmail.sendMail(data);
         }
-        [HttpPost("MailNotificationFollowUpItemToOwner", Name = "MailNotificationFollowUpItemToOwner")]
-        public string MailNotificationFollowUpItemToOwner(string seq)
-        {
-            ClassEmail classEmail = new ClassEmail();
-            return classEmail.MailNotificationFollowUpItemToOwner(seq);
-        }
+
         [HttpPost("MailTest", Name = "MailTest")]
         public string MailTest()
         {
