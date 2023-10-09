@@ -24,6 +24,7 @@ using iTextSharp.text.pdf.qrcode;
 using Newtonsoft.Json;
 using System;
 using Org.BouncyCastle.Ocsp;
+using System.Threading.Tasks;
 
 namespace Class
 {
@@ -189,7 +190,7 @@ namespace Class
 
         #endregion function
 
-        #region export excel
+        #region export excel hazop
 
         public string export_hazop_report_word(ReportModel param)
         {
@@ -311,7 +312,7 @@ namespace Class
 
             excel_hazop_worksheet(seq, _Path, _FolderTemplate, _DownloadPath, export_file_name, export_type, true);
 
-            excel_hazop_ram(seq, _Path, _FolderTemplate, _DownloadPath, export_file_name, export_type, true);
+            excel_hazop_ram(seq, _Path, _FolderTemplate, _DownloadPath, export_file_name, export_type, true, "Hazop");
 
             excel_hazop_guidewords(seq, _Path, _FolderTemplate, _DownloadPath, export_file_name, export_type, true);
 
@@ -646,7 +647,9 @@ namespace Class
                             }
                         }
                     }
+
                 }
+
 
                 //delete source file
                 try { File.Delete(sourceFilePath); } catch { }
@@ -656,6 +659,9 @@ namespace Class
 
                 //delete destination file
                 try { File.Delete(destinationFilePath); } catch { }
+
+
+
             }
             catch { }
 
@@ -922,7 +928,6 @@ namespace Class
 
             return cls_json.SetJSONresult(dtdef);
         }
-
 
         public string excel_hazop_worksheet(string seq, string _Path, string _FolderTemplate, string _DownloadPath, string _excel_name, string export_type, Boolean report_all)
         {
@@ -2027,7 +2032,7 @@ namespace Class
             string export_file_name_full = "";
             if (export_type == "excel" || export_type == "pdf")
             {
-                export_file_name_full = excel_hazop_ram(seq, _Path, _FolderTemplate, _DownloadPath, export_file_name + ".xlsx", export_type, false);
+                export_file_name_full = excel_hazop_ram(seq, _Path, _FolderTemplate, _DownloadPath, export_file_name + ".xlsx", export_type, false, "Hazop");
                 if (export_type == "excel") { export_file_name += ".xlsx"; } else { export_file_name += ".pdf"; }
             }
 
@@ -2043,7 +2048,7 @@ namespace Class
 
             return cls_json.SetJSONresult(dtdef);
         }
-        public string excel_hazop_ram(string seq, string _Path, string _FolderTemplate, string _DownloadPath, string _excel_name, string export_type, Boolean report_all)
+        public string excel_hazop_ram(string seq, string _Path, string _FolderTemplate, string _DownloadPath, string _excel_name, string export_type, Boolean report_all, string sub_software)
         {
             sqlstr = @"  select a.name as ram_type, a.descriptions, a.document_file_name
                         from epha_m_ram a where a.active_type = 1
@@ -2115,12 +2120,12 @@ namespace Class
                         {
                             #region move file to _temp  
                             string export_file_name = _Path + _excel_name.Replace(".xlsx", ".pdf");
-                            File.Copy(export_file_name, export_file_name.Replace(@"/Hazop/", @"/_temp/"));
+                            File.Copy(export_file_name, export_file_name.Replace(@"/" + sub_software + @"/", @"/_temp/"));
                             try { File.Delete(export_file_name.Replace(".pdf", ".xlsx")); } catch { }
                             try { File.Delete(export_file_name); } catch { }
                             #endregion move file to _temp
                         }
-                        return (_DownloadPath + _excel_name.Replace(".xlsx", ".pdf")).Replace(@"/Hazop/", @"/_temp/");
+                        return (_DownloadPath + _excel_name.Replace(".xlsx", ".pdf")).Replace(@"/" + sub_software + @"/", @"/_temp/");
 
                     }
                 }
@@ -2132,10 +2137,10 @@ namespace Class
             {
                 #region move file to _temp  
                 string export_file_name = _Path + _excel_name;
-                File.Copy(export_file_name, (export_file_name).Replace(@"/Hazop/", @"/_temp/"));
+                File.Copy(export_file_name, (export_file_name).Replace(@"/" + sub_software + @"/", @"/_temp/"));
                 try { File.Delete(export_file_name); } catch { }
                 #endregion move file to _temp
-                return (_DownloadPath + _excel_name).Replace(@"/Hazop/", @"/_temp/");
+                return (_DownloadPath + _excel_name).Replace(@"/" + sub_software + @"/", @"/_temp/");
             }
             else { return (_DownloadPath + _excel_name); }
         }
@@ -2299,7 +2304,7 @@ namespace Class
             else { return (_DownloadPath + _excel_name); }
         }
 
-        public string export_template_data(ReportModel param)
+        public string export_template_jsea(ReportModel param)
         {
             string seq = param.seq;
             string export_type = param.export_type;
@@ -2319,13 +2324,13 @@ namespace Class
             #endregion Determine whether the directory exists.
 
             string msg_error = "";
-            string _DownloadPath = "/AttachedFileTemp/Hazop/";
-            string _Folder = "/wwwroot/AttachedFileTemp/Hazop/";
+            string _DownloadPath = "/AttachedFileTemp/Jsea/";
+            string _Folder = "/wwwroot/AttachedFileTemp/Jsea/";
             string _FolderTemplate = MapPathFiles("/wwwroot/AttachedFileTemp/");
             string _Path = MapPathFiles(_Folder);
 
             var datetime_run = DateTime.Now.ToString("yyyyMMddHHmm");
-            string export_file_name = "HAZOP Guidewords " + datetime_run;
+            string export_file_name = "JSEA Report Template " + datetime_run;
             string export_file_name_full = "";
             if (export_type == "excel" || export_type == "pdf")
             {
@@ -2352,33 +2357,42 @@ namespace Class
                         from EPHA_F_HEADER h 
                         inner join EPHA_T_GENERAL g on h.id = g.id_pha 
                         where h.seq = '" + seq + "'  ";
-            sqlstr += @" order by h.pha_request_name";
+            sqlstr += @" order by g.pha_request_name";
             cls_conn = new ClassConnectionDb();
             dt = new DataTable();
             dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
 
-
-            string pha_no = "";
-            if (dt.Rows.Count > 0)
-            {
-                pha_no = (dt.Rows[0]["pha_no"] + "");
-            }
-
             //JSEA Report Template.xlsx
-            FileInfo template = new FileInfo(_FolderTemplate + export_type.ToUpper() + " Report Template.xlsx");
+            FileInfo template = new FileInfo(_FolderTemplate + "JSEA Report Template.xlsx");
 
 
             ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
             using (ExcelPackage excelPackage = new ExcelPackage(template))
             {
-                ExcelWorksheet sourceWorksheet = excelPackage.Workbook.Worksheets["Data"];
+                ExcelWorksheet sourceWorksheet = excelPackage.Workbook.Worksheets["WorksheetTemplate"];
                 ExcelWorksheet worksheet = sourceWorksheet;
-
-                // c4
-                worksheet.Cells["C4"].Value = dt.Rows[0]["pha_request_name"].ToString();
-                // i4 = วันที่ทำการประเมิน (Date): 23/5/2566
-                worksheet.Cells["I4"].Value = "วันที่ทำการประเมิน (Date):" + dt.Rows[0]["target_start_date"].ToString();
-
+                try
+                {
+                    if (dt.Rows.Count > 0)
+                    {
+                        // c4
+                        worksheet.Cells["C4"].Value = dt.Rows[0]["pha_request_name"].ToString();
+                        // i4 = วันที่ทำการประเมิน (Date): 23/5/2566
+                        worksheet.Cells["I4"].Value = "วันที่ทำการประเมิน (Date):" + dt.Rows[0]["target_start_date"].ToString();
+                    }
+                }
+                catch { }
+                try
+                {
+                    var startRows = 12;
+                    var icol_end = 14;
+                    for (int i = 0; i < 10; i++)
+                    {
+                        worksheet.InsertRow(startRows, 1);
+                    }
+                    DrawTableBorders(worksheet, startRows - 1, 2, startRows - 1, icol_end - 1);
+                }
+                catch { }
                 excelPackage.SaveAs(new FileInfo(_Path + _excel_name));
             }
 
@@ -2399,7 +2413,20 @@ namespace Class
                 }
             }
         }
-
+        static void ClearTableBorders(ExcelWorksheet worksheet, int startRow, int startCol, int endRow, int endCol)
+        {
+            for (int row = startRow; row <= endRow; row++)
+            {
+                for (int col = startCol; col <= endCol; col++)
+                {
+                    var cell = worksheet.Cells[row, col];
+                    cell.Style.Border.Top.Style = ExcelBorderStyle.None;
+                    cell.Style.Border.Left.Style = ExcelBorderStyle.None;
+                    cell.Style.Border.Right.Style = ExcelBorderStyle.None;
+                    cell.Style.Border.Bottom.Style = ExcelBorderStyle.None;
+                }
+            }
+        }
         public string copy_pdf_file(CopyFileModel param)
         {
             //page_start_first,page_start_second,page_end_first,page_end_second
@@ -2502,7 +2529,1003 @@ namespace Class
 
             return cls_json.SetJSONresult(dtdef);
         }
-        #endregion export excel
+        #endregion export excel hazop
+
+        #region export excel jsea
+
+        public string export_jsea_report(ReportModel param)
+        {
+            string seq = param.seq;
+            string export_type = param.export_type;
+
+            DataTable dtdef = new DataTable();
+
+            #region Determine whether the directory exists.
+            DataTable dt = new DataTable();
+            dt.Columns.Add("ATTACHED_FILE_NAME");
+            dt.Columns.Add("ATTACHED_FILE_PATH");
+            dt.Columns.Add("ATTACHED_FILE_OF");
+            dt.Columns.Add("IMPORT_DATA_MSG");
+            dt.AcceptChanges();
+            dtdef = dt.Clone(); dtdef.AcceptChanges();
+
+            #endregion Determine whether the directory exists.
+
+            string msg_error = "";
+            string _DownloadPath = "/AttachedFileTemp/Jsea/";
+            string _Folder = "/wwwroot/AttachedFileTemp/Jsea/";
+            string _FolderTemplate = MapPathFiles("/wwwroot/AttachedFileTemp/");
+            string _Path = MapPathFiles(_Folder);
+
+            var datetime_run = DateTime.Now.ToString("yyyyMMddHHmm");
+            string export_file_name = "JSEA Report " + datetime_run;
+            string export_file_name_full = "";
+            if (export_type == "excel" || export_type == "pdf")
+            {
+                export_file_name_full = excel_jsea_report(seq, _Path, _FolderTemplate, _DownloadPath, export_file_name + ".xlsx", export_type);
+                if (export_type == "excel") { export_file_name += ".xlsx"; } else { export_file_name += ".pdf"; }
+            }
+
+            try
+            {
+                dtdef.Rows.Add(dtdef.NewRow()); dtdef.AcceptChanges();
+                dtdef.Rows[dtdef.Rows.Count - 1]["ATTACHED_FILE_NAME"] = export_file_name;
+                dtdef.Rows[dtdef.Rows.Count - 1]["ATTACHED_FILE_PATH"] = export_file_name_full;
+                dtdef.Rows[dtdef.Rows.Count - 1]["IMPORT_DATA_MSG"] = msg_error;
+                dtdef.AcceptChanges();
+            }
+            catch (Exception ex) { ex.Message.ToString(); }
+
+            return cls_json.SetJSONresult(dtdef);
+        }
+        public string excel_jsea_report(string seq, string _Path, string _FolderTemplate, string _DownloadPath, string _excel_name, string export_type)
+        {
+            string export_file_name = _Path + _excel_name;
+            FileInfo template = new FileInfo(_FolderTemplate + "JSEA Report Template.xlsx");
+            ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
+            using (ExcelPackage excelPackage = new ExcelPackage(template))
+            {
+                excelPackage.SaveAs(new FileInfo(export_file_name));
+            }
+
+            //Study Objective and Work Scope, Drawing & Reference, Node List
+            excel_jsea_general(seq, _Path, _FolderTemplate, _DownloadPath, export_file_name, export_type, true);
+
+            //JSEA Attendee Sheet 
+            excel_jsea_atendeesheet(seq, _Path, _FolderTemplate, _DownloadPath, export_file_name, export_type, true);
+
+            //JSEA Recommendation
+            excel_jsea_recommendation(seq, _Path, _FolderTemplate, _DownloadPath, export_file_name, export_type, true);
+
+            excel_jsea_worksheet(seq, _Path, _FolderTemplate, _DownloadPath, export_file_name, export_type, true);
+
+            excel_hazop_ram(seq, _Path, _FolderTemplate, _DownloadPath, export_file_name, export_type, true, "Jsea");
+
+            ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
+            using (ExcelPackage excelPackage = new ExcelPackage(export_file_name))
+            {
+                string SheetName_befor = excelPackage.Workbook.Worksheets[excelPackage.Workbook.Worksheets.Count - 1].Name;
+                string SheetName = "Drawing PIDs & PFDs";
+
+                excelPackage.Workbook.Worksheets.MoveAfter(SheetName, SheetName_befor);
+
+                // Save changes
+                excelPackage.Save();
+            }
+            // Save the workbook as PDF
+            if (export_type == "pdf")
+            {
+                Workbook workbookPDF = new Workbook(export_file_name);
+                PdfSaveOptions options = new PdfSaveOptions
+                {
+                    AllColumnsInOnePagePerSheet = true
+                };
+                export_file_name = export_file_name.Replace(".xlsx", ".pdf");
+
+                workbookPDF.Save(export_file_name, options);
+
+                add_drawing_to_appendix(seq, _Path, export_file_name, true);
+
+
+                if (true)
+                {
+                    #region move file to _temp  
+                    if (File.Exists(export_file_name))
+                    {
+                        _delay_time(export_file_name);
+
+                        File.Copy(export_file_name, (export_file_name.Replace(@"/Jsea/", @"/_temp/")), true); 
+                        //File.Copy(export_file_name, _FolderTemplate + @"_temp/" +_excel_name.Replace(".xlsx", ".pdf"), true); 
+                        try { File.Delete(export_file_name.Replace(".pdf", ".xlsx")); } catch { }
+                        try { File.Delete(export_file_name); } catch { }
+                    }
+                    #endregion move file to _temp
+                }
+                return (_DownloadPath + _excel_name.Replace(".xlsx", ".pdf")).Replace(@"/Jsea/", @"/_temp/");
+
+            }
+
+
+            if (true)
+            {
+                #region move file to _temp  
+                File.Copy(export_file_name, (export_file_name).Replace(@"/Jsea/", @"/_temp/"));
+                try { File.Delete(export_file_name); } catch { }
+                #endregion move file to _temp
+            }
+            return (_DownloadPath + _excel_name).Replace(@"/Jsea/", @"/_temp/");
+        }
+        private void _delay_time(string filePath)
+        {
+
+            int maxRetryAttempts = 5;
+            int retryDelayMilliseconds = 1000;
+
+            for (int i = 0; i < maxRetryAttempts; i++)
+            {
+                try
+                {
+                    using (FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+                    {
+                        // Your code to work with the file
+                    }
+                    break; // If successful, break out of the loop
+                }
+                catch (IOException ex)
+                {
+                    // Handle the exception or log it
+                    Console.WriteLine($"Attempt {i + 1}: {ex.Message}");
+                    System.Threading.Thread.Sleep(retryDelayMilliseconds); // Wait before retrying
+                }
+            }
+        }
+        public string excel_jsea_general(string seq, string _Path, string _FolderTemplate, string _DownloadPath, string _excel_name, string export_type, Boolean report_all)
+        {
+            #region get data
+            sqlstr = @" select g.work_scope
+                         from EPHA_F_HEADER h 
+                         inner join EPHA_T_GENERAL g on h.id = g.id_pha  
+                         where h.seq = '" + seq + "' ";
+
+            cls_conn = new ClassConnectionDb();
+            DataTable dtWorkScope = new DataTable();
+            dtWorkScope = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+
+
+            sqlstr = @" select distinct d.no, d.document_name, d.document_no, d.document_file_name, d.descriptions 
+                        from EPHA_F_HEADER h 
+                        inner join EPHA_T_GENERAL g on h.id = g.id_pha  
+                        inner join EPHA_T_DRAWING d on h.id = d.id_pha    
+                        where h.seq = '" + seq + "' and d.document_name is not null order by convert(int,d.no) ";
+
+            cls_conn = new ClassConnectionDb();
+            DataTable dtDrawing = new DataTable();
+            dtDrawing = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+
+            FileInfo template = new FileInfo(_FolderTemplate + "HAZOP Report Template.xlsx");
+            if (report_all == true) { template = new FileInfo(_excel_name); }
+
+            #endregion get data
+
+            ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
+            using (ExcelPackage excelPackage = new ExcelPackage(template))
+            {
+                ExcelWorksheet sourceWorksheet = excelPackage.Workbook.Worksheets["Study Objective and Work Scope"];  // Replace "SourceSheet" with the actual source sheet name
+                ExcelWorksheet worksheet = sourceWorksheet;// excelPackage.Workbook.Worksheets.Add("HAZOP Attendee Sheet", sourceWorksheet);
+
+                //Study Objective and Work Scope
+                worksheet = excelPackage.Workbook.Worksheets["Study Objective and Work Scope"];
+                worksheet.Cells["A2"].Value = (dtWorkScope.Rows[0]["work_scope"] + "");
+
+                //Drawing & Reference
+                #region Drawing & Reference
+                if (true)
+                {
+                    worksheet = excelPackage.Workbook.Worksheets["Drawing & Reference"];
+
+                    int startRows = 3;
+                    int icol_end = 6;
+                    int ino = 1;
+                    for (int i = 0; i < dtDrawing.Rows.Count; i++)
+                    {
+                        //No.	Document Name	Drawing No	Document File	Comment
+                        worksheet.InsertRow(startRows, 1);
+                        worksheet.Cells["A" + (i + startRows)].Value = (i + 1); ;
+                        worksheet.Cells["B" + (i + startRows)].Value = (dtDrawing.Rows[i]["document_name"] + "");
+                        worksheet.Cells["C" + (i + startRows)].Value = (dtDrawing.Rows[i]["document_no"] + "");
+                        worksheet.Cells["D" + (i + startRows)].Value = (dtDrawing.Rows[i]["document_file_name"] + "");
+                        worksheet.Cells["E" + (i + startRows)].Value = (dtDrawing.Rows[i]["descriptions"] + "");
+                        startRows++;
+                    }
+                    // วาดเส้นตาราง โดยใช้เซลล์ XX ถึง XX
+                    DrawTableBorders(worksheet, 1, 1, startRows - 1, icol_end - 1);
+
+                    //var eRange = worksheet.Cells[worksheet.Cells["A3"].Address + ":" + worksheet.Cells["D" + startRows].Address];
+                    //eRange.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                    //eRange.Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+                }
+                #endregion Drawing & Reference
+
+
+
+                //Study Objective and Work Scope
+                #region Study Objective and Work Scope
+                if (true)
+                {
+                    worksheet = excelPackage.Workbook.Worksheets["Study Objective and Work Scope"];
+                    worksheet.Cells["A2"].Value = (dtWorkScope.Rows[0]["work_scope"] + "");
+                }
+                #endregion Study Objective and Work Scope
+
+                if (report_all == true)
+                {
+                    //excelPackage.Workbook.Worksheets.MoveBefore("HAZOP Attendee Sheet", "HAZOP Cover Page"); 
+                    //ExcelWorksheet SheetTemplate = excelPackage.Workbook.Worksheets["AttendeeSheetTemplate"];
+                    //SheetTemplate.Hidden = eWorkSheetHidden.Hidden;
+
+                    if (!Directory.Exists(_Path))
+                    {
+                        Directory.CreateDirectory(_Path);
+                    }
+                    excelPackage.Save();
+                }
+                else
+                {
+                    //ExcelWorksheet SheetTemplate = excelPackage.Workbook.Worksheets["AttendeeSheetTemplate"];
+                    //SheetTemplate.Hidden = eWorkSheetHidden.Hidden;
+
+                    excelPackage.SaveAs(new FileInfo(_Path + _excel_name));
+
+                    // Save the workbook as PDF
+                    if (export_type == "pdf")
+                    {
+                        Workbook workbookPDF = new Workbook(_Path + _excel_name);
+                        PdfSaveOptions options = new PdfSaveOptions
+                        {
+                            AllColumnsInOnePagePerSheet = true
+                        };
+                        workbookPDF.Save(_Path + _excel_name.Replace(".xlsx", ".pdf"), options);
+                        //return _DownloadPath + _excel_name.Replace(".xlsx", ".pdf");
+                        if (true)
+                        {
+                            #region move file to _temp  
+                            string export_file_name = _Path + _excel_name.Replace(".xlsx", ".pdf");
+                            File.Copy(export_file_name, export_file_name.Replace(@"/Jsea/", @"/_temp/"));
+                            try { File.Delete(export_file_name.Replace(".pdf", ".xlsx")); } catch { }
+                            try { File.Delete(export_file_name); } catch { }
+                            #endregion move file to _temp
+                        }
+                        return (_DownloadPath + _excel_name.Replace(".xlsx", ".pdf")).Replace(@"/Jsea/", @"/_temp/");
+                    }
+                }
+            }
+
+            if (!report_all)
+            {
+                #region move file to _temp  
+                string export_file_name = _Path + _excel_name;
+                File.Copy(export_file_name, (export_file_name).Replace(@"/Jsea/", @"/_temp/"));
+                try { File.Delete(export_file_name); } catch { }
+                #endregion move file to _temp
+                return (_DownloadPath + _excel_name).Replace(@"/Jsea/", @"/_temp/");
+            }
+            else { return (_DownloadPath + _excel_name); }
+        }
+        public string excel_jsea_atendeesheet(string seq, string _Path, string _FolderTemplate, string _DownloadPath, string _excel_name, string export_type, Boolean report_all)
+        {
+            //ตอนนี้รายละเอียดจะเหมือนกับ HAZOP แค่แยกออกมาก่อน รอ comment จาก user อีกที
+            sqlstr = @" select s.id_pha, s.seq as seq_session, s.no as session_no
+                         , convert(varchar,s.meeting_date,106) as meeting_date
+                         , mt.no as member_no, isnull(mt.user_name,'') as user_name, emp.user_displayname
+                         from EPHA_F_HEADER h 
+                         inner join EPHA_T_GENERAL g on h.id = g.id_pha 
+                         inner join EPHA_T_SESSION s on h.id = s.id_pha 
+                         left join EPHA_T_MEMBER_TEAM mt on h.id = mt. id_pha and mt.id_session = s.id
+                         left join VW_EPHA_PERSON_DETAILS emp on lower(emp.user_name) = lower(mt.user_name)
+                         where h.seq = '" + seq + "' and lower(mt.user_name) is not null ";
+
+            cls_conn = new ClassConnectionDb();
+            DataTable dtAll = new DataTable();
+            dtAll = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+
+            cls_conn = new ClassConnectionDb();
+            DataTable dtMember = new DataTable();
+            dtMember = cls_conn.ExecuteAdapterSQL(" select distinct 0 as no, t.user_name, t.user_displayname, '' as company_text from (" + sqlstr + " )t where t.user_name <> '' order by t.user_name").Tables[0];
+
+            cls_conn = new ClassConnectionDb();
+            DataTable dtSession = new DataTable();
+            dtSession = cls_conn.ExecuteAdapterSQL(" select distinct t.seq_session, t.session_no, t.meeting_date from (" + sqlstr + ")t order by t.session_no ").Tables[0];
+
+            Boolean bCheckNewFile = false;
+            FileInfo template = new FileInfo(_FolderTemplate + "JSEA AttendeeSheet Template.xlsx");
+            if (report_all == true) { template = new FileInfo(_excel_name); }
+
+            ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
+            using (ExcelPackage excelPackage = new ExcelPackage(template))
+            {
+                ExcelWorksheet sourceWorksheet = excelPackage.Workbook.Worksheets["AttendeeSheetTemplate"];  // Replace "SourceSheet" with the actual source sheet name
+                sourceWorksheet.Name = "JSEA Attendee Sheet";
+                ExcelWorksheet worksheet = sourceWorksheet;// excelPackage.Workbook.Worksheets.Add("HAZOP Attendee Sheet", sourceWorksheet);
+
+                int i = 0;
+                int startRows = 4;
+                int icol_start = 4;
+                int icol_end = icol_start + (dtSession.Rows.Count > 6 ? dtSession.Rows.Count : 6);
+
+                for (int imember = 0; imember < dtMember.Rows.Count; imember++)
+                {
+                    worksheet.InsertRow(startRows, 1);
+                    string user_name = (dtMember.Rows[imember]["user_name"] + "");
+                    //No.
+                    worksheet.Cells["A" + (i + startRows)].Value = (imember + 1);
+                    //Name
+                    worksheet.Cells["B" + (i + startRows)].Value = (dtMember.Rows[imember]["user_displayname"] + "");
+                    //Company
+                    worksheet.Cells["C" + (i + startRows)].Value = (dtMember.Rows[imember]["company_text"] + "");
+
+                    int irow_session = 0;
+                    if (imember == 0)
+                    {
+                        if (dtSession.Rows.Count < 6)
+                        {
+                            //worksheet.Cells[2, icol_start, 2, icol_end].Merge = true; 
+                            for (int c = icol_end; c < 30; c++)
+                            {
+                                worksheet.DeleteColumn(icol_end);
+
+                            }
+                        }
+
+                        irow_session = 0;
+                        for (int c = icol_start; c < icol_end; c++)
+                        {
+                            try
+                            {
+                                //header 
+                                if ((dtSession.Rows[irow_session]["meeting_date"] + "") == "")
+                                {
+                                    worksheet.Cells[3, c].Value = "";
+                                }
+                                else
+                                {
+                                    worksheet.Cells[3, c].Value = (dtSession.Rows[irow_session]["meeting_date"] + "");
+                                }
+                            }
+                            catch { worksheet.Cells[3, c].Value = ""; }
+                            irow_session += 1;
+                        }
+                    }
+
+                    irow_session = 0;
+                    for (int c = icol_start; c < icol_end; c++)
+                    {
+                        try
+                        {
+                            string session_no = "";
+                            try { session_no = (dtSession.Rows[irow_session]["session_no"] + ""); } catch { }
+
+                            DataRow[] dr = dtAll.Select("user_name = '" + user_name + "' and session_no = '" + session_no + "'");
+                            if (dr.Length > 0)
+                            {
+                                worksheet.Cells[startRows, c].Value = "X";
+                            }
+                            else { worksheet.Cells[startRows, c].Value = ""; }
+                        }
+                        catch { }
+                        irow_session++;
+
+                    }
+
+                    startRows++;
+                }
+
+                // วาดเส้นตาราง โดยใช้เซลล์ XX ถึง XX
+                DrawTableBorders(worksheet, 1, 1, startRows - 1, icol_end - 1);
+
+                if (report_all == true)
+                {
+                    //excelPackage.Workbook.Worksheets.MoveBefore("HAZOP Attendee Sheet", "Study Objective and Work Scope"); 
+                    //ExcelWorksheet SheetTemplate = excelPackage.Workbook.Worksheets["AttendeeSheetTemplate"];
+                    //SheetTemplate.Hidden = eWorkSheetHidden.Hidden;
+
+                    if (!Directory.Exists(_Path))
+                    {
+                        Directory.CreateDirectory(_Path);
+                    }
+                    excelPackage.Save();
+                }
+                else
+                {
+                    //ExcelWorksheet SheetTemplate = excelPackage.Workbook.Worksheets["AttendeeSheetTemplate"];
+                    //SheetTemplate.Hidden = eWorkSheetHidden.Hidden;
+
+                    excelPackage.SaveAs(new FileInfo(_Path + _excel_name));
+
+                    // Save the workbook as PDF
+                    if (export_type == "pdf")
+                    {
+                        Workbook workbookPDF = new Workbook(_Path + _excel_name);
+                        PdfSaveOptions options = new PdfSaveOptions
+                        {
+                            AllColumnsInOnePagePerSheet = true
+                        };
+                        workbookPDF.Save(_Path + _excel_name.Replace(".xlsx", ".pdf"), options);
+                        //return _DownloadPath + _excel_name.Replace(".xlsx", ".pdf");
+                        if (true)
+                        {
+                            #region move file to _temp  
+                            string export_file_name = _Path + _excel_name.Replace(".xlsx", ".pdf");
+                            File.Copy(export_file_name, export_file_name.Replace(@"/Jsea/", @"/_temp/"));
+                            try { File.Delete(export_file_name.Replace(".pdf", ".xlsx")); } catch { }
+                            try { File.Delete(export_file_name); } catch { }
+                            #endregion move file to _temp
+                        }
+                        return (_DownloadPath + _excel_name.Replace(".xlsx", ".pdf")).Replace(@"/Jsea/", @"/_temp/");
+                    }
+                }
+            }
+
+            //return _DownloadPath + _excel_name;  
+            if (!report_all)
+            {
+                #region move file to _temp  
+                string export_file_name = _Path + _excel_name;
+                File.Copy(export_file_name, (export_file_name).Replace(@"/Jsea/", @"/_temp/"));
+                try { File.Delete(export_file_name); } catch { }
+                #endregion move file to _temp
+                return (_DownloadPath + _excel_name).Replace(@"/Jsea/", @"/_temp/");
+            }
+            else { return (_DownloadPath + _excel_name); }
+        }
+        public string excel_jsea_recommendation(string seq, string _Path, string _FolderTemplate, string _DownloadPath, string _excel_name, string export_type, Boolean report_all)
+        {
+            sqlstr = @" select distinct
+                        h.seq, h.pha_no, nl.id as id_node, g.pha_request_name
+                        , nl.node, nl.node as node_check, nl.design_intent, nl.descriptions, nl.design_conditions, nl.node_boundary, nl.operating_conditions
+                        , d.document_no, d.document_file_name
+                        , mgw.guide_words as guideword, mgw.deviations as deviation, nw.causes, nw.consequences
+                        , nw.category_type, nw.ram_befor_security, nw.ram_befor_likelihood, nw.ram_befor_risk
+                        , nw.existing_safeguards, nw.recommendations, nw.recommendations_no, nw.responder_user_name, nw.responder_user_displayname
+                        , nw.action_status
+                        , nl.no as node_no, nw.no, nw.causes_no, nw.consequences_no
+                        , nw.seq as seq_worksheet
+                        from EPHA_F_HEADER h 
+                        inner join EPHA_T_GENERAL g on h.id = g.id_pha 
+                        inner join EPHA_T_NODE nl on h.id = nl.id_pha 
+                        left join EPHA_T_NODE_DRAWING nd on h.id = nd.id_pha and  nl.id = nd.id_node 
+                        left join EPHA_T_DRAWING d on h.id = d.id_pha and  nd.id_drawing = d.id
+                        left join EPHA_T_NODE_WORKSHEET nw on h.id = nw.id_pha and  nl.id = nw.id_node   
+                        left join EPHA_M_GUIDE_WORDS mgw on mgw.id = nw.id_guide_word
+                        where h.seq = '" + seq + "' and nw.responder_user_name is not null ";
+            sqlstr += @" order by cast(nl.no as int),cast(nw.no as int), cast(nw.causes_no as int), cast(nw.consequences_no as int)";
+
+            cls_conn = new ClassConnectionDb();
+            DataTable dtWorksheet = new DataTable();
+            dtWorksheet = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+
+            sqlstr = @" select distinct nl.no, nw.no, nw.seq, 0 as ref, nl.node, nl.node as node_check
+                        , nw.ram_after_risk, nw.ram_after_risk_action, nw.recommendations, nw.recommendations_no, nw.action_status, nw.responder_user_name, nw.responder_user_displayname 
+                        from EPHA_F_HEADER h 
+                        inner join EPHA_T_GENERAL g on h.id = g.id_pha 
+                        inner join EPHA_T_NODE nl on h.id = nl.id_pha 
+                        left join EPHA_T_NODE_DRAWING nd on h.id = nd.id_pha and  nl.id = nd.id_node 
+                        left join EPHA_T_DRAWING d on h.id = d.id_pha and  nd.id_drawing = d.id
+                        left join EPHA_T_NODE_WORKSHEET nw on h.id = nw.id_pha and  nl.id = nw.id_node   
+                        left join EPHA_M_GUIDE_WORDS mgw on mgw.id = nw.id_guide_word
+                        where h.seq = '" + seq + "' and nw.responder_user_name is not null ";
+            sqlstr += @" order by nl.no, nw.no ";
+            cls_conn = new ClassConnectionDb();
+            DataTable dtTrack = new DataTable();
+            dtTrack = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+            if (true)
+            {
+                for (int t = 0; t < dtTrack.Rows.Count; t++)
+                {
+                    dtTrack.Rows[t]["ref"] = (t + 1);
+                    dtTrack.AcceptChanges();
+                }
+            }
+
+
+            FileInfo template = new FileInfo(_FolderTemplate + "JSEA Recommendation Template.xlsx");
+            if (report_all == true) { template = new FileInfo(_excel_name); }
+
+            ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
+            using (ExcelPackage excelPackage = new ExcelPackage(template))
+            {
+
+                dt = new DataTable(); dt = dtWorksheet.Copy(); dt.AcceptChanges();
+                for (int i = 0; i < dt.Rows.Count; i++)
+                {
+                    #region Sheet
+                    if (true)
+                    {
+                        ExcelWorksheet sourceWorksheet = excelPackage.Workbook.Worksheets["RecommTemplate"];
+                        ExcelWorksheet worksheet = excelPackage.Workbook.Worksheets.Add("RecommTemplate" + i, sourceWorksheet);
+
+                        string ref_no = (i + 1).ToString();
+                        worksheet.Name = "Response Sheet(Ref." + ref_no + ")";
+
+                        string responder_user_name = (dt.Rows[i]["responder_user_name"] + "");
+                        string responder_user_displayname = (dt.Rows[i]["responder_user_displayname"] + "");
+                        string pha_request_name = (dt.Rows[i]["pha_request_name"] + "");
+                        string pha_no = (dt.Rows[i]["pha_no"] + "");
+                        string seq_worksheet = (dt.Rows[i]["seq_worksheet"] + "");
+
+
+                        int startRows = 2;
+                        if (true)
+                        {
+                            string tasks = "";
+                            string drawing_doc = "";
+
+                            //workstep,taskdesc,potentailhazard,possiblecase 
+                            string workstep = "";
+                            string taskdesc = "";
+                            string potentailhazard = "";
+                            string possiblecase = "";
+
+                            string recommendations = "";
+                            string recommendations_no = "";
+
+                            int action_no = 0;
+
+                            #region loop drawing_doc 
+                            drawing_doc = (dt.Rows[i]["document_no"] + "");
+                            if ((dt.Rows[i]["document_file_name"] + "") != "")
+                            {
+                                drawing_doc += " (" + dt.Rows[i]["document_file_name"] + ")";
+                            }
+                            #endregion loop drawing_doc 
+
+                            #region loop workksheet
+                            DataRow[] drWorksheet = dt.Select("seq_worksheet = '" + seq_worksheet + "'");
+                            for (int n = 0; n < drWorksheet.Length; n++)
+                            {
+                                //workstep,taskdesc,potentailhazard,possiblecase 
+                                if ((drWorksheet[n]["workstep"] + "") != "")
+                                {
+                                    if (workstep != "") { workstep += ","; }
+                                    workstep += (drWorksheet[n]["workstep"] + "");
+                                }
+
+                                if ((drWorksheet[n]["taskdesc"] + "") != "")
+                                {
+                                    if (taskdesc != "") { taskdesc += ","; }
+                                    taskdesc += (drWorksheet[n]["taskdesc"] + "");
+                                }
+                                if ((drWorksheet[n]["potentailhazard"] + "") != "")
+                                {
+                                    if (potentailhazard != "") { potentailhazard += ","; }
+                                    potentailhazard += (drWorksheet[n]["potentailhazard"] + "");
+                                }
+                                if ((drWorksheet[n]["possiblecase"] + "") != "")
+                                {
+                                    if (possiblecase != "") { possiblecase += ","; }
+                                    possiblecase += (drWorksheet[n]["possiblecase"] + "");
+                                }
+
+                                if ((drWorksheet[n]["recommendations"] + "") != "")
+                                {
+                                    if (recommendations != "") { recommendations += ","; }
+                                    recommendations += (drWorksheet[n]["recommendations"] + "");
+                                    action_no += 1;
+
+                                    if (recommendations_no != "") { recommendations_no += ","; }
+                                    recommendations_no += (drWorksheet[n]["recommendations_no"] + "");
+                                }
+
+                            }
+
+                            #endregion loop workksheet
+
+                            worksheet.Cells["A" + (startRows)].Value = "Project Title:" + pha_request_name;
+                            startRows += 1;
+                            worksheet.Cells["A" + (startRows)].Value = "Project No:" + pha_no;
+                            startRows += 1;
+                            worksheet.Cells["A" + (startRows)].Value = "Tasks:" + tasks;
+                            startRows += 1;
+
+                            worksheet.Cells["B" + (startRows)].Value = responder_user_displayname;
+                            worksheet.Cells["E" + (startRows)].Value = responder_user_displayname;
+                            startRows += 1;
+
+                            worksheet.Cells["B" + (startRows)].Value = action_no;
+                            startRows += 1;
+
+                            worksheet.Cells["B" + (startRows)].Value = drawing_doc;
+                            startRows += 1;
+                            worksheet.Cells["B" + (startRows)].Value = workstep;
+                            startRows += 1;
+                            worksheet.Cells["B" + (startRows)].Value = taskdesc;
+                            startRows += 1;
+                            worksheet.Cells["B" + (startRows)].Value = potentailhazard;
+                            startRows += 1;
+                            worksheet.Cells["B" + (startRows)].Value = possiblecase;
+                            startRows += 1;
+                            worksheet.Cells["B" + (startRows)].Value = recommendations;
+                            startRows += 1;
+                        }
+
+                    }
+                    #endregion Sheet
+
+                }
+
+                #region TrackTemplate
+                if (dtTrack.Rows.Count > 0)
+                {
+                    //ข้อมูลทั้งหมด
+                    ExcelWorksheet worksheet = excelPackage.Workbook.Worksheets["TrackTemplate"];
+                    worksheet.Name = "Status Tracking Table";
+
+                    int i = 0;
+                    int startRows = 3;
+
+                    dt = new DataTable(); dt = dtTrack.Copy(); dt.AcceptChanges();
+                    if (dt.Rows.Count > 0)
+                    {
+                        for (i = 0; i < dt.Rows.Count; i++)
+                        {
+                            worksheet.InsertRow(startRows, 1);
+                            worksheet.Cells["A" + (startRows)].Value = dt.Rows[i]["ref"].ToString();
+                            worksheet.Cells["B" + (startRows)].Value = dt.Rows[i]["workstep"].ToString();
+                            worksheet.Cells["C" + (startRows)].Value = dt.Rows[i]["ram_after_risk"].ToString();
+                            worksheet.Cells["D" + (startRows)].Value = dt.Rows[i]["recommendations"].ToString();
+                            worksheet.Cells["E" + (startRows)].Value = dt.Rows[i]["action_status"].ToString();
+                            worksheet.Cells["F" + (startRows)].Value = dt.Rows[i]["responder_user_displayname"].ToString();
+                            startRows++;
+                        }
+
+                        // วาดเส้นตาราง โดยใช้เซลล์ A1 ถึง C3
+                        DrawTableBorders(worksheet, 3, 1, startRows - 1, 6);
+                    }
+                }
+                #endregion Response Sheet
+
+                if (report_all == true)
+                {
+                    ExcelWorksheet SheetTemplate = excelPackage.Workbook.Worksheets["RecommTemplate"];
+                    SheetTemplate.Hidden = eWorkSheetHidden.Hidden;
+                    excelPackage.Save();
+                }
+                else
+                {
+                    ExcelWorksheet SheetTemplate = excelPackage.Workbook.Worksheets["RecommTemplate"];
+                    SheetTemplate.Hidden = eWorkSheetHidden.Hidden;
+                    excelPackage.SaveAs(new FileInfo(_Path + _excel_name));
+
+                    // Save the workbook as PDF
+                    if (export_type == "pdf")
+                    {
+                        Workbook workbookPDF = new Workbook(_Path + _excel_name);
+                        PdfSaveOptions options = new PdfSaveOptions
+                        {
+                            AllColumnsInOnePagePerSheet = true
+                        };
+                        workbookPDF.Save(_Path + _excel_name.Replace(".xlsx", ".pdf"), options);
+                        //return _DownloadPath + _excel_name.Replace(".xlsx", ".pdf");
+                        if (true)
+                        {
+                            #region move file to _temp  
+                            string export_file_name = _Path + _excel_name.Replace(".xlsx", ".pdf");
+                            File.Copy(export_file_name, export_file_name.Replace(@"/Jsea/", @"/_temp/"));
+                            try { File.Delete(export_file_name.Replace(".pdf", ".xlsx")); } catch { }
+                            try { File.Delete(export_file_name); } catch { }
+                            #endregion move file to _temp
+                        }
+                        return (_DownloadPath + _excel_name.Replace(".xlsx", ".pdf")).Replace(@"/Jsea/", @"/_temp/");
+
+                    }
+                }
+            }
+
+
+            //return _DownloadPath + _excel_name;  
+            if (!report_all)
+            {
+                #region move file to _temp  
+                string export_file_name = _Path + _excel_name;
+                File.Copy(export_file_name, (export_file_name).Replace(@"/Jsea/", @"/_temp/"));
+                try { File.Delete(export_file_name); } catch { }
+                #endregion move file to _temp
+                return (_DownloadPath + _excel_name).Replace(@"/Jsea/", @"/_temp/");
+            }
+            else { return (_DownloadPath + _excel_name); }
+        }
+
+        public string excel_jsea_worksheet(string seq, string _Path, string _FolderTemplate, string _DownloadPath, string _excel_name, string export_type, Boolean report_all)
+        {
+            #region get data
+            sqlstr = @"  select g.pha_request_name, format(g.target_start_date,'dd MMM yyyy') as target_start_date, g.descriptions
+                         from EPHA_F_HEADER h 
+                         inner join EPHA_T_GENERAL g on h.id = g.id_pha  
+                         where h.seq = '" + seq + "' ";
+
+            cls_conn = new ClassConnectionDb();
+            DataTable dtHead = new DataTable();
+            dtHead = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+
+            sqlstr = @"   select tw.no, tw.workstep_no, tw.workstep, tw.taskdesc_no, tw.taskdesc, tw.potentailhazard_no, tw.potentailhazard, tw.possiblecase_no, tw.possiblecase  
+                         , tw.category_no, tw.category_type, tw.ram_befor_security, tw.ram_befor_likelihood, tw.ram_befor_risk, tw.recommendations, tw.responder_action_by
+                         , tw.ram_after_security, tw.ram_after_likelihood, tw.ram_after_risk
+                         , g.id_ram
+                         from EPHA_F_HEADER h 
+                         inner join EPHA_T_GENERAL g on h.id = g.id_pha  
+                         inner join EPHA_T_TASKS_WORKSHEET tw on h.id  = tw.id_pha 
+                         where h.seq = '" + seq + "' order by tw.no  ";
+
+            cls_conn = new ClassConnectionDb();
+            DataTable dtWorksheet = new DataTable();
+            dtWorksheet = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+
+            sqlstr = @" select tr.user_type ,tr.no, tr.user_displayname, tr.user_title, tr.reviewer_date
+                         from EPHA_F_HEADER h
+                         inner join EPHA_T_TASKS_RELATEDPEOPLE tr on h.id  = tr.id_pha
+                         where h.seq = '" + seq + "' order by tr.user_type ,tr.no  ";
+
+            cls_conn = new ClassConnectionDb();
+            DataTable dtRelatedPeople = new DataTable();
+            dtRelatedPeople = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+
+
+            FileInfo template = new FileInfo(_FolderTemplate + "JSEA Report Template.xlsx");
+            if (report_all == true) { template = new FileInfo(_excel_name); }
+
+            #endregion get data
+
+            ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
+            using (ExcelPackage excelPackage = new ExcelPackage(template))
+            {
+                ExcelWorksheet sourceWorksheet = excelPackage.Workbook.Worksheets["WorksheetTemplate"];
+                ExcelWorksheet worksheet = sourceWorksheet;
+
+                //Worksheet
+                #region Worksheet
+                if (true)
+                {
+                    //header
+                    worksheet.Cells["C4"].Value = (dtHead.Rows[0]["pha_request_name"] + "");
+                    worksheet.Cells["I4"].Value = "วันที่ทำการประเมิน (Date): " + (dtHead.Rows[0]["target_start_date"] + "");
+                    worksheet.Cells["I5"].Value = (dtHead.Rows[0]["descriptions"] + "");
+
+                    int startRows = 12;
+                    int icol_start = 1;
+                    int icol_end = 6;
+                    for (int i = 0; i < dtWorksheet.Rows.Count; i++)
+                    {
+                        worksheet.InsertRow(startRows, 1);
+                        icol_start = 1;
+
+                        icol_start += 1; worksheet.Cells[(i + startRows), icol_start].Value = (dtWorksheet.Rows[i]["workstep_no"] + "." + dtWorksheet.Rows[i]["workstep"]);
+                        icol_start += 1; worksheet.Cells[(i + startRows), icol_start].Value = (dtWorksheet.Rows[i]["taskdesc_no"] + "." + dtWorksheet.Rows[i]["taskdesc"]);
+                        icol_start += 1; worksheet.Cells[(i + startRows), icol_start].Value = (dtWorksheet.Rows[i]["potentailhazard_no"] + "." + dtWorksheet.Rows[i]["potentailhazard"]);
+                        icol_start += 1; worksheet.Cells[(i + startRows), icol_start].Value = (dtWorksheet.Rows[i]["possiblecase_no"] + "." + dtWorksheet.Rows[i]["possiblecase"]);
+                        if ((dtWorksheet.Rows[i]["id_ram"] + "") == "5")
+                        {
+                            icol_start += 1; worksheet.Cells[(i + startRows), icol_start].Value = (dtWorksheet.Rows[i]["category_type"] + "");
+                        }
+                        icol_start += 1; worksheet.Cells[(i + startRows), icol_start].Value = (dtWorksheet.Rows[i]["ram_befor_security"] + "");
+                        icol_start += 1; worksheet.Cells[(i + startRows), icol_start].Value = (dtWorksheet.Rows[i]["ram_befor_likelihood"] + "");
+                        icol_start += 1; worksheet.Cells[(i + startRows), icol_start].Value = (dtWorksheet.Rows[i]["ram_befor_risk"] + "");
+                        icol_start += 1; worksheet.Cells[(i + startRows), icol_start].Value = (dtWorksheet.Rows[i]["recommendations"] + "");
+                        icol_start += 1; worksheet.Cells[(i + startRows), icol_start].Value = (dtWorksheet.Rows[i]["responder_action_by"] + "");
+                        icol_start += 1; worksheet.Cells[(i + startRows), icol_start].Value = (dtWorksheet.Rows[i]["ram_after_security"] + "");
+                        icol_start += 1; worksheet.Cells[(i + startRows), icol_start].Value = (dtWorksheet.Rows[i]["ram_after_likelihood"] + "");
+                        icol_start += 1; worksheet.Cells[(i + startRows), icol_start].Value = (dtWorksheet.Rows[i]["ram_after_risk"] + "");
+
+                        icol_end = icol_start;
+
+                        // วาดเส้นตาราง โดยใช้เซลล์ XX ถึง XX
+                        DrawTableBorders(worksheet, 1, 1, startRows - 1, icol_end - 1);
+
+
+                        startRows++;
+                    }
+
+                    //RelatedPeople 
+                    //attendees,specialist,reviewer,approver
+                    int startRowsRP = startRows;
+                    int endColRP = icol_end;
+                    int iapprover_start_row = startRowsRP + 7;
+
+                    DataRow[] drAttendees = dtRelatedPeople.Select("user_type = 'attendees'");
+                    DataRow[] drSpecialist = dtRelatedPeople.Select("user_type = 'specialist'");
+                    DataRow[] drReviewer = dtRelatedPeople.Select("user_type = 'reviewer'");
+                    DataRow[] drApprover = dtRelatedPeople.Select("user_type = 'approver'");
+
+                    //default row running  = 7 row
+                    int iDefRow = 6;
+                    for (int i = 0; i < drAttendees.Length; i++)
+                    {
+                        if (i >= iDefRow)
+                        {
+                            worksheet.InsertRow(startRows, 1);
+
+                            iapprover_start_row = startRowsRP + 8;
+                            ClearTableBorders(worksheet, iapprover_start_row, endColRP - 4, iapprover_start_row, endColRP - 3);
+                        }
+                        icol_start = 1;
+                        icol_start += 1; worksheet.Cells[(i + startRows), icol_start].Value = (drAttendees[i]["no"] + "");
+                        icol_start += 1; worksheet.Cells[(i + startRows), icol_start].Value = (drAttendees[i]["user_displayname"] + "");
+                        icol_start += 1; worksheet.Cells[(i + startRows), icol_start].Value = (drAttendees[i]["user_title"] + "");
+
+                        startRows++;
+                    }
+                    //default row running  = 4 row
+                    iDefRow = 3;
+                    for (int i = 0; i < drSpecialist.Length; i++)
+                    {
+                        if (i >= iDefRow) { worksheet.InsertRow(startRows, 1); }
+                        icol_start = 1;
+                        icol_start += 1; worksheet.Cells[(i + startRows), icol_start].Value = (drAttendees[i]["no"] + "");
+                        icol_start += 1; worksheet.Cells[(i + startRows), icol_start].Value = (drAttendees[i]["user_displayname"] + "");
+                        icol_start += 1; worksheet.Cells[(i + startRows), icol_start].Value = (drAttendees[i]["user_title"] + "");
+
+                        startRows++;
+                    }
+
+                    if (drReviewer.Length > 0)
+                    {
+                        worksheet.Cells[startRowsRP + 1, endColRP - 4].Value = (drReviewer[0]["user_displayname"] + "");
+                        worksheet.Cells[startRowsRP + 1, endColRP - 3].Value = (drReviewer[0]["reviewer_date"] + "");
+                    }
+
+                    if (drApprover.Length > 0)
+                    {
+                        worksheet.Cells[iapprover_start_row, endColRP - 5].Value = ("AE or AGSI");
+                        worksheet.Cells[iapprover_start_row, endColRP - 4].Value = (drApprover[0]["user_displayname"] + "");
+                        worksheet.Cells[iapprover_start_row, endColRP - 3].Value = (drApprover[0]["reviewer_date"] + "");
+
+                        DrawTableBorders(worksheet, iapprover_start_row, endColRP - 4, iapprover_start_row, endColRP - 3);
+                        DrawTableBorders(worksheet, iapprover_start_row + 2, endColRP - 4, iapprover_start_row + 2, endColRP - 4);
+                    }
+
+                }
+                #endregion Worksheet
+
+
+                if (report_all == true)
+                {
+                    if (!Directory.Exists(_Path))
+                    {
+                        Directory.CreateDirectory(_Path);
+                    }
+                    excelPackage.Save();
+                }
+                else
+                {
+                    excelPackage.SaveAs(new FileInfo(_Path + _excel_name));
+
+                    // Save the workbook as PDF
+                    if (export_type == "pdf")
+                    {
+                        Workbook workbookPDF = new Workbook(_Path + _excel_name);
+                        PdfSaveOptions options = new PdfSaveOptions
+                        {
+                            AllColumnsInOnePagePerSheet = true
+                        };
+                        workbookPDF.Save(_Path + _excel_name.Replace(".xlsx", ".pdf"), options);
+                        //return _DownloadPath + _excel_name.Replace(".xlsx", ".pdf");
+                        if (true)
+                        {
+                            #region move file to _temp  
+                            string export_file_name = _Path + _excel_name.Replace(".xlsx", ".pdf");
+                            File.Copy(export_file_name, export_file_name.Replace(@"/Jsea/", @"/_temp/"));
+                            try { File.Delete(export_file_name.Replace(".pdf", ".xlsx")); } catch { }
+                            try { File.Delete(export_file_name); } catch { }
+                            #endregion move file to _temp
+                        }
+                        return (_DownloadPath + _excel_name.Replace(".xlsx", ".pdf")).Replace(@"/Jsea/", @"/_temp/");
+                    }
+                }
+            }
+
+            if (!report_all)
+            {
+                #region move file to _temp  
+                string export_file_name = _Path + _excel_name;
+                File.Copy(export_file_name, (export_file_name).Replace(@"/jsea/", @"/_temp/"));
+                try { File.Delete(export_file_name); } catch { }
+                #endregion move file to _temp
+                return (_DownloadPath + _excel_name).Replace(@"/jsea/", @"/_temp/");
+            }
+            else { return (_DownloadPath + _excel_name); }
+        }
+
+        public string export_jsea_worksheet(ReportModel param)
+        {
+            string seq = param.seq;
+            string export_type = param.export_type;
+
+            DataTable dtdef = new DataTable();
+
+            #region Determine whether the directory exists.
+            DataTable dt = new DataTable();
+            dt.Columns.Add("ATTACHED_FILE_NAME");
+            dt.Columns.Add("ATTACHED_FILE_PATH");
+            dt.Columns.Add("ATTACHED_FILE_OF");
+            dt.Columns.Add("IMPORT_DATA_MSG");
+            dt.AcceptChanges();
+            dtdef = dt.Clone(); dtdef.AcceptChanges();
+
+            #endregion Determine whether the directory exists.
+
+            string msg_error = "";
+            string _DownloadPath = "/AttachedFileTemp/Jsea/";
+            string _Folder = "/wwwroot/AttachedFileTemp/Jsea/";
+            string _FolderTemplate = MapPathFiles("/wwwroot/AttachedFileTemp/");
+            string _Path = MapPathFiles(_Folder);
+
+            var datetime_run = DateTime.Now.ToString("yyyyMMddHHmm");
+            string export_file_name = "JSEA WORKSHEET & RECOMMENDATION RESPONSE SHEET " + datetime_run;
+            string export_file_name_full = "";
+            if (export_type == "excel" || export_type == "pdf")
+            {
+                export_file_name_full = excel_jsea_worksheet(seq, _Path, _FolderTemplate, _DownloadPath, export_file_name + ".xlsx", export_type, false);
+                if (export_type == "excel") { export_file_name += ".xlsx"; } else { export_file_name += ".pdf"; }
+
+            }
+
+            try
+            {
+                dtdef.Rows.Add(dtdef.NewRow()); dtdef.AcceptChanges();
+                dtdef.Rows[dtdef.Rows.Count - 1]["ATTACHED_FILE_NAME"] = export_file_name;
+                dtdef.Rows[dtdef.Rows.Count - 1]["ATTACHED_FILE_PATH"] = export_file_name_full;
+                dtdef.Rows[dtdef.Rows.Count - 1]["IMPORT_DATA_MSG"] = msg_error;
+                dtdef.AcceptChanges();
+            }
+            catch (Exception ex) { ex.Message.ToString(); }
+
+            return cls_json.SetJSONresult(dtdef);
+        }
+        public string export_jsea_recommendation(ReportModel param)
+        {
+            string seq = param.seq;
+            string export_type = param.export_type;
+
+            DataTable dtdef = new DataTable();
+
+            #region Determine whether the directory exists.
+            DataTable dt = new DataTable();
+            dt.Columns.Add("ATTACHED_FILE_NAME");
+            dt.Columns.Add("ATTACHED_FILE_PATH");
+            dt.Columns.Add("ATTACHED_FILE_OF");
+            dt.Columns.Add("IMPORT_DATA_MSG");
+            dt.AcceptChanges();
+            dtdef = dt.Clone(); dtdef.AcceptChanges();
+
+            #endregion Determine whether the directory exists.
+
+            string msg_error = "";
+            string _DownloadPath = "/AttachedFileTemp/Jsea/";
+            string _Folder = "/wwwroot/AttachedFileTemp/Jsea/";
+            string _FolderTemplate = MapPathFiles("/wwwroot/AttachedFileTemp/");
+            string _Path = MapPathFiles(_Folder);
+
+            var datetime_run = DateTime.Now.ToString("yyyyMMddHHmm");
+            string export_file_name = "JSEA RECOMMENDATION RESPONSE SHEET & RECCOMENDATION STATUS TRACKING TABLE " + datetime_run;
+            string export_file_name_full = "";
+            if (export_type == "excel" || export_type == "pdf")
+            {
+                export_file_name_full = excel_hazop_recommendation(seq, _Path, _FolderTemplate, _DownloadPath, export_file_name + ".xlsx", export_type, false);
+                if (export_type == "excel") { export_file_name += ".xlsx"; } else { export_file_name += ".pdf"; }
+            }
+
+            try
+            {
+                dtdef.Rows.Add(dtdef.NewRow()); dtdef.AcceptChanges();
+                dtdef.Rows[dtdef.Rows.Count - 1]["ATTACHED_FILE_NAME"] = export_file_name;
+                dtdef.Rows[dtdef.Rows.Count - 1]["ATTACHED_FILE_PATH"] = export_file_name_full;
+                dtdef.Rows[dtdef.Rows.Count - 1]["IMPORT_DATA_MSG"] = msg_error;
+                dtdef.AcceptChanges();
+            }
+            catch (Exception ex) { ex.Message.ToString(); }
+
+            return cls_json.SetJSONresult(dtdef);
+        }
+
+        #endregion export excel jsea
 
         #region export doc
 
@@ -2552,6 +3575,13 @@ namespace Class
             }
             catch (Exception ex) { msg = ex.Message.ToString() + ""; ret = "Error"; return; }
 
+            string sub_expense_type = "";
+            try
+            {
+                sub_expense_type = (dsData.Tables["general"].Rows[0]["sub_expense_type"] + "");
+            }
+            catch { }
+
             jsper = param.json_functional_audition + "";
             try
             {
@@ -2566,11 +3596,11 @@ namespace Class
                     }
                 }
             }
-            catch (Exception ex) { msg = ex.Message.ToString() + ""; ret = "Error"; return; }
+            catch (Exception ex) { msg = ex.Message.ToString() + ""; ret = "Error"; }
 
 
             jsper = param.json_session + "";
-            if (jsper.Trim() == "") { msg = "No Data."; ret = "Error"; return; }
+            if (jsper.Trim() == "") { msg = "No Data."; ret = "Error"; }
             try
             {
                 dt = new DataTable();
@@ -2581,7 +3611,7 @@ namespace Class
                     dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
                 }
             }
-            catch (Exception ex) { msg = ex.Message.ToString() + ""; ret = "Error"; return; }
+            catch (Exception ex) { msg = ex.Message.ToString() + ""; ret = "Error"; }
 
             jsper = param.json_memberteam + "";
             try
@@ -2594,7 +3624,7 @@ namespace Class
                     dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
                 }
             }
-            catch (Exception ex) { msg = ex.Message.ToString() + ""; ret = "Error"; return; }
+            catch (Exception ex) { msg = ex.Message.ToString() + ""; ret = "Error"; }
 
             jsper = param.json_drawing + "";
             try
@@ -2607,70 +3637,7 @@ namespace Class
                     dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
                 }
             }
-            catch (Exception ex) { msg = ex.Message.ToString() + ""; ret = "Error"; return; }
-
-            jsper = param.json_node + "";
-            try
-            {
-                if (jsper.Trim() != "")
-                {
-                    dt = new DataTable();
-                    dt = cls_json.ConvertJSONresult(jsper);
-                    if (dt != null)
-                    {
-                        dt.TableName = "node";
-                        dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
-                    }
-                }
-            }
-            catch (Exception ex) { msg = ex.Message.ToString() + ""; ret = "Error"; return; }
-
-            jsper = param.json_nodedrawing + "";
-            try
-            {
-                dt = new DataTable();
-                dt = cls_json.ConvertJSONresult(jsper);
-                if (dt != null)
-                {
-                    dt.TableName = "nodedrawing";
-                    dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
-                }
-            }
-            catch (Exception ex) { msg = ex.Message.ToString() + ""; ret = "Error"; return; }
-
-            jsper = param.json_nodeguidwords + "";
-            try
-            {
-                dt = new DataTable();
-                dt = cls_json.ConvertJSONresult(jsper);
-                if (dt != null)
-                {
-                    dt.TableName = "nodeguidwords";
-                    dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
-                }
-            }
-            catch (Exception ex) { msg = ex.Message.ToString() + ""; ret = "Error"; return; }
-
-            string sub_expense_type = "";
-            try
-            {
-                sub_expense_type = (dsData.Tables["general"].Rows[0]["sub_expense_type"] + "");
-            }
-            catch { }
-            //if (pha_status == "11" && !(sub_expense_type == "Study")) { goto Next_Line_Data; }
-
-            jsper = param.json_nodeworksheet + "";
-            try
-            {
-                dt = new DataTable();
-                dt = cls_json.ConvertJSONresult(jsper);
-                if (dt != null)
-                {
-                    dt.TableName = "nodeworksheet";
-                    dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
-                }
-            }
-            catch (Exception ex) { msg = ex.Message.ToString() + ""; ret = "Error"; return; }
+            catch (Exception ex) { msg = ex.Message.ToString() + ""; ret = "Error"; }
 
             jsper = param.json_ram_level + "";
             try
@@ -2683,7 +3650,7 @@ namespace Class
                     dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
                 }
             }
-            catch (Exception ex) { msg = ex.Message.ToString() + ""; ret = "Error"; return; }
+            catch (Exception ex) { msg = ex.Message.ToString() + ""; ret = "Error"; }
 
             jsper = param.json_ram_master + "";
             try
@@ -2696,7 +3663,119 @@ namespace Class
                     dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
                 }
             }
-            catch (Exception ex) { msg = ex.Message.ToString() + ""; ret = "Error"; return; }
+            catch (Exception ex) { msg = ex.Message.ToString() + ""; ret = "Error"; }
+
+            jsper = param.json_flow_action + "";
+            try
+            {
+                dt = new DataTable();
+                dt = cls_json.ConvertJSONresult(jsper);
+                if (dt != null)
+                {
+                    dt.TableName = "flow_action";
+                    dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
+                }
+            }
+            catch (Exception ex) { msg = ex.Message.ToString() + ""; ret = "Error"; }
+
+            //hazop
+            if (true)
+            {
+                jsper = param.json_node + "";
+                try
+                {
+                    if (jsper.Trim() != "")
+                    {
+                        dt = new DataTable();
+                        dt = cls_json.ConvertJSONresult(jsper);
+                        if (dt != null)
+                        {
+                            dt.TableName = "node";
+                            dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
+                        }
+                    }
+                }
+                catch (Exception ex) { msg = ex.Message.ToString() + ""; ret = "Error"; return; }
+
+                jsper = param.json_nodedrawing + "";
+                try
+                {
+                    dt = new DataTable();
+                    dt = cls_json.ConvertJSONresult(jsper);
+                    if (dt != null)
+                    {
+                        dt.TableName = "nodedrawing";
+                        dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
+                    }
+                }
+                catch (Exception ex) { msg = ex.Message.ToString() + ""; ret = "Error"; return; }
+
+                jsper = param.json_nodeguidwords + "";
+                try
+                {
+                    dt = new DataTable();
+                    dt = cls_json.ConvertJSONresult(jsper);
+                    if (dt != null)
+                    {
+                        dt.TableName = "nodeguidwords";
+                        dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
+                    }
+                }
+                catch (Exception ex) { msg = ex.Message.ToString() + ""; ret = "Error"; return; }
+
+                jsper = param.json_nodeworksheet + "";
+                try
+                {
+                    dt = new DataTable();
+                    dt = cls_json.ConvertJSONresult(jsper);
+                    if (dt != null)
+                    {
+                        dt.TableName = "nodeworksheet";
+                        dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
+                    }
+                }
+                catch (Exception ex) { msg = ex.Message.ToString() + ""; ret = "Error"; return; }
+
+
+            }
+
+            //jsea
+            if (true)
+            {
+
+                jsper = param.json_tasks_worksheet + "";
+                try
+                {
+                    if (jsper.Trim() != "")
+                    {
+                        dt = new DataTable();
+                        dt = cls_json.ConvertJSONresult(jsper);
+                        if (dt != null)
+                        {
+                            dt.TableName = "tasks_worksheet";
+                            dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
+                        }
+                    }
+                }
+                catch (Exception ex) { msg = ex.Message.ToString() + ""; ret = "Error"; return; }
+
+                jsper = param.json_tasks_relatedpeople + "";
+                try
+                {
+                    if (jsper.Trim() != "")
+                    {
+                        dt = new DataTable();
+                        dt = cls_json.ConvertJSONresult(jsper);
+                        if (dt != null)
+                        {
+                            dt.TableName = "tasks_relatedpeople";
+                            dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
+                        }
+                    }
+                }
+                catch (Exception ex) { msg = ex.Message.ToString() + ""; ret = "Error"; return; }
+
+            }
 
         Next_Line_Data:;
             #endregion ConvertJSONresult
@@ -2771,6 +3850,43 @@ namespace Class
             else
             {
                 seq_header_now = seq;
+
+                #region check / update seq
+                if (pha_status == "11" || dsData.Tables["header"].Rows.Count > 0)
+                {
+                    if ((dsData.Tables["header"].Rows[0]["action_type"] + "") == "insert")
+                    {
+                        sqlstr = @" select seq from EPHA_F_HEADER a where lower(a.seq) = lower(" + cls.ChkSqlStr(seq, 50) + ")  ";
+                        cls_conn = new ClassConnectionDb();
+                        dt = new DataTable();
+                        dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+                        if (dt.Rows.Count > 0)
+                        {
+                            for (int t = 0; t < dsData.Tables.Count; t++)
+                            {
+                                for (int i = 0; i < dsData.Tables[t].Rows.Count; i++)
+                                {
+                                    try
+                                    {
+                                        if (dsData.Tables[t].TableName == "header")
+                                        {
+                                            dsData.Tables[t].Rows[i]["seq"] = seq_header_now;
+                                            dsData.Tables[t].Rows[i]["id"] = seq_header_now;
+                                        }
+                                        else
+                                        {
+                                            dsData.Tables[t].Rows[i]["id_pha"] = seq_header_now;
+                                        }
+                                    }
+                                    catch { }
+                                }
+                            }
+                            dsData.AcceptChanges();
+                        }
+                    }
+                }
+                #endregion check / update seq
+
             }
 
             ClassHazop cls_old = new ClassHazop();
@@ -2929,7 +4045,7 @@ namespace Class
                         #endregion update case SAFETY_CRITICAL_EQUIPMENT_SHOW
 
 
-                        ret = set_hazop_parti(ref dsData, ref cls_conn_header, seq_header_now, dsDataOld);
+                        ret = set_pha_parti(ref dsData, ref cls_conn_header, seq_header_now, dsDataOld);
                         if (ret == "") { ret = "true"; }
                         if (ret != "true") { goto Next_Line; }
 
@@ -3473,6 +4589,41 @@ namespace Class
             else
             {
                 seq_header_now = seq;
+                #region check / update seq
+                if (pha_status == "11" || dsData.Tables["header"].Rows.Count > 0)
+                {
+                    if ((dsData.Tables["header"].Rows[0]["action_type"] + "") == "insert")
+                    {
+                        sqlstr = @" select seq from EPHA_F_HEADER a where lower(a.seq) = lower(" + cls.ChkSqlStr(seq, 50) + ")  ";
+                        cls_conn = new ClassConnectionDb();
+                        dt = new DataTable();
+                        dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+                        if (dt.Rows.Count > 0)
+                        {
+                            for (int t = 0; t < dsData.Tables.Count; t++)
+                            {
+                                for (int i = 0; i < dsData.Tables[t].Rows.Count; i++)
+                                {
+                                    try
+                                    {
+                                        if (dsData.Tables[t].TableName == "header")
+                                        {
+                                            dsData.Tables[t].Rows[i]["seq"] = seq_header_now;
+                                            dsData.Tables[t].Rows[i]["id"] = seq_header_now;
+                                        }
+                                        else
+                                        {
+                                            dsData.Tables[t].Rows[i]["id_pha"] = seq_header_now;
+                                        }
+                                    }
+                                    catch { }
+                                }
+                            }
+                            dsData.AcceptChanges();
+                        }
+                    }
+                }
+                #endregion check / update seq
             }
 
             ClassHazop cls_old = new ClassHazop();
@@ -3630,16 +4781,11 @@ namespace Class
                         }
                         #endregion update case SAFETY_CRITICAL_EQUIPMENT_SHOW
 
-
                         ret = set_pha_parti(ref dsData, ref cls_conn_header, seq_header_now, dsDataOld);
                         if (ret == "") { ret = "true"; }
                         if (ret != "true") { goto Next_Line; }
 
-                        ret = set_jsea_partii(ref dsData, ref cls_conn_node, seq_header_now);
-                        if (ret == "") { ret = "true"; }
-                        if (ret != "true") { goto Next_Line; }
-
-                        ret = set_hazop_partiii(ref dsData, ref cls_conn_node, seq_header_now);
+                        ret = set_jsea_partiii(ref dsData, ref cls_conn_node, seq_header_now);
                         if (ret == "") { ret = "true"; }
                         if (ret != "true") { goto Next_Line; }
 
@@ -4329,7 +5475,7 @@ namespace Class
                         }
                         #endregion update case SAFETY_CRITICAL_EQUIPMENT_SHOW
 
-                        ret = set_hazop_parti(ref dsData, ref cls_conn_header, seq_header_now, dsDataOld);
+                        ret = set_pha_parti(ref dsData, ref cls_conn_header, seq_header_now, dsDataOld);
                         if (ret == "") { ret = "true"; }
                         if (ret != "true") { goto Next_Line; }
 
@@ -5071,7 +6217,7 @@ namespace Class
                         ",ID_AREA,ID_APU,ID_BUSINESS_UNIT,ID_UNIT_NO,OTHER_AREA,OTHER_APU,OTHER_BUSINESS_UNIT,OTHER_UNIT_NO,OTHER_FUNCTIONAL_LOCATION,FUNCTIONAL_LOCATION  " +
                         ",PHA_REQUEST_NAME,TARGET_START_DATE,TARGET_END_DATE,ACTUAL_START_DATE,ACTUAL_END_DATE  " +
                         ",DESCRIPTIONS,WORK_SCOPE" +
-                        ",ID_TOC,ID_TAGID,TAGID_AUDITION,INPUT_TYPE_EXCEL,TYPES_OF_HAZARD,FILE_UPLOAD_SIZE,FILE_UPLOAD_NAME,FILE_UPLOAD_PATH" +
+                        ",ID_TOC,ID_TAGID,INPUT_TYPE_EXCEL,TYPES_OF_HAZARD,FILE_UPLOAD_SIZE,FILE_UPLOAD_NAME,FILE_UPLOAD_PATH" +
                         ",CREATE_DATE,UPDATE_DATE,CREATE_BY,UPDATE_BY" +
                         ") values ";
                     sqlstr += " ( ";
@@ -5312,7 +6458,7 @@ namespace Class
 
                         sqlstr += " where SEQ = " + cls.ChkSqlNum((dt.Rows[i]["SEQ"] + "").ToString(), "N");
                         sqlstr += " and ID = " + cls.ChkSqlNum((dt.Rows[i]["ID"] + "").ToString(), "N");
-                        sqlstr += " and ID_PHA = " + cls.ChkSqlNum((dt.Rows[i]["ID"] + "").ToString(), "N");
+                        sqlstr += " and ID_PHA = " + cls.ChkSqlNum((dt.Rows[i]["ID_PHA"] + "").ToString(), "N");
 
                         #endregion update
                     }
@@ -5575,8 +6721,8 @@ namespace Class
 
             return ret;
         }
-    
-        public string set_hazop_partii(ref DataSet dsData, ref ClassConnectionDb cls_conn, string seq_header_now, string sub_software)
+
+        public string set_hazop_partii(ref DataSet dsData, ref ClassConnectionDb cls_conn, string seq_header_now)
         {
             string ret = "";
             #region update data node
@@ -5965,15 +7111,15 @@ namespace Class
             return ret;
 
         }
-       
+
         public string set_jsea_partiii(ref DataSet dsData, ref ClassConnectionDb cls_conn, string seq_header_now)
         {
             string ret = "";
             #region update data tasksworksheet
-            if (dsData.Tables["tasksworksheet"] != null)
+            if (dsData.Tables["tasks_worksheet"] != null)
             {
                 dt = new DataTable();
-                dt = dsData.Tables["tasksworksheet"].Copy(); dt.AcceptChanges();
+                dt = dsData.Tables["tasks_worksheet"].Copy(); dt.AcceptChanges();
                 for (int i = 0; i < dt.Rows.Count; i++)
                 {
                     string action_type = (dt.Rows[i]["action_type"] + "").ToString();
@@ -5982,10 +7128,10 @@ namespace Class
                         #region insert
                         //SEQ Auto running
                         sqlstr = "insert into EPHA_T_TASKS_WORKSHEET (" +
-                            "SEQ,ID,ID_PHA" + 
+                            "SEQ,ID,ID_PHA" +
                             ",NO,ROW_TYPE,WORKSTEP_NO,WORKSTEP,TASKDESC_NO,TASKDESC,POTENTAILHAZARD_NO,POTENTAILHAZARD,POSSIBLECASE_NO,POSSIBLECASE,CATEGORY_NO,CATEGORY_TYPE" +
                             ",RAM_BEFOR_SECURITY,RAM_BEFOR_LIKELIHOOD,RAM_BEFOR_RISK,MAJOR_ACCIDENT_EVENT,SAFETY_CRITICAL_EQUIPMENT,EXISTING_SAFEGUARDS,RAM_AFTER_SECURITY,RAM_AFTER_LIKELIHOOD,RAM_AFTER_RISK" +
-                            ",RECOMMENDATIONS_NO,RECOMMENDATIONS,SAFETY_CRITICAL_EQUIPMENT_TAG,RESPONDER_USER_NAME,RESPONDER_USER_DISPLAYNAME,ACTION_STATUS,ESTIMATED_START_DATE,ESTIMATED_END_DATE" +
+                            ",RECOMMENDATIONS_NO,RECOMMENDATIONS,SAFETY_CRITICAL_EQUIPMENT_TAG,RESPONDER_ACTION_BY,RESPONDER_USER_NAME,RESPONDER_USER_DISPLAYNAME,ACTION_STATUS,ESTIMATED_START_DATE,ESTIMATED_END_DATE" +
                             ",CREATE_DATE,UPDATE_DATE,CREATE_BY,UPDATE_BY" +
                             ") values ";
 
@@ -5994,7 +7140,7 @@ namespace Class
                         sqlstr += " " + cls.ChkSqlNum((dt.Rows[i]["SEQ"] + "").ToString(), "N");
                         sqlstr += " ," + cls.ChkSqlNum((dt.Rows[i]["ID"] + "").ToString(), "N");
                         sqlstr += " ," + cls.ChkSqlNum(seq_header_now, "N");
-                          
+
                         sqlstr += " ," + cls.ChkSqlNum((dt.Rows[i]["NO"] + "").ToString(), "N");
                         sqlstr += " ," + cls.ChkSqlStr((dt.Rows[i]["ROW_TYPE"] + "").ToString(), 50);
 
@@ -6012,7 +7158,7 @@ namespace Class
 
                         sqlstr += " ," + cls.ChkSqlNum((dt.Rows[i]["CATEGORY_NO"] + "").ToString(), "N");
                         sqlstr += " ," + cls.ChkSqlStr((dt.Rows[i]["CATEGORY_TYPE"] + "").ToString(), 4000);
-                         
+
                         sqlstr += " ," + cls.ChkSqlStr((dt.Rows[i]["RAM_BEFOR_SECURITY"] + "").ToString(), 10);
                         sqlstr += " ," + cls.ChkSqlStr((dt.Rows[i]["RAM_BEFOR_LIKELIHOOD"] + "").ToString(), 10);
                         sqlstr += " ," + cls.ChkSqlStr((dt.Rows[i]["RAM_BEFOR_RISK"] + "").ToString(), 10);
@@ -6026,6 +7172,7 @@ namespace Class
                         sqlstr += " ," + cls.ChkSqlNum((dt.Rows[i]["RECOMMENDATIONS_NO"] + "").ToString(), "N");
                         sqlstr += " ," + cls.ChkSqlStr((dt.Rows[i]["RECOMMENDATIONS"] + "").ToString(), 4000);
                         sqlstr += " ," + cls.ChkSqlStr((dt.Rows[i]["SAFETY_CRITICAL_EQUIPMENT_TAG"] + "").ToString(), 4000);
+                        sqlstr += " ," + cls.ChkSqlStr((dt.Rows[i]["RESPONDER_ACTION_BY"] + "").ToString(), 4000);
                         sqlstr += " ," + cls.ChkSqlStr((dt.Rows[i]["RESPONDER_USER_NAME"] + "").ToString(), 50);
                         sqlstr += " ," + cls.ChkSqlStr((dt.Rows[i]["RESPONDER_USER_DISPLAYNAME"] + "").ToString(), 4000);
                         sqlstr += " ," + cls.ChkSqlStr((dt.Rows[i]["ACTION_STATUS"] + "").ToString(), 50);
@@ -6054,16 +7201,16 @@ namespace Class
 
 
                         sqlstr += " ,WORKSTEP_NO = " + cls.ChkSqlNum((dt.Rows[i]["WORKSTEP_NO"] + "").ToString(), "N");
-                        sqlstr += " ,WORKSTEP = " + cls.ChkSqlStr((dt.Rows[i]["WORKSTEP"] + "").ToString(), 4000); 
+                        sqlstr += " ,WORKSTEP = " + cls.ChkSqlStr((dt.Rows[i]["WORKSTEP"] + "").ToString(), 4000);
                         sqlstr += " ,TASKDESC_NO = " + cls.ChkSqlNum((dt.Rows[i]["TASKDESC_NO"] + "").ToString(), "N");
-                        sqlstr += " ,TASKDESC = " + cls.ChkSqlStr((dt.Rows[i]["TASKDESC"] + "").ToString(), 4000); 
+                        sqlstr += " ,TASKDESC = " + cls.ChkSqlStr((dt.Rows[i]["TASKDESC"] + "").ToString(), 4000);
                         sqlstr += " ,POTENTAILHAZARD_NO = " + cls.ChkSqlNum((dt.Rows[i]["POTENTAILHAZARD_NO"] + "").ToString(), "N");
-                        sqlstr += " ,POTENTAILHAZARD = " + cls.ChkSqlStr((dt.Rows[i]["POTENTAILHAZARD"] + "").ToString(), 4000); 
+                        sqlstr += " ,POTENTAILHAZARD = " + cls.ChkSqlStr((dt.Rows[i]["POTENTAILHAZARD"] + "").ToString(), 4000);
                         sqlstr += " ,POSSIBLECASE_NO = " + cls.ChkSqlNum((dt.Rows[i]["POSSIBLECASE_NO"] + "").ToString(), "N");
-                        sqlstr += " ,POSSIBLECASE = " + cls.ChkSqlStr((dt.Rows[i]["POSSIBLECASE"] + "").ToString(), 4000); 
+                        sqlstr += " ,POSSIBLECASE = " + cls.ChkSqlStr((dt.Rows[i]["POSSIBLECASE"] + "").ToString(), 4000);
                         sqlstr += " ,CATEGORY_NO = " + cls.ChkSqlNum((dt.Rows[i]["CATEGORY_NO"] + "").ToString(), "N");
                         sqlstr += " ,CATEGORY_TYPE = " + cls.ChkSqlStr((dt.Rows[i]["CATEGORY_TYPE"] + "").ToString(), 4000);
-                         
+
                         sqlstr += " ,RAM_BEFOR_SECURITY = " + cls.ChkSqlStr((dt.Rows[i]["RAM_BEFOR_SECURITY"] + "").ToString(), 10);
                         sqlstr += " ,RAM_BEFOR_LIKELIHOOD = " + cls.ChkSqlStr((dt.Rows[i]["RAM_BEFOR_LIKELIHOOD"] + "").ToString(), 10);
                         sqlstr += " ,RAM_BEFOR_RISK = " + cls.ChkSqlStr((dt.Rows[i]["RAM_BEFOR_RISK"] + "").ToString(), 10);
@@ -6076,6 +7223,7 @@ namespace Class
                         sqlstr += " ,RECOMMENDATIONS_NO = " + cls.ChkSqlNum((dt.Rows[i]["CATEGORY_NO"] + "").ToString(), "N");
                         sqlstr += " ,RECOMMENDATIONS = " + cls.ChkSqlStr((dt.Rows[i]["RECOMMENDATIONS"] + "").ToString(), 4000);
                         sqlstr += " ,SAFETY_CRITICAL_EQUIPMENT_TAG = " + cls.ChkSqlStr((dt.Rows[i]["SAFETY_CRITICAL_EQUIPMENT_TAG"] + "").ToString(), 4000);
+                        sqlstr += " ,RESPONDER_ACTION_BY = " + cls.ChkSqlStr((dt.Rows[i]["RESPONDER_ACTION_BY"] + "").ToString(), 4000);
                         sqlstr += " ,RESPONDER_USER_NAME = " + cls.ChkSqlStr((dt.Rows[i]["RESPONDER_USER_NAME"] + "").ToString(), 50);
                         sqlstr += " ,RESPONDER_USER_DISPLAYNAME = " + cls.ChkSqlStr((dt.Rows[i]["RESPONDER_USER_DISPLAYNAME"] + "").ToString(), 4000);
 
@@ -6098,7 +7246,7 @@ namespace Class
 
                         sqlstr += " where SEQ = " + cls.ChkSqlNum((dt.Rows[i]["SEQ"] + "").ToString(), "N");
                         sqlstr += " and ID = " + cls.ChkSqlNum((dt.Rows[i]["ID"] + "").ToString(), "N");
-                        sqlstr += " and ID_PHA = " + cls.ChkSqlNum((dt.Rows[i]["ID_PHA"] + "").ToString(), "N"); 
+                        sqlstr += " and ID_PHA = " + cls.ChkSqlNum((dt.Rows[i]["ID_PHA"] + "").ToString(), "N");
                         #endregion delete
                     }
 
@@ -6126,9 +7274,9 @@ namespace Class
                         #region insert
                         //SEQ Auto running
                         sqlstr = "insert into EPHA_T_TASKS_RELATEDPEOPLE (" +
-                            "SEQ,ID,ID_PHA,ID_TASKS,NO,USER_TYPE,USER_NAME,USER_DISPLAYNAME,USER_TITLE,REVIEWER_DATE,CREATE_DATE,UPDATE_DATE,CREATE_BY,UPDATE_BY" +
+                            "SEQ,ID,ID_PHA,ID_TASKS,NO,USER_TYPE,APPROVER_TYPE,USER_NAME,USER_DISPLAYNAME,USER_TITLE,REVIEWER_DATE,CREATE_DATE,UPDATE_DATE,CREATE_BY,UPDATE_BY" +
                             ") values ";
-                         
+
                         sqlstr += " ( ";
                         sqlstr += " " + cls.ChkSqlNum((dt.Rows[i]["SEQ"] + "").ToString(), "N");
                         sqlstr += " ," + cls.ChkSqlNum((dt.Rows[i]["ID"] + "").ToString(), "N");
@@ -6137,11 +7285,12 @@ namespace Class
 
                         sqlstr += " ," + cls.ChkSqlNum((dt.Rows[i]["NO"] + "").ToString(), "N");
                         sqlstr += " ," + cls.ChkSqlStr((dt.Rows[i]["USER_TYPE"] + "").ToString(), 50);
-                        sqlstr += " ," + cls.ChkSqlStr((dt.Rows[i]["USER_NAME"] + "").ToString(), 50); 
+                        sqlstr += " ," + cls.ChkSqlStr((dt.Rows[i]["APPROVER_TYPE"] + "").ToString(), 50);
+                        sqlstr += " ," + cls.ChkSqlStr((dt.Rows[i]["USER_NAME"] + "").ToString(), 50);
                         sqlstr += " ," + cls.ChkSqlStr((dt.Rows[i]["USER_DISPLAYNAME"] + "").ToString(), 4000);
-                        sqlstr += " ," + cls.ChkSqlStr((dt.Rows[i]["USER_TITLE"] + "").ToString(), 50);  
+                        sqlstr += " ," + cls.ChkSqlStr((dt.Rows[i]["USER_TITLE"] + "").ToString(), 50);
                         sqlstr += " ," + cls.ChkSqlDateYYYYMMDD((dt.Rows[i]["REVIEWER_DATE"] + "").ToString());
-                         
+
                         sqlstr += " ,getdate()";
                         sqlstr += " ,null";
                         sqlstr += " ," + cls.ChkSqlStr((dt.Rows[i]["CREATE_BY"] + "").ToString(), 50);
@@ -6158,12 +7307,12 @@ namespace Class
                         sqlstr = "update EPHA_T_TASKS_RELATEDPEOPLE set ";
 
                         sqlstr += " NO = " + cls.ChkSqlNum((dt.Rows[i]["NO"] + "").ToString(), "N");
-                         
-                        sqlstr += " ,USER_TYPE = " + cls.ChkSqlStr((dt.Rows[i]["USER_TYPE"] + "").ToString(), 50);
+
+                        sqlstr += " ,APPROVER_TYPE = " + cls.ChkSqlStr((dt.Rows[i]["APPROVER_TYPE"] + "").ToString(), 50);
                         sqlstr += " ,USER_NAME = " + cls.ChkSqlStr((dt.Rows[i]["USER_NAME"] + "").ToString(), 50);
                         sqlstr += " ,USER_DISPLAYNAME = " + cls.ChkSqlStr((dt.Rows[i]["USER_DISPLAYNAME"] + "").ToString(), 4000);
-                        sqlstr += " ,USER_TITLE = " + cls.ChkSqlStr((dt.Rows[i]["USER_TITLE"] + "").ToString(), 50); 
-                        sqlstr += " ,REVIEWER_DATE = " + cls.ChkSqlDateYYYYMMDD((dt.Rows[i]["ESTIMATED_START_DATE"] + "").ToString()); 
+                        sqlstr += " ,USER_TITLE = " + cls.ChkSqlStr((dt.Rows[i]["USER_TITLE"] + "").ToString(), 50);
+                        sqlstr += " ,REVIEWER_DATE = " + cls.ChkSqlDateYYYYMMDD((dt.Rows[i]["REVIEWER_DATE"] + "").ToString());
 
                         sqlstr += " ,UPDATE_DATE = getdate()";
                         sqlstr += " ,UPDATE_BY = " + cls.ChkSqlStr((dt.Rows[i]["UPDATE_BY"] + "").ToString(), 50);
@@ -6171,7 +7320,8 @@ namespace Class
                         sqlstr += " where SEQ = " + cls.ChkSqlNum((dt.Rows[i]["SEQ"] + "").ToString(), "N");
                         sqlstr += " and ID = " + cls.ChkSqlNum((dt.Rows[i]["ID"] + "").ToString(), "N");
                         sqlstr += " and ID_PHA = " + cls.ChkSqlNum((dt.Rows[i]["ID_PHA"] + "").ToString(), "N");
-                        sqlstr += " and ID_TASKS = " + cls.ChkSqlNum((dt.Rows[i]["ID_TASKS"] + "").ToString(), "N");
+                        //sqlstr += " and ID_TASKS = " + cls.ChkSqlNum((dt.Rows[i]["ID_TASKS"] + "").ToString(), "N");
+                        sqlstr += " and USER_TYPE = " + cls.ChkSqlStr((dt.Rows[i]["USER_TYPE"] + "").ToString(), 50);
 
                         #endregion update
                     }
@@ -6183,7 +7333,8 @@ namespace Class
                         sqlstr += " where SEQ = " + cls.ChkSqlNum((dt.Rows[i]["SEQ"] + "").ToString(), "N");
                         sqlstr += " and ID = " + cls.ChkSqlNum((dt.Rows[i]["ID"] + "").ToString(), "N");
                         sqlstr += " and ID_PHA = " + cls.ChkSqlNum((dt.Rows[i]["ID_PHA"] + "").ToString(), "N");
-                        sqlstr += " and ID_TASKS = " + cls.ChkSqlNum((dt.Rows[i]["ID_TASKS"] + "").ToString(), "N");
+                        //sqlstr += " and ID_TASKS = " + cls.ChkSqlNum((dt.Rows[i]["ID_TASKS"] + "").ToString(), "N");
+                        sqlstr += " and USER_TYPE = " + cls.ChkSqlStr((dt.Rows[i]["USER_TYPE"] + "").ToString(), 50);
                         #endregion delete
                     }
 
@@ -6694,7 +7845,6 @@ namespace Class
                         sqlstr += " DOCUMENT_FILE_NAME = " + cls.ChkSqlStr((dt.Rows[i]["DOCUMENT_FILE_NAME"] + "").ToString(), 4000);
                         sqlstr += " ,DOCUMENT_FILE_PATH = " + cls.ChkSqlStr((dt.Rows[i]["DOCUMENT_FILE_PATH"] + "").ToString(), 4000);
                         sqlstr += " ,ACTION_STATUS = " + cls.ChkSqlStr((dt.Rows[i]["ACTION_STATUS"] + "").ToString(), 50);
-
 
                         sqlstr += " ,RESPONDER_COMMENT = " + cls.ChkSqlStr((dt.Rows[i]["RESPONDER_COMMENT"] + "").ToString(), 4000);
 

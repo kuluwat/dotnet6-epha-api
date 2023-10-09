@@ -74,7 +74,7 @@ namespace Class
             DataTable _dt = new DataTable();
             cls = new ClassFunctions();
 
-            sqlstr = @" select '" + sub_software.ToUpper() + "-" + year.ToUpper() + "-' + right('0000000' + trim(str(coalesce(max(replace(upper(pha_no),'" + sub_software.ToUpper() + "-" + year.ToUpper() + "-','')+1),0))),7) as pha_no ";
+            sqlstr = @" select '" + sub_software.ToUpper() + "-" + year.ToUpper() + "-' + right('0000000' + trim(str(coalesce(max(replace(upper(pha_no),'" + sub_software.ToUpper() + "-" + year.ToUpper() + "-','')+1),1))),7) as pha_no ";
             sqlstr += @" from EPHA_F_HEADER where lower(pha_sub_software) = lower('" + sub_software + "') and year = " + year;
 
             cls_conn = new ClassConnectionDb();
@@ -83,24 +83,45 @@ namespace Class
 
             return (_dt.Rows[0]["pha_no"].ToString() + "");
         }
-        private void get_history_search_follow(ref DataSet _dsData, string id_pha, string user_name_active)
+        private void get_history_search_follow(ref DataSet _dsData, string id_pha, string user_name_active, string sub_software)
         {
-            sqlstr = @" select distinct isnull(h.approver_user_name,'') as id,  isnull(h.approver_user_displayname,'') as name
+            if (sub_software == "hazop")
+            {
+                sqlstr = @" select distinct isnull(h.approver_user_name,'') as id,  isnull(h.approver_user_displayname,'') as name
                          from EPHA_F_HEADER h 
                          inner join EPHA_T_GENERAL g on h.id = g.id_pha 
                          inner join EPHA_T_NODE_WORKSHEET nw on h.id = nw.id_pha 
                          inner join EPHA_T_MANAGE_RECOM w on h.id = w.id_pha and  lower(nw.responder_user_name) =  lower(w.responder_user_name) 
                          where h.approver_user_displayname is not null ";
-            if (id_pha != "") { sqlstr += @" and lower(h.seq) = lower(" + cls.ChkSqlStr(id_pha, 50) + ")  "; }
-            if (user_name_active != "") { sqlstr += @" and lower(nw.responder_user_name) = lower(" + cls.ChkSqlStr(user_name_active, 50) + ")  "; }
-            sqlstr += " order by isnull(h.approver_user_displayname,'')";
+                if (id_pha != "") { sqlstr += @" and lower(h.seq) = lower(" + cls.ChkSqlStr(id_pha, 50) + ")  "; }
+                if (user_name_active != "") { sqlstr += @" and lower(nw.responder_user_name) = lower(" + cls.ChkSqlStr(user_name_active, 50) + ")  "; }
+                sqlstr += " order by isnull(h.approver_user_displayname,'')";
 
-            cls_conn = new ClassConnectionDb();
-            dt = new DataTable();
-            dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
 
-            dt.TableName = "his_approver";
-            _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
+                cls_conn = new ClassConnectionDb();
+                dt = new DataTable();
+                dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+                dt.TableName = "his_approver";
+                _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
+            }
+            else if (sub_software == "jsea")
+            {
+                //sqlstr = @" select distinct isnull(h.approver_user_name,'') as id,  isnull(h.approver_user_displayname,'') as name
+                //         from EPHA_F_HEADER h 
+                //         inner join EPHA_T_GENERAL g on h.id = g.id_pha 
+                //         inner join EPHA_T_TASKS_WORKSHEET nw on h.id = nw.id_pha 
+                //         inner join EPHA_T_MANAGE_RECOM w on h.id = w.id_pha and  lower(nw.responder_user_name) =  lower(w.responder_user_name) 
+                //         where h.approver_user_displayname is not null ";
+                //if (id_pha != "") { sqlstr += @" and lower(h.seq) = lower(" + cls.ChkSqlStr(id_pha, 50) + ")  "; }
+                //if (user_name_active != "") { sqlstr += @" and lower(nw.responder_user_name) = lower(" + cls.ChkSqlStr(user_name_active, 50) + ")  "; }
+                //sqlstr += " order by isnull(h.approver_user_displayname,'')";
+
+                //cls_conn = new ClassConnectionDb();
+                //dt = new DataTable();
+                //dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+                //dt.TableName = "his_approver";
+                //_dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
+            }
 
         }
         private void get_history_doc(ref DataSet _dsData, string sub_software)
@@ -485,20 +506,24 @@ namespace Class
             _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
             #endregion unit no
 
-            #region master functional location
-            sqlstr = @" select *, a.functional_location as id, a.functional_location as name, 0 as selected_type
+            if (sub_software.ToLower() == "hazop" || sub_software.ToLower() == "whatif"
+                || sub_software.ToLower() == "followup"
+                || sub_software.ToLower() == "search")
+            {
+
+                #region master functional location
+                sqlstr = @" select *, a.functional_location as id, a.functional_location as name, 0 as selected_type
                          from EPHA_M_FUNCTIONAL_LOCATION a
                          where active_type = 1 order by seq ";
 
-            cls_conn = new ClassConnectionDb();
-            dt = new DataTable();
-            dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+                cls_conn = new ClassConnectionDb();
+                dt = new DataTable();
+                dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
 
-            dt.TableName = "functional";
-            _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
-            #endregion functional location  
-            if (sub_software.ToLower() == "hazop" || sub_software.ToLower() == "whatif")
-            {
+                dt.TableName = "functional";
+                _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
+                #endregion functional location  
+
                 #region master business unit
                 sqlstr = @" select id_company, id_area, id_apu, id, name from EPHA_M_BUSSINESS_UNIT t order by id_company, id_area, id_apu, id  ";
                 cls_conn = new ClassConnectionDb();
@@ -508,7 +533,6 @@ namespace Class
                 dt.TableName = "business_unit";
                 _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
                 #endregion business unit
-
 
                 #region master guidwords  
                 sqlstr = @" select seq, parameter, deviations, guide_words, guide_words as guidewords, process_deviation, area_application, 0 as selected_type, 0 as main_parameter, def_selected
@@ -543,7 +567,8 @@ namespace Class
                 #endregion guidwords  
 
             }
-            else if (sub_software.ToLower() == "jsea")
+
+            if (sub_software.ToLower() == "jsea" || sub_software.ToLower() == "followup" || sub_software.ToLower() == "search")
             {
                 #region company
                 sqlstr = @" select id, name from EPHA_M_COMPANY t order by id ";
@@ -578,9 +603,9 @@ namespace Class
                 _dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
                 #endregion Tag ID
 
-                // master_tagid_audition
             }
-            else
+
+            if (false)
             {
                 #region master storagelocation  
                 string sqlstr_def = @"  select a.id as id_company, a.name as name_company 
@@ -704,7 +729,23 @@ namespace Class
             JSONresult = JsonConvert.SerializeObject(_dtJson);
             return JSONresult;
         }
+        public string get_search_details(LoadDocModel param)
+        {
+            dsData = new DataSet();
+            string user_name = (param.user_name + "").Trim();
+            string token_doc = (param.token_doc + "").Trim();
+            string sub_software = (param.sub_software + "").Trim();
+            string type_doc = (param.type_doc + "").Trim();
+            string seq = token_doc;
 
+            get_master(ref dsData, "search");
+
+            DataPageSearch(ref dsData, user_name, seq, sub_software);
+
+            string json = JsonConvert.SerializeObject(dsData, Formatting.Indented);
+
+            return json;
+        }
         public string get_hazop_search(LoadDocModel param)
         {
             dsData = new DataSet();
@@ -730,8 +771,8 @@ namespace Class
             string sub_software = (param.sub_software + "").Trim();
             string seq = token_doc;
 
-            get_master(ref dsData, "followup");
-            get_history_search_follow(ref dsData, seq, user_name);
+            get_master(ref dsData, sub_software);
+            get_history_search_follow(ref dsData, seq, user_name, sub_software);
 
             DataHazopSearchFollowUp(ref dsData, user_name, seq, sub_software);
 
@@ -841,7 +882,7 @@ namespace Class
             #region general 
             sqlstr = @" select b.* 
                         , isnull(fa.functional_location,'') as functional_location_audition
-                        , isnull(fa.functional_location,'') as tagid_audition
+                        , isnull(fa.functional_location,'') as tagid_audition_def
                         , '' as business_unit_name, '' as unit_no_name
                         , 'update' as action_type, 0 as action_change
                         from EPHA_F_HEADER a inner join EPHA_T_GENERAL b on a.id  = b.id_pha
@@ -862,7 +903,7 @@ namespace Class
                 dt.Rows[0]["id"] = id_pha;// (get_max("EPHA_T_GENERAL")); ข้อมูล 1 ต่อ 1 ให้ใช้กับ header ได้เลย
                 dt.Rows[0]["id_pha"] = id_pha;
 
-                dt.Rows[0]["functional_location_audition"] = "TPX-76-LICSA-001-TX,TPX-76-LICSA-002-TX,TPX-76-LICSA-003-TX";
+                dt.Rows[0]["functional_location_audition"] = "";
 
                 //default values 
                 DataTable dtram = dsData.Tables["ram"].Copy(); dtram.AcceptChanges();
@@ -871,10 +912,15 @@ namespace Class
                 dt.Rows[0]["expense_type"] = "OPEX";
                 dt.Rows[0]["sub_expense_type"] = "Normal";
 
+                dt.Rows[0]["types_of_hazard"] = 1;
                 dt.Rows[0]["create_by"] = user_name;
                 dt.Rows[0]["action_type"] = "insert";
                 dt.Rows[0]["action_change"] = 0;
                 dt.AcceptChanges();
+            }
+            else
+            {
+                dt.Rows[0]["tagid_audition"] = dt.Rows[0]["tagid_audition_def"];
             }
             dt.AcceptChanges();
 
@@ -906,9 +952,14 @@ namespace Class
                 dt.Rows[0]["action_change"] = 0;
                 dt.AcceptChanges();
             }
+
             set_max_id(ref dtma, "functional_audition", (id_functional_audition + 1).ToString());
+            set_max_id(ref dtma, "tagid_audition", (id_functional_audition + 1).ToString());
 
             dt.TableName = "functional_audition";
+            dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
+
+            dt.TableName = "tagid_audition";
             dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
             #endregion functional_audition
 
@@ -1248,6 +1299,8 @@ namespace Class
                 dt.Rows[0]["possiblecase_no"] = 1;
                 dt.Rows[0]["category_no"] = 1;
 
+                dt.Rows[0]["action_status"] = "Open";
+
                 dt.Rows[0]["create_by"] = user_name;
                 dt.Rows[0]["action_type"] = "insert";
                 dt.Rows[0]["action_change"] = 0;
@@ -1280,26 +1333,76 @@ namespace Class
                 //data_attendees->mutti list
                 //data_specialist->mutti list
                 //data_reviewer->create one row
-                //data_approver->create one row 
+                //data_approver->create one row   
+                dt.Rows.Add(dt.NewRow());
+                dt.Rows[0]["seq"] = id_related;
+                dt.Rows[0]["id"] = id_related;
+                dt.Rows[0]["id_pha"] = id_pha;
+                dt.Rows[0]["id_tasks"] = id_tasks;
+
+
+                dt.Rows[0]["create_by"] = user_name;
+                dt.Rows[0]["action_type"] = "insert";
+                dt.Rows[0]["action_change"] = 0;
+                dt.AcceptChanges();
+
+
                 string[] xsplit = ("attendees,specialist,reviewer,approver").Split(',');
                 for (int i = 0; i < xsplit.Length; i++)
                 {
                     string _user_type = xsplit[i].Trim();
 
-                    dt.Rows.Add(dt.NewRow());
                     dt.Rows[0]["seq"] = id_related;
                     dt.Rows[0]["id"] = id_related;
-                    dt.Rows[0]["id_pha"] = id_pha;
-                    dt.Rows[0]["id_tasks"] = id_tasks;
-
-                    dt.Rows[0]["no"] = (i + 1);
+                    dt.Rows[0]["no"] = 1;
                     dt.Rows[0]["user_type"] = _user_type;//attendees,specialist,reviewer,approver
+                    if (_user_type == "approver")
+                    {
+                        dt.Rows[0]["approver_type"] = "AE";
+                    }
+                    dt.TableName = _user_type;
+                    dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
 
-                    dt.Rows[0]["create_by"] = user_name;
-                    dt.Rows[0]["action_type"] = "insert";
-                    dt.Rows[0]["action_change"] = 0;
-                    dt.AcceptChanges();
+                    id_related += 1;
+                }
 
+            }
+            else
+            {
+                string[] xsplit = ("attendees,specialist,reviewer,approver").Split(',');
+                for (int i = 0; i < xsplit.Length; i++)
+                {
+                    string _user_type = xsplit[i].Trim();
+
+                    sqlstr = @" select b.* , 'update' as action_type, 0 as action_change
+                        from EPHA_F_HEADER a 
+                        inner join EPHA_T_TASKS_RELATEDPEOPLE b on a.id  = b.id_pha
+                        where 1=1 ";
+                    sqlstr += " and lower(a.seq) = lower(" + cls.ChkSqlStr(seq, 50) + ")  ";
+                    sqlstr += " and lower(b.user_type) = lower(" + cls.ChkSqlStr(_user_type, 50) + ")  ";
+                    sqlstr += " order by a.seq,b.seq";
+
+                    cls_conn = new ClassConnectionDb();
+                    dt = new DataTable();
+                    dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+                     
+                    if (dt.Rows.Count == 0)
+                    { 
+                        dt.Rows.Add(dt.NewRow());
+                        dt.Rows[0]["seq"] = id_related;
+                        dt.Rows[0]["id"] = id_related;
+                        dt.Rows[0]["id_pha"] = id_pha;
+                        dt.Rows[0]["id_tasks"] = id_tasks;
+                        dt.Rows[0]["no"] = 1;
+                        if (_user_type == "approver")
+                        {
+                            dt.Rows[0]["approver_type"] = "AE";
+                        }
+                        dt.Rows[0]["create_by"] = user_name;
+                        dt.Rows[0]["action_type"] = "insert";
+                        dt.Rows[0]["action_change"] = 0;
+                        dt.AcceptChanges();
+                    }
                     dt.TableName = _user_type;
                     dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
 
@@ -1312,15 +1415,15 @@ namespace Class
             #endregion tasks_relatedpeople
 
         }
-         
+
         private void _whatif_data(string user_name, string seq, int id_pha, ref DataTable dtma)
         {
-            int id_node = 0;
-            int id_nodeworksheet = 0;
-            
-            #region node 
+            int id_list = 0;
+            int id_listworksheet = 0;
+
+            #region list 
             sqlstr = @" select b.* , 'update' as action_type, 0 as action_change
-                        from EPHA_F_HEADER a inner join EPHA_T_NODE b on a.id  = b.id_pha
+                        from EPHA_F_HEADER a inner join EPHA_T_LIST b on a.id  = b.id_pha
                         where 1=1 ";
             sqlstr += " and lower(a.seq) = lower(" + cls.ChkSqlStr(seq, 50) + ")  ";
             sqlstr += " order by a.seq,b.seq";
@@ -1329,13 +1432,13 @@ namespace Class
             dt = new DataTable();
             dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
 
-            id_node = (get_max("EPHA_T_NODE", seq));
+            id_list = (get_max("EPHA_T_list", seq));
             if (dt.Rows.Count == 0)
             {
                 //กรณีที่เป็นใบงานใหม่
                 dt.Rows.Add(dt.NewRow());
-                dt.Rows[0]["seq"] = id_node;
-                dt.Rows[0]["id"] = id_node;
+                dt.Rows[0]["seq"] = id_list;
+                dt.Rows[0]["id"] = id_list;
                 dt.Rows[0]["id_pha"] = id_pha;
 
                 dt.Rows[0]["no"] = 1;
@@ -1346,17 +1449,17 @@ namespace Class
                 dt.AcceptChanges();
 
             }
-            set_max_id(ref dtma, "node", (id_node + 1).ToString());
+            set_max_id(ref dtma, "list", (id_list + 1).ToString());
 
-            dt.TableName = "node";
+            dt.TableName = "list";
             dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
-            #endregion node
+            #endregion list
 
 
-            #region nodedrawing 
+            #region listdrawing 
             sqlstr = @" select b.* , 'update' as action_type, 0 as action_change
-                        , b.id_node as seq_node
-                        from EPHA_F_HEADER a inner join EPHA_T_NODE_DRAWING b on a.id  = b.id_pha
+                        , b.id_list as seq_list
+                        from EPHA_F_HEADER a inner join EPHA_T_LIST_DRAWING b on a.id  = b.id_pha
                         where 1=1 ";
             sqlstr += " and lower(a.seq) = lower(" + cls.ChkSqlStr(seq, 50) + ")  ";
             sqlstr += " order by a.seq,b.seq";
@@ -1365,17 +1468,17 @@ namespace Class
             dt = new DataTable();
             dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
 
-            int id_nodedrawing = (get_max("EPHA_T_NODE_DRAWING", seq));
+            int id_listdrawing = (get_max("EPHA_T_LIST_DRAWING", seq));
             if (dt.Rows.Count == 0)
             {
                 //กรณีที่เป็นใบงานใหม่
                 dt.Rows.Add(dt.NewRow());
-                dt.Rows[0]["seq"] = id_nodedrawing;
-                dt.Rows[0]["id"] = id_nodedrawing;
-                dt.Rows[0]["id_node"] = id_node;
+                dt.Rows[0]["seq"] = id_listdrawing;
+                dt.Rows[0]["id"] = id_listdrawing;
+                dt.Rows[0]["id_list"] = id_list;
                 dt.Rows[0]["id_pha"] = id_pha;
 
-                dt.Rows[0]["seq_node"] = id_node;
+                dt.Rows[0]["seq_list"] = id_list;
 
                 dt.Rows[0]["no"] = 1;
 
@@ -1384,91 +1487,46 @@ namespace Class
                 dt.Rows[0]["action_change"] = 0;
                 dt.AcceptChanges();
             }
-            set_max_id(ref dtma, "nodedrawing", (id_nodedrawing + 1).ToString());
+            set_max_id(ref dtma, "listdrawing", (id_listdrawing + 1).ToString());
 
-            dt.TableName = "nodedrawing";
+            dt.TableName = "listdrawing";
             dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
-            #endregion nodedrawing
+            #endregion listdrawing
 
-            #region nodeguidwords 
-            sqlstr = @"  select b.* ,coalesce(def_selected,0) as selected_type , 'update' as action_type, 0 as action_change
-                        , b.id_node as seq_node, g.guide_words as guidewords, g.deviations, 0 as no_guide_word
-                        from EPHA_F_HEADER a inner join EPHA_T_NODE_GUIDE_WORDS b on a.id  = b.id_pha
-                        left join EPHA_M_GUIDE_WORDS g on b.id_guide_word = g.id
-                        where 1=1 ";
-            sqlstr += " and lower(a.seq) = lower(" + cls.ChkSqlStr(seq, 50) + ")  ";
-            sqlstr += " order by a.seq,b.seq";
-
-            cls_conn = new ClassConnectionDb();
-            dt = new DataTable();
-            dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
-
-            int id_nodeguidwords = (get_max("EPHA_T_NODE_GUIDE_WORDS", seq));
-
-            if (dt.Rows.Count == 0)
-            {
-                //กรณีที่เป็นใบงานใหม่
-                dt.Rows.Add(dt.NewRow());
-                dt.Rows[0]["seq"] = id_nodeguidwords;
-                dt.Rows[0]["id"] = id_nodeguidwords;
-                dt.Rows[0]["id_node"] = id_node;
-                dt.Rows[0]["id_pha"] = id_pha;
-
-                dt.Rows[0]["seq_node"] = id_node;
-                dt.Rows[0]["no"] = 1;
-
-                ////หาหน้าบ้าน
-                //dt.Rows[0]["id_guide_words"] = id_node;
-
-                dt.Rows[0]["create_by"] = user_name;
-                dt.Rows[0]["action_type"] = "insert";
-                dt.Rows[0]["action_change"] = 0;
-                dt.AcceptChanges();
-            }
-            set_max_id(ref dtma, "nodeguidwords", (id_nodeguidwords + 1).ToString());
-
-            DataTable dtnodeguidwords = new DataTable();
-            dtnodeguidwords = dt.Copy(); dtnodeguidwords.AcceptChanges();
-
-            dt.TableName = "nodeguidwords";
-            dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
-            #endregion nodeguidwords
-
-            #region nodeworksheet 
+            #region listworksheet 
             sqlstr = @" select b.* , 0 as no  
                         , 'update' as action_type, 0 as action_change
-                        , b.id_node as seq_node, g.guide_words as guidewords, g.deviations
+                        , b.id_list as seq_list 
                         , vw.user_id as responder_user_id, vw.user_email as responder_user_email
                         , 'assets/img/team/avatar.webp' as responder_user_img
                         , n.no as node_no
                         from EPHA_F_HEADER a   
-                        inner join EPHA_T_NODE n on a.id  = n.id_pha 
-                        inner join EPHA_T_NODE_WORKSHEET b on a.id  = b.id_pha and n.id = b.id_node 
-                        inner join EPHA_M_GUIDE_WORDS g on b.id_guide_word = g.id    
+                        inner join EPHA_T_list n on a.id  = n.id_pha 
+                        inner join EPHA_T_LIST_WORKSHEET b on a.id  = b.id_pha and n.id = b.id_list  
                         left join VW_EPHA_PERSON_DETAILS vw on lower(b.responder_user_name) = lower(vw.user_name) 
                         where 1=1";
             sqlstr += " and lower(a.seq) = lower(" + cls.ChkSqlStr(seq, 50) + ")  ";
-            sqlstr += " order by n.no, g.id, b.no, b.causes_no, b.consequences_no, b.category_no";
+            sqlstr += " order by n.no, b.no, b.list_system_no, b.list_sub_system_no, b.causes_no, b.consequences_no, b.category_no";
 
             cls_conn = new ClassConnectionDb();
             dt = new DataTable();
             dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
 
-            id_nodeworksheet = (get_max("EPHA_T_NODE_WORKSHEET", seq));
+            id_listworksheet = (get_max("EPHA_T_list_WORKSHEET", seq));
             if (dt.Rows.Count == 0)
             {
                 //กรณีที่เป็นใบงานใหม่ เดียวให้หน้าบ้านเช็คแล้ว loop เอา -> logic เดียวต้องรวมกับ functions add อยู่แล้ว
                 dt.Rows.Add(dt.NewRow());
-                dt.Rows[0]["seq"] = id_nodeworksheet;
-                dt.Rows[0]["id"] = id_nodeworksheet;
-                dt.Rows[0]["id_node"] = id_node;
+                dt.Rows[0]["seq"] = id_listworksheet;
+                dt.Rows[0]["id"] = id_listworksheet;
+                dt.Rows[0]["id_list"] = id_list;
                 dt.Rows[0]["id_pha"] = id_pha;
 
-                dt.Rows[0]["seq_node"] = id_node;
+                dt.Rows[0]["seq_list"] = id_list;
 
                 dt.Rows[0]["no"] = 1;
 
-                dt.Rows[0]["row_type"] = "causes";//guideword,causes,consequences,cat
+                dt.Rows[0]["row_type"] = "list_system";//list_system,list_sub_system,causes,consequences,category
 
                 dt.Rows[0]["create_by"] = user_name;
                 dt.Rows[0]["action_type"] = "new";
@@ -1476,12 +1534,43 @@ namespace Class
                 dt.Rows[0]["action_status"] = "Open";
                 dt.AcceptChanges();
             }
-            set_max_id(ref dtma, "nodeworksheet", (id_nodeworksheet + 1).ToString());
+            set_max_id(ref dtma, "listworksheet", (id_listworksheet + 1).ToString());
 
-            dt.TableName = "nodeworksheet";
+            dt.TableName = "listworksheet";
             dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
-            #endregion nodeworksheet
+            #endregion listworksheet
 
+        }
+
+        private void check_role_user_active(string user_name, ref string role_type)
+        {
+
+            ClassLogin classLogin = new ClassLogin();
+            sqlstr = classLogin.QueryAdminUser_Role(user_name);
+            cls_conn = new ClassConnectionDb();
+            DataTable dtrole = new DataTable();
+            dtrole = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+            if (dtrole.Rows.Count > 0)
+            {
+                for (int i = 0; i < dtrole.Rows.Count; i++)
+                {
+                    role_type = (dtrole.Rows[0]["role_type"] + "").ToString();
+                    if (role_type == "admin") { break; }
+                }
+            }
+            else
+            {
+                dtrole = new DataTable();
+                dtrole = cls_conn.ExecuteAdapterSQL(sqlstr.Replace("inner join", "left join")).Tables[0];
+                if (dtrole.Rows.Count > 0)
+                {
+                    for (int i = 0; i < dtrole.Rows.Count; i++)
+                    {
+                        role_type = (dtrole.Rows[0]["role_type"] + "").ToString();
+                        if (role_type == "admin") { break; }
+                    }
+                }
+            }
         }
 
 
@@ -1606,37 +1695,121 @@ namespace Class
             dsData.DataSetName = "dsData"; dsData.AcceptChanges();
 
         }
-
-        private void check_role_user_active(string user_name, ref string role_type)
+        public void DataPageSearch(ref DataSet dsData, string user_name, string seq, string sub_software)
         {
+            DataTable dtma = new DataTable();
+            string pha_no = "";
+            int id_pha = 0;
+            user_name = (user_name == "" ? "zkuluwat" : user_name);
 
-            ClassLogin classLogin = new ClassLogin();
-            sqlstr = classLogin.QueryAdminUser_Role(user_name);
+            string year_now = System.DateTime.Now.Year.ToString();
+            if (Convert.ToInt64(year_now) > 2500) { year_now = (Convert.ToInt64(year_now) - 543).ToString(); }
+
+            dt = new DataTable();
+            cls = new ClassFunctions();
+
+            //--user_name, user_displayname, user_email
+            sqlstr = @" select *  from EPHA_PERSON_DETAILS a where 1=1 ";
+            sqlstr += " and lower(a.user_name) = lower(coalesce(" + cls.ChkSqlStr(user_name, 50) + ",'x'))  ";
             cls_conn = new ClassConnectionDb();
-            DataTable dtrole = new DataTable();
-            dtrole = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
-            if (dtrole.Rows.Count > 0)
+            DataTable dtemp = new DataTable();
+            dtemp = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+
+            #region conditions 
+            sqlstr = @" select b.* , '' as functional_location_audition, '' as business_unit_name, '' as unit_no_name, 'update' as action_type, 0 as action_change
+                        from EPHA_F_HEADER a inner join EPHA_T_GENERAL b on a.id  = b.id_pha
+                        where 1=2 ";
+            sqlstr += " order by a.pha_no";
+
+            cls_conn = new ClassConnectionDb();
+            dt = new DataTable();
+            dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+
+            if (dt.Rows.Count == 0)
             {
-                for (int i = 0; i < dtrole.Rows.Count; i++)
-                {
-                    role_type = (dtrole.Rows[0]["role_type"] + "").ToString();
-                    if (role_type == "admin") { break; }
-                }
+                //กรณีที่เป็นใบงานใหม่
+                dt.Rows.Add(dt.NewRow());
+                dt.Rows[0]["seq"] = id_pha;
+                dt.Rows[0]["id"] = id_pha;
+                dt.Rows[0]["id_pha"] = id_pha;
+
+                dt.Rows[0]["functional_location_audition"] = "";
+
+                //default values 
+                DataTable dtram = dsData.Tables["ram"].Copy(); dtram.AcceptChanges();
+                dt.Rows[0]["id_ram"] = dtram.Rows[0]["id"];
+
+                dt.Rows[0]["expense_type"] = "OPEX";
+                dt.Rows[0]["sub_expense_type"] = "Normal";
+
+                dt.Rows[0]["create_by"] = user_name;
+                dt.Rows[0]["action_type"] = "insert";
+                dt.Rows[0]["action_change"] = 0;
+                dt.AcceptChanges();
             }
-            else
+            dt.AcceptChanges();
+
+            dt.TableName = "conditions";
+            dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
+            #endregion conditions
+
+            #region results 
+            sqlstr = @" select a.*,b.*,ms.name as pha_status_name, ms.descriptions as pha_status_displayname
+                        ,case when a.year = year(getdate()) then vw.user_name else a.request_user_name end request_user_name
+                        ,case when a.year = year(getdate()) then vw.user_name else a.request_user_displayname end request_user_displayname
+                        ,null as approver_user_img
+                        , 'update' as action_type, 0 as action_change
+                        from EPHA_F_HEADER a
+						inner join EPHA_T_GENERAL b on a.id  = b.id_pha
+                        left join EPHA_M_STATUS ms on a.pha_status = ms.id
+                        left join VW_EPHA_PERSON_DETAILS vw on lower(a.pha_request_by) = lower(vw.user_name)
+                        where 1=1";
+            if (seq != "") { sqlstr += " and lower(a.seq) = lower(" + cls.ChkSqlStr(seq, 50) + ")  "; }
+            if (sub_software != "") { sqlstr += " and lower(a.pha_sub_software) = lower(" + cls.ChkSqlStr(sub_software, 50) + ")  "; }
+            sqlstr += " order by a.pha_no";
+
+            cls_conn = new ClassConnectionDb();
+            dt = new DataTable();
+            dt = cls_conn.ExecuteAdapterSQL(sqlstr).Tables[0];
+
+            if (dt.Rows.Count == 0)
             {
-                dtrole = new DataTable();
-                dtrole = cls_conn.ExecuteAdapterSQL(sqlstr.Replace("inner join", "left join")).Tables[0];
-                if (dtrole.Rows.Count > 0)
-                {
-                    for (int i = 0; i < dtrole.Rows.Count; i++)
-                    {
-                        role_type = (dtrole.Rows[0]["role_type"] + "").ToString();
-                        if (role_type == "admin") { break; }
-                    }
-                }
+                pha_no = get_pha_no(sub_software, year_now);
+                id_pha = (get_max("EPHA_F_HEADER", seq));
+                set_max_id(ref dtma, "header", id_pha.ToString());
+
+                //กรณีที่เป็นใบงานใหม่
+                dt.Rows.Add(dt.NewRow());
+                dt.Rows[0]["seq"] = id_pha;
+                dt.Rows[0]["id"] = id_pha;
+                dt.Rows[0]["year"] = year_now;
+                dt.Rows[0]["pha_no"] = pha_no;
+                dt.Rows[0]["pha_version"] = 0;
+                dt.Rows[0]["pha_status"] = 11;
+                dt.Rows[0]["pha_sub_software"] = sub_software;
+                dt.Rows[0]["request_approver"] = 0;
+
+                dt.Rows[0]["pha_status_name"] = "DF";
+                dt.Rows[0]["pha_status_displayname"] = "Draft";
+
+                dt.Rows[0]["pha_request_by"] = (dtemp.Rows[0]["user_name"] + "");
+                dt.Rows[0]["request_user_name"] = (dtemp.Rows[0]["user_name"] + "");
+                dt.Rows[0]["request_user_displayname"] = (dtemp.Rows[0]["user_displayname"] + "");
+
+                dt.Rows[0]["create_by"] = user_name;
+                dt.Rows[0]["action_type"] = "insert";
+                dt.Rows[0]["action_change"] = 0;
+                dt.AcceptChanges();
             }
+
+            dt.TableName = "results";
+            dsData.Tables.Add(dt.Copy()); dsData.AcceptChanges();
+            #endregion results
+
+            dsData.DataSetName = "dsData"; dsData.AcceptChanges();
+
         }
+
         public void DataHazopSearchFollowUp(ref DataSet dsData, string user_name, string seq, string sub_software)
         {
             DataTable dtma = new DataTable();
@@ -1770,7 +1943,9 @@ namespace Class
 
         public string QueryFollowUpDetail(string seq, string pha_no, string responder_user_name, string sub_software, Boolean bOrderBy)
         {
-            sqlstr = @"  select  'update' as action_type, 0 as action_change
+            if (sub_software == "hazop")
+            {
+                sqlstr = @"  select  'update' as action_type, 0 as action_change
                          , 0 as no,a.id as id_pha, upper(a.pha_sub_software) as pha_sub_software, a.pha_no, g.pha_request_name, vw.user_displayname as responder_user_displayname, nw.responder_user_name
                          , (nw.action_status) as action_status
 						 , count(1) as status_total
@@ -1792,17 +1967,54 @@ namespace Class
                          inner join VW_EPHA_PERSON_DETAILS vw on lower(nw.responder_user_name) = lower(vw.user_name) 
                          where nw.responder_user_name is not null and a.pha_status in (13,14)";
 
-            if (seq != "") { sqlstr += @" and lower(a.seq) = lower(" + cls.ChkSqlStr(seq, 50) + ")  "; }
-            if (pha_no != "") { sqlstr += @" and lower(a.pha_no) = lower(" + cls.ChkSqlStr(pha_no, 50) + ")  "; }
-            if (responder_user_name != "") { sqlstr += @" and lower(nw.responder_user_name) = lower(" + cls.ChkSqlStr(responder_user_name, 50) + ")  "; }
+                if (seq != "") { sqlstr += @" and lower(a.seq) = lower(" + cls.ChkSqlStr(seq, 50) + ")  "; }
+                if (pha_no != "") { sqlstr += @" and lower(a.pha_no) = lower(" + cls.ChkSqlStr(pha_no, 50) + ")  "; }
+                if (responder_user_name != "") { sqlstr += @" and lower(nw.responder_user_name) = lower(" + cls.ChkSqlStr(responder_user_name, 50) + ")  "; }
 
-            sqlstr += @"  group by a.id, nw.seq, nw.id, a.pha_sub_software, a.pha_no, g.pha_request_name, vw.user_displayname, nw.responder_user_name
+                sqlstr += @"  group by a.id, nw.seq, nw.id, a.pha_sub_software, a.pha_no, g.pha_request_name, vw.user_displayname, nw.responder_user_name
                          , nw.document_file_name, nw.document_file_path, nw.estimated_start_date, nw.estimated_end_date, nw.action_status, isnull(nw.responder_action_type,'') 
 						 , nw.recommendations, nw.causes_no, nw.consequences_no, nw.recommendations_no, n.no, n.node, g.id_ram
                          , nw.ram_after_risk, nw.ram_action_security, nw.ram_action_likelihood, nw.ram_action_risk, nw.responder_comment";
 
-            if (bOrderBy) { sqlstr += @" order by convert(int, a.id), a.pha_sub_software, a.pha_no, g.pha_request_name, vw.user_displayname, nw.responder_user_name"; }
+                if (bOrderBy) { sqlstr += @" order by convert(int, a.id), a.pha_sub_software, a.pha_no, g.pha_request_name, vw.user_displayname, nw.responder_user_name"; }
+            }
+            else if (sub_software == "jsea")
+            {
+                sqlstr = @"  select  'update' as action_type, 0 as action_change
+                         , 0 as no,a.id as id_pha, upper(a.pha_sub_software) as pha_sub_software, a.pha_no, g.pha_request_name, vw.user_displayname as responder_user_displayname, nw.responder_user_name
+                         , (nw.action_status) as action_status
+						 , count(1) as status_total
+                         , count(case when lower(nw.action_status) in ( 'closed','responed') then null else 1 end) status_open
+                         , count(case when lower(nw.action_status) in ( 'closed','responed') then 1 else null end) status_closed
+						 , nw.document_file_name, nw.document_file_path, 0 as document_file_size
+						 , format(nw.estimated_start_date,'dd MMM yyyy') as estimated_start_date_text 
+						 , format(nw.estimated_end_date,'dd MMM yyyy') as estimated_end_date_text 
+						 , isnull(datediff(day,case when nw.estimated_end_date > getdate() then getdate() else nw.estimated_end_date end,getdate()),0) as over_due
+                         , nw.seq, nw.id, isnull(nw.responder_action_type,'') as responder_action_type
+						 , nw.workstep, nw.taskdesc, nw.potentailhazard, nw.possiblecase, nw.recommendations
+						 , nw.workstep_no, nw.taskdesc_no, nw.potentailhazard_no, nw.possiblecase_no, nw.recommendations_no
+                         , g.id_ram 
+                         , nw.ram_after_risk, nw.ram_action_security, nw.ram_action_likelihood, nw.ram_action_risk
+                         , nw.responder_comment
+                         from EPHA_F_HEADER a 
+                         inner join EPHA_T_GENERAL g on a.id = g.id_pha 
+						 inner join EPHA_T_TASKS_WORKSHEET nw on a.id = nw.id_pha   
+                         inner join VW_EPHA_PERSON_DETAILS vw on lower(nw.responder_user_name) = lower(vw.user_name) 
+                         where nw.responder_user_name is not null and a.pha_status in (13,14)";
 
+                if (seq != "") { sqlstr += @" and lower(a.seq) = lower(" + cls.ChkSqlStr(seq, 50) + ")  "; }
+                if (pha_no != "") { sqlstr += @" and lower(a.pha_no) = lower(" + cls.ChkSqlStr(pha_no, 50) + ")  "; }
+                if (responder_user_name != "") { sqlstr += @" and lower(nw.responder_user_name) = lower(" + cls.ChkSqlStr(responder_user_name, 50) + ")  "; }
+
+                sqlstr += @"  group by a.id, nw.seq, nw.id, a.pha_sub_software, a.pha_no, g.pha_request_name, vw.user_displayname, nw.responder_user_name
+                         , nw.document_file_name, nw.document_file_path, nw.estimated_start_date, nw.estimated_end_date, nw.action_status, isnull(nw.responder_action_type,'') 
+						 , nw.workstep, nw.taskdesc, nw.potentailhazard, nw.possiblecase, nw.recommendations
+						 , nw.workstep_no, nw.taskdesc_no, nw.potentailhazard_no, nw.possiblecase_no, nw.recommendations_no, g.id_ram
+                         , nw.ram_after_risk, nw.ram_action_security, nw.ram_action_likelihood, nw.ram_action_risk, nw.responder_comment";
+
+                if (bOrderBy) { sqlstr += @" order by convert(int, a.id), a.pha_sub_software, a.pha_no, g.pha_request_name, vw.user_displayname, nw.responder_user_name"; }
+
+            }
 
             return sqlstr;
         }
@@ -1867,7 +2079,6 @@ namespace Class
             #endregion general
 
             dsData.DataSetName = "dsData"; dsData.AcceptChanges();
-
         }
 
 

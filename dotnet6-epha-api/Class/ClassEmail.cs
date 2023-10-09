@@ -163,7 +163,7 @@ namespace Class
             string mail_user = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("MailConfig")["MailUser"];
             string mail_password = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("MailConfig")["MailPassword"];
             mail_user = "zkuluwat@thaioilgroup.com";
-            mail_password = "Initial1;Q4";
+            mail_password = "Initial1;Q5";
 
             if (mail_test != "")
             {
@@ -1941,7 +1941,7 @@ namespace Class
                         s_body += "<td style ='padding: 15px;'>" + dr[a]["consolidator"] + "</td>";
                         s_body += "</tr>";
                         iNo += 1;
-
+                         
                     }
 
                     s_body += "</tbody>";

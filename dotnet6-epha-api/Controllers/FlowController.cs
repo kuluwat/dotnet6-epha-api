@@ -107,6 +107,13 @@ namespace Controllers
             return cls.get_details(param);
         }
 
+        [HttpPost("load_page_search_details", Name = "load_page_search_details")]
+        public string load_page_search_details(LoadDocModel param)
+        {
+            ClassHazop cls = new ClassHazop();
+            return cls.get_search_details(param);
+
+        }
 
         [HttpPost("load_hazop_details", Name = "load_hazop_details")]
         public string load_hazop_details(LoadDocModel param)
@@ -249,13 +256,38 @@ namespace Controllers
 
         #region export jsea
 
-        [HttpPost("export_template_data", Name = "export_template_data")]
-        public string export_template_data(ReportModel param)
+        [HttpPost("export_template_jsea", Name = "export_template_jsea")]
+        public string export_template_jsea(ReportModel param)
         {
             ClassHazopSet cls = new ClassHazopSet();
-            return cls.export_template_data(param);
+            return cls.export_template_jsea(param);
         }
+
+        [HttpPost("export_jsea_report", Name = "export_jsea_report")]
+        public string export_jsea_report(ReportModel param)
+        {
+            ClassHazopSet cls = new ClassHazopSet();
+            return cls.export_jsea_report(param);
+        }
+
+        [HttpPost("export_jsea_worksheet", Name = "export_jsea_worksheet")]
+        public string export_jsea_worksheet(ReportModel param)
+        {
+            ClassHazopSet cls = new ClassHazopSet();
+            return cls.export_jsea_worksheet(param);
+        }
+
+        [HttpPost("export_jsea_recommendation", Name = "export_jsea_recommendation")]
+        public string export_jsea_recommendation(ReportModel param)
+        {
+            ClassHazopSet cls = new ClassHazopSet();
+            return cls.export_jsea_recommendation(param);
+        }
+         
+
         #endregion export jsea
+
+
         //[HttpPost("MailNotificationFollowUpItemToOwner", Name = "MailNotificationFollowUpItemToOwner")]
         //public string MailNotificationFollowUpItemToOwner(string seq)
         //{
