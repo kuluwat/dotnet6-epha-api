@@ -80,7 +80,9 @@ namespace Model
         public string? json_nodeworksheet { get; set; } = "";
           
         //jsea
-        public string? json_tasksworksheet { get; set; } = "";
+        public string? json_tasks_worksheet { get; set; } = "";
+        public string? json_tasks_relatedpeople { get; set; } = "";
+
 
         //whatif
         public string? json_list { get; set; } = "";
@@ -88,6 +90,7 @@ namespace Model
         public string? json_listworksheet { get; set; } = "";
 
 
+        public string? json_flow_action { get; set; } = "";
     }
 
     public class HeaderModel
