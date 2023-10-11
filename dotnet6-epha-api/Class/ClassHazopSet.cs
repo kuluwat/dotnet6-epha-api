@@ -6251,7 +6251,7 @@ namespace Class
                     sqlstr += " ," + cls.ChkSqlStr((dt.Rows[i]["WORK_SCOPE"] + "").ToString(), 4000);
 
                     #region jsea
-                    //ID_TOC,ID_TAGID,TAGID_AUDITION,INPUT_TYPE_EXCEL,TYPES_OF_HAZARD,FILE_UPLOAD_SIZE,FILE_UPLOAD_NAME,FILE_UPLOAD_PATH
+                    //ID_TOC,ID_TAGID,INPUT_TYPE_EXCEL,TYPES_OF_HAZARD,FILE_UPLOAD_SIZE,FILE_UPLOAD_NAME,FILE_UPLOAD_PATH
                     try
                     {
                         sqlstr += " ," + cls.ChkSqlNum((dt.Rows[i]["ID_TOC"] + "").ToString(), "N");
@@ -6261,17 +6261,13 @@ namespace Class
                     {
                         sqlstr += " ," + cls.ChkSqlNum((dt.Rows[i]["ID_TAGID"] + "").ToString(), "N");
                     }
-                    catch { sqlstr += " ,null"; }
-                    try
-                    {
-                        sqlstr += " ," + cls.ChkSqlStr((dt.Rows[i]["TAGID_AUDITION"] + "").ToString(), 4000);
-                    }
-                    catch { sqlstr += " ,null"; }
+                    catch { sqlstr += " ,null"; } 
                     try
                     {
                         sqlstr += " ," + cls.ChkSqlNum((dt.Rows[i]["INPUT_TYPE_EXCEL"] + "").ToString(), "N");
                     }
                     catch { sqlstr += " ,null"; }
+               
                     try
                     {
                         sqlstr += " ," + cls.ChkSqlNum((dt.Rows[i]["TYPES_OF_HAZARD"] + "").ToString(), "N");
@@ -6339,7 +6335,7 @@ namespace Class
 
 
                     #region jsea
-                    //ID_TOC,ID_TAGID,TAGID_AUDITION,INPUT_TYPE_EXCEL,TYPES_OF_HAZARD,FILE_UPLOAD_SIZE,FILE_UPLOAD_NAME,FILE_UPLOAD_PATH
+                    //ID_TOC,ID_TAGID,INPUT_TYPE_EXCEL,TYPES_OF_HAZARD,FILE_UPLOAD_SIZE,FILE_UPLOAD_NAME,FILE_UPLOAD_PATH
                     try
                     {
                         sqlstr += " ,ID_TOC = " + cls.ChkSqlNum((dt.Rows[i]["ID_TOC"] + "").ToString(), "N");
@@ -6349,12 +6345,7 @@ namespace Class
                     {
                         sqlstr += " ,ID_TAGID = " + cls.ChkSqlNum((dt.Rows[i]["ID_TAGID"] + "").ToString(), "N");
                     }
-                    catch { }
-                    try
-                    {
-                        sqlstr += " ,TAGID_AUDITION = " + cls.ChkSqlStr((dt.Rows[i]["TAGID_AUDITION"] + "").ToString(), 4000);
-                    }
-                    catch { }
+                    catch { } 
                     try
                     {
                         sqlstr += " ,INPUT_TYPE_EXCEL = " + cls.ChkSqlNum((dt.Rows[i]["INPUT_TYPE_EXCEL"] + "").ToString(), "N");
